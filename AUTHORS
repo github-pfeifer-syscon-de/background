@@ -1,0 +1,18 @@
+program:
+background@pfeifer-syscon.de
+-----
+The astronomy functions are made available by Greg Miller
+see https://celestialprogramming.com/
+----
+the star data is build from http://tapvizier.cds.unistra.fr/adql/?%20I/311/hip2
+* output format : json
+SELECT TOP 2000 "I/311/hip2".HIP,  "I/311/hip2".n_HIP,  "I/311/hip2".Sn,  "I/311/hip2".So,  "I/311/hip2".RArad,  "I/311/hip2".DErad,  "I/311/hip2".Plx,
+"I/311/hip2".e_Plx,  "I/311/hip2".pmRA,  "I/311/hip2".pmDE,  "I/311/hip2".Hpmag,  "I/311/hip2"."B-V"
+FROM "I/311/hip2"
+WHERE "I/311/hip2"."Hpmag"<= 5
+----
+The planet data is build from https://github.com/gmiller123456/jpl-development-ephemeris
+Which is based on FTP ssd.jpl.nasa.gov/pub/eph/planets
+---
+The constellation lines are provided by Sky&Teleskope
+taken from the Stellarium repository https://github.com/Stellarium/stellarium/blob/master/skycultures/modern_st/SnT_constellations.txt .

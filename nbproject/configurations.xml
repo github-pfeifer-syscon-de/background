@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="src">
+        <in>AzimutAltitude.cpp</in>
+        <in>BackgroundApp.cpp</in>
+        <in>Constellation.cpp</in>
+        <in>ConstellationFormat.cpp</in>
+        <in>GeoPosition.cpp</in>
+        <in>HipparcosFormat.cpp</in>
+        <in>HipparcosStar.cpp</in>
+        <in>JulianDate.cpp</in>
+        <in>Layout.cpp</in>
+        <in>Math.cpp</in>
+        <in>Moon.cpp</in>
+        <in>Phase.cpp</in>
+        <in>Point2D.cpp</in>
+        <in>Polyline.cpp</in>
+        <in>RaDec.cpp</in>
+        <in>Star.cpp</in>
+        <in>StarDraw.cpp</in>
+        <in>StarWin.cpp</in>
+        <in>Sun.cpp</in>
+        <in>resources.c</in>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>configure</itemPath>
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-g"/>
+        <element flagsID="1" commonFlags="-std=c++14"/>
+        <element flagsID="2" commonFlags="-std=c++20"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>src/background</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>src</pElem>
+              <pElem>.</pElem>
+              <pElem>/usr/include/glibmm-2.4</pElem>
+              <pElem>/usr/lib/glibmm-2.4/include</pElem>
+              <pElem>/usr/include/glib-2.0</pElem>
+              <pElem>/usr/lib/glib-2.0/include</pElem>
+              <pElem>/usr/include/sysprof-6</pElem>
+              <pElem>/usr/include/sigc++-2.0</pElem>
+              <pElem>/usr/lib/sigc++-2.0/include</pElem>
+              <pElem>/usr/include/giomm-2.4</pElem>
+              <pElem>/usr/lib/giomm-2.4/include</pElem>
+              <pElem>/usr/include/libmount</pElem>
+              <pElem>/usr/include/blkid</pElem>
+              <pElem>/usr/include/gtkmm-3.0</pElem>
+              <pElem>/usr/lib/gtkmm-3.0/include</pElem>
+              <pElem>/usr/include/gtk-3.0</pElem>
+              <pElem>/usr/include/pango-1.0</pElem>
+              <pElem>/usr/include/harfbuzz</pElem>
+              <pElem>/usr/include/freetype2</pElem>
+              <pElem>/usr/include/libpng16</pElem>
+              <pElem>/usr/include/fribidi</pElem>
+              <pElem>/usr/include/cairo</pElem>
+              <pElem>/usr/include/pixman-1</pElem>
+              <pElem>/usr/include/gdk-pixbuf-2.0</pElem>
+              <pElem>/usr/include/gio-unix-2.0</pElem>
+              <pElem>/usr/include/cloudproviders</pElem>
+              <pElem>/usr/include/atk-1.0</pElem>
+              <pElem>/usr/include/at-spi2-atk/2.0</pElem>
+              <pElem>/usr/include/at-spi-2.0</pElem>
+              <pElem>/usr/include/dbus-1.0</pElem>
+              <pElem>/usr/lib/dbus-1.0/include</pElem>
+              <pElem>/usr/include/cairomm-1.0</pElem>
+              <pElem>/usr/lib/cairomm-1.0/include</pElem>
+              <pElem>/usr/include/pangomm-1.4</pElem>
+              <pElem>/usr/lib/pangomm-1.4/include</pElem>
+              <pElem>/usr/include/atkmm-1.6</pElem>
+              <pElem>/usr/lib/atkmm-1.6/include</pElem>
+              <pElem>/usr/include/gtk-3.0/unix-print</pElem>
+              <pElem>/usr/include/gdkmm-3.0</pElem>
+              <pElem>/usr/lib/gdkmm-3.0/include</pElem>
+              <pElem>/usr/include/genericimg</pElem>
+              <pElem>/usr/include/json-glib-1.0</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>HAVE_CONFIG_H</Elem>
+              <Elem>PACKAGE_DATA_DIR="/usr/share/background-program"</Elem>
+              <Elem>PACKAGE_LOCALE_DIR="/usr/share/locale"</Elem>
+              <Elem>PACKAGE_SRC_DIR="."</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>src</pElem>
+              <pElem>.</pElem>
+              <pElem>/usr/include/glibmm-2.4</pElem>
+              <pElem>/usr/lib/glibmm-2.4/include</pElem>
+              <pElem>/usr/include/glib-2.0</pElem>
+              <pElem>/usr/lib/glib-2.0/include</pElem>
+              <pElem>/usr/include/sysprof-6</pElem>
+              <pElem>/usr/include/sigc++-2.0</pElem>
+              <pElem>/usr/lib/sigc++-2.0/include</pElem>
+              <pElem>/usr/include/giomm-2.4</pElem>
+              <pElem>/usr/lib/giomm-2.4/include</pElem>
+              <pElem>/usr/include/libmount</pElem>
+              <pElem>/usr/include/blkid</pElem>
+              <pElem>/usr/include/gtkmm-3.0</pElem>
+              <pElem>/usr/lib/gtkmm-3.0/include</pElem>
+              <pElem>/usr/include/gtk-3.0</pElem>
+              <pElem>/usr/include/pango-1.0</pElem>
+              <pElem>/usr/include/harfbuzz</pElem>
+              <pElem>/usr/include/freetype2</pElem>
+              <pElem>/usr/include/libpng16</pElem>
+              <pElem>/usr/include/fribidi</pElem>
+              <pElem>/usr/include/cairo</pElem>
+              <pElem>/usr/include/pixman-1</pElem>
+              <pElem>/usr/include/gdk-pixbuf-2.0</pElem>
+              <pElem>/usr/include/gio-unix-2.0</pElem>
+              <pElem>/usr/include/cloudproviders</pElem>
+              <pElem>/usr/include/atk-1.0</pElem>
+              <pElem>/usr/include/at-spi2-atk/2.0</pElem>
+              <pElem>/usr/include/at-spi-2.0</pElem>
+              <pElem>/usr/include/dbus-1.0</pElem>
+              <pElem>/usr/lib/dbus-1.0/include</pElem>
+              <pElem>/usr/include/cairomm-1.0</pElem>
+              <pElem>/usr/lib/cairomm-1.0/include</pElem>
+              <pElem>/usr/include/pangomm-1.4</pElem>
+              <pElem>/usr/lib/pangomm-1.4/include</pElem>
+              <pElem>/usr/include/atkmm-1.6</pElem>
+              <pElem>/usr/lib/atkmm-1.6/include</pElem>
+              <pElem>/usr/include/gtk-3.0/unix-print</pElem>
+              <pElem>/usr/include/gdkmm-3.0</pElem>
+              <pElem>/usr/lib/gdkmm-3.0/include</pElem>
+              <pElem>/usr/include/genericimg</pElem>
+              <pElem>/usr/include/json-glib-1.0</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>HAVE_CONFIG_H</Elem>
+              <Elem>PACKAGE_DATA_DIR="/usr/share/background-program"</Elem>
+              <Elem>PACKAGE_LOCALE_DIR="/usr/share/locale"</Elem>
+              <Elem>PACKAGE_SRC_DIR="."</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand>./configure CC=${IDE_CC} CXX=${IDE_CXX} CFLAGS="-g3 -gdwarf-2" CXXFLAGS="-g3 -gdwarf-2"</preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="src/AzimutAltitude.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/BackgroundApp.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/Constellation.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/ConstellationFormat.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/GeoPosition.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/HipparcosFormat.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/HipparcosStar.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/JulianDate.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/Layout.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/Math.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/Moon.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/Phase.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/Point2D.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/Polyline.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/RaDec.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/Star.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/StarDraw.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/StarWin.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="src/Sun.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/resources.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="0">
+        </cTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

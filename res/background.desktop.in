@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Version=0.1
+Name=Background
+Comment=Background utility
+Categories=Application;Utility;
+Exec=background
+Icon=@APP_ICON@
