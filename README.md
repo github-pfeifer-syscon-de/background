@@ -10,6 +10,6 @@ go for a astrononmy application.
 On the other hand, if you want some infos on a regular basis,
 this offers you some option with a app that does
 not take a whole bunch of resources
-(but i must admit there are more needed that i expected) .
+(but i must admit there are more needed than i expected) .
 And as a side effect, some insight might be easier to gain
 at a somewhat smaller scale...
