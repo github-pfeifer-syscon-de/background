@@ -7,21 +7,39 @@
         <in>BackgroundApp.cpp</in>
         <in>Constellation.cpp</in>
         <in>ConstellationFormat.cpp</in>
+        <in>Earth.cpp</in>
+        <in>Earth.hpp</in>
         <in>GeoPosition.cpp</in>
         <in>HipparcosFormat.cpp</in>
         <in>HipparcosStar.cpp</in>
         <in>JulianDate.cpp</in>
+        <in>Jupiter.cpp</in>
+        <in>Jupiter.hpp</in>
         <in>Layout.cpp</in>
+        <in>Mars.cpp</in>
+        <in>Mars.hpp</in>
         <in>Math.cpp</in>
+        <in>Mercury.cpp</in>
+        <in>Mercury.hpp</in>
         <in>Moon.cpp</in>
+        <in>Neptune.cpp</in>
+        <in>Neptune.hpp</in>
         <in>Phase.cpp</in>
+        <in>Planet.cpp</in>
+        <in>Planet.hpp</in>
         <in>Point2D.cpp</in>
         <in>Polyline.cpp</in>
         <in>RaDec.cpp</in>
+        <in>Saturn.cpp</in>
+        <in>Saturn.hpp</in>
         <in>Star.cpp</in>
         <in>StarDraw.cpp</in>
         <in>StarWin.cpp</in>
         <in>Sun.cpp</in>
+        <in>Uranus.cpp</in>
+        <in>Uranus.hpp</in>
+        <in>Venus.cpp</in>
+        <in>Venus.hpp</in>
         <in>resources.c</in>
       </df>
     </df>
@@ -184,6 +202,10 @@
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="src/Earth.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Earth.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/GeoPosition.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
@@ -200,21 +222,41 @@
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="src/Jupiter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Jupiter.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/Layout.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="src/Mars.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Mars.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/Math.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="src/Mercury.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Mercury.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/Moon.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="src/Neptune.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Neptune.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/Phase.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="src/Planet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Planet.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/Point2D.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
@@ -227,6 +269,10 @@
       <item path="src/RaDec.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="src/Saturn.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Saturn.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/Star.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
@@ -243,6 +289,14 @@
       <item path="src/Sun.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="src/Uranus.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Uranus.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/Venus.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/Venus.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/resources.c" ex="false" tool="0" flavor2="2">
         <cTool flags="0">

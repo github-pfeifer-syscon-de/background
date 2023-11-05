@@ -23,6 +23,13 @@
 #include "Layout.hpp"
 #include "GeoPosition.hpp"
 #include "JulianDate.hpp"
+#include "Mercury.hpp"
+#include "Venus.hpp"
+#include "Mars.hpp"
+#include "Jupiter.hpp"
+#include "Saturn.hpp"
+#include "Uranus.hpp"
+#include "Neptune.hpp"
 
 class HipparcosFormat;
 class ConstellationFormat;
@@ -38,16 +45,27 @@ public:
     virtual ~StarDraw() = default;
 
     static constexpr auto SUN_MOON_RADIUS = 7.0;
+    static constexpr  double PLANET_READIUS = 3.0;
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
-    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout);
-    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout);
-    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout);
-    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout);
+    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
 
     std::string get_config_name();
     void setupConfig();
+protected:
+    std::array<std::shared_ptr<Planet>,7> planets =
+                        {std::make_shared<Mercury>(),
+                        std::make_shared<Venus>(),
+                        std::make_shared<Mars>(),
+                        std::make_shared<Jupiter>(),
+                        std::make_shared<Saturn>(),
+                        std::make_shared<Uranus>(),
+                        std::make_shared<Neptune>()};
 
 private:
     std::shared_ptr<HipparcosFormat> m_starFormat;

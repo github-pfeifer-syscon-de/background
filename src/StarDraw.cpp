@@ -74,11 +74,35 @@ StarDraw::get_config_name()
 }
 
 void
-StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout)
+StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+{
+    ctx->save();
+    ctx->set_font_size(10.0);
+    Cairo::FontExtents fontExtents;
+    ctx->get_font_extents(fontExtents);
+	for (auto planet : planets) {
+	    auto raDec = planet->getRaDecPositon(jd);
+	    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+	    if (azAlt->isVisible()) {
+            auto p = azAlt->toScreen(layout);
+            ctx->arc(p.getX() - PLANET_READIUS, p.getY() - PLANET_READIUS, PLANET_READIUS, 0.0, 2.0*M_PI);
+            ctx->set_source_rgb(0.9, 0.9, 0.9);
+            ctx->fill();
+            ctx->set_source_rgb(0.7, 0.7, 0.7);
+            ctx->move_to(p.getX() + fontExtents.max_x_advance / 4.0,
+                         p.getY() + fontExtents.height / 4.0);
+            ctx->show_text(planet->getName());
+	    }
+	}
+    ctx->restore();
+}
+
+void
+StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
     auto raDec = Sun::position(jd);
     //std::cout << "Sun ra " << raDec->getRaDegrees() << " dec " << raDec->getDecDegrees() << std::endl;
-    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
     //std::cout << "Sun az " << azAlt->getAzimutDegrees() << " az " << azAlt->getAltitudeDegrees() << std::endl;
     if (azAlt->isVisible()) {
         auto p = azAlt->toScreen(layout);
@@ -89,10 +113,10 @@ StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& j
 }
 
 void
-StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout)
+StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
     auto raDec = Moon::position(jd);
-    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
     if (azAlt->isVisible()) {
         Moon moon;
         ctx->save();
@@ -105,12 +129,12 @@ StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& 
 
 
 void
-StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout)
+StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
     ctx->set_source_rgb(0.8, 0.8, 0.8);
     for (auto s : m_starFormat->getStars()) {
         auto raDec = s->getRaDec();
-        auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+        auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
         if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
             auto rs = std::max(3.0 - (s->getVmagnitude() / 2.0), 1.0);
@@ -122,7 +146,7 @@ StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate&
 }
 
 void
-StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const GeoPosition& geoPos, const Layout& layout)
+StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
     ctx->set_font_size(10.0);
     for (auto c : m_constlFormat->getConstellations()) {
@@ -143,7 +167,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
             ctx->set_source_rgb(gray, gray, gray);
             bool visible = false;
             for (auto raDec : l->getPoints()) {
-                auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+                auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
                 if (azAlt->isVisible()) {
                     visible = true;
                 }
@@ -151,7 +175,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
             if (visible) {
                 anyVisible = true;
                 for (auto raDec : l->getPoints()) {
-                    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+                    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
                     auto p = azAlt->toScreen(layout);
                     sum.add(p);
                     if (count == 0) {
@@ -178,6 +202,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
 bool
 StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
 {
+    //auto start = g_get_monotonic_time();
     int w = get_allocated_width();
     int height = get_allocated_height();
     //std::cout << "draw " << w << " h " << h << "\n";
@@ -192,10 +217,11 @@ StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
     double r = layout.getMin() / 2.0;
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
     ctx->clip();    // as we draw some lines beyond horizon
-    draw_constl(ctx, jd, m_geoPos, layout);
-    draw_stars(ctx, jd, m_geoPos, layout);
-    draw_moon(ctx, jd, m_geoPos, layout);
-    draw_sun(ctx, jd, m_geoPos, layout);
+    draw_constl(ctx, jd, layout);
+    draw_stars(ctx, jd, layout);
+    draw_moon(ctx, jd, layout);
+    draw_sun(ctx, jd, layout);
+    draw_planets(ctx, jd, layout);
 
     ctx->set_source_rgb(0.5, 0.5, 0.7);
     ctx->set_font_size(16.0);
@@ -209,7 +235,8 @@ StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
 	ctx->show_text("N");
     ctx->move_to(r - fontExtents.max_x_advance, 0.0);
 	ctx->show_text("W");
-
     ctx->restore();
+    //auto end = g_get_monotonic_time();
+    //std::cout << "time to draw " << (end - start) << "us" << std::endl;
     return true;
 }

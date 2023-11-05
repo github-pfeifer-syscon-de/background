@@ -61,7 +61,25 @@ background_SOURCES = resources.c \
 	HipparcosFormat.hpp \
 	HipparcosFormat.cpp \
 	ConstellationFormat.hpp \
-	ConstellationFormat.cpp
+	ConstellationFormat.cpp \
+	Planet.hpp \
+	Planet.cpp \
+	Earth.hpp \
+	Earth.cpp \
+	Neptune.hpp \
+	Neptune.cpp \
+	Uranus.hpp \
+	Uranus.cpp \
+	Saturn.hpp \
+	Saturn.cpp \
+	Jupiter.hpp \
+	Jupiter.cpp \
+	Mars.hpp \
+	Mars.cpp \
+	Venus.hpp \
+	Venus.cpp \
+	Mercury.hpp \
+	Mercury.cpp
 
 
 if HAVE_PDF
