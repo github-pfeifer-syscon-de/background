@@ -62,3 +62,6 @@
 /depcomp
 /ltmain.sh
 /compile
+/pkg/
+/src/configure.ac
+/PKGBUILD

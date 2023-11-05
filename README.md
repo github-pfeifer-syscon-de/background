@@ -2,6 +2,9 @@
 a live background
 see AUTHORS for &copy; included data.
 
+![Background](background.png "background")
+
+
 Is it really worth to do something that is already available
 with e.g. stellarium. It depends what you expect.
 if you want the full package with much more details and
