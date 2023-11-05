@@ -48,8 +48,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-g"/>
-        <element flagsID="1" commonFlags="-std=c++14"/>
-        <element flagsID="2" commonFlags="-std=c++20"/>
+        <element flagsID="1" commonFlags="-std=c++20"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -170,115 +169,79 @@
         </preBuild>
       </makefileType>
       <item path="src/AzimutAltitude.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/BackgroundApp.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Constellation.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/ConstellationFormat.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/GeoPosition.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/HipparcosFormat.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/HipparcosStar.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/JulianDate.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Layout.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Math.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Moon.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Phase.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Point2D.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Polyline.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/RaDec.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Star.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/StarDraw.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/StarWin.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/Sun.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
-          <preprocessorList>
-            <Elem>PACKAGE_DATA_DIR="/usr/local/share/background-program"</Elem>
-            <Elem>PACKAGE_LOCALE_DIR="/usr/local/share/locale"</Elem>
-          </preprocessorList>
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="src/resources.c" ex="false" tool="0" flavor2="2">

@@ -113,7 +113,7 @@ Moon::position(const JulianDate& jd) {
 double
 Moon::constrain(double d)
 {
-	double t = std::remainder(d, 360.0);
+	double t = std::fmod(d, 360.0);
 	if (t < 0.0) {
 	    t += 360.0;
 	}

@@ -29,8 +29,8 @@ std::shared_ptr<RaDec>
 Sun::position(const JulianDate& jd)
 {
 	double n = jd.toJulianDateE2000day();
-	double L = std::remainder((280.460 + 0.9856474 * n), 360.0);
-	double g = Math::toRadians(std::remainder((357.528 + 0.9856003 * n), 360.0));
+	double L = std::fmod((280.460 + 0.9856474 * n), 360.0);
+	double g = Math::toRadians(std::fmod((357.528 + 0.9856003 * n), 360.0));
 	if (L < 0.0) {
 	    L += 360.0;
 	}

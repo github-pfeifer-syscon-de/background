@@ -79,7 +79,7 @@ GeoPosition::toAzimutAltitude(const std::shared_ptr<RaDec>& raDec, const JulianD
     //System.out.format("jd %.3f\n", jd);
     const double gmst = greenwichMeanSiderealTime(jd);
     //System.out.format("gmst %.3f\n", gmst);
-    double localSiderealTime = std::remainder((gmst + lonRad), (M_PI2));
+    double localSiderealTime = std::fmod((gmst + lonRad), (M_PI2));
     //System.out.format("localSiderealTime %.3f\n", localSiderealTime);
 
     double H = (localSiderealTime - raRad);
@@ -111,7 +111,7 @@ GeoPosition::greenwichMeanSiderealTime(const JulianDate& jd) const
 
     double gmst = earthRotationAngle(jd) + Math::toRadians((0.014506 + 4612.156534*t + 1.3915817*t*t - 0.00000044 *t*t*t - 0.000029956*t*t*t*t - 0.0000000368*t*t*t*t*t)/60.0/60.0);  //eq 42
     //System.out.format("gmst %.3f\n", gmst);
-    gmst = std::remainder(gmst, M_PI2);
+    gmst = std::fmod(gmst, M_PI2);
     if (gmst < 0.0) {
         gmst += M_PI2;
     }
@@ -125,12 +125,12 @@ GeoPosition::earthRotationAngle(const JulianDate& jd) const
 	//IERS Technical Note No. 32
 	const double t = jd.toJulianDateE2000day();
 	//System.out.format("earth t %.3f\n", t);
-	const double f = std::remainder(t, 1.0);
+	const double f = std::fmod(t, 1.0);
 	//System.out.format("f %.3f\n", f);
 
 	double theta = M_PI2 * (f + 0.7790572732640 + 0.00273781191135448 * t); //eq 14
 	//System.out.format("thet %.3f\n", theta);
-	theta = std::remainder(theta, M_PI2);
+	theta = std::fmod(theta, M_PI2);
 	if (theta < 0.0) {
 	    theta += M_PI2;
 	}
