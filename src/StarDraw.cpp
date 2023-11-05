@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <sys/utsname.h>        // uname
 
 #include "StarDraw.hpp"
 #include "HipparcosFormat.hpp"
@@ -30,9 +31,9 @@ StarDraw::StarDraw(BaseObjectType* cobject
 : Gtk::DrawingArea(cobject)
 {
     m_starFormat = std::make_shared<HipparcosFormat>(appl);
-    m_starFormat->getStars();       // preinit
+    //m_starFormat->getStars();       // preinit
     m_constlFormat = std::make_shared<ConstellationFormat>(appl);
-    m_constlFormat->getConstellations();
+    //m_constlFormat->getConstellations();
     setupConfig();
 }
 
@@ -69,9 +70,119 @@ StarDraw::get_config_name()
 {
     // share config with glglobe as we already have coordinates
     std::string fullPath = g_canonicalize_filename("glglobe.conf", Glib::get_user_config_dir().c_str());
+    //Glib:canonicalize_file_name()
     //std::cout << "using config " << fullPath << std::endl;
     return fullPath;
 }
+
+void
+StarDraw::drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size)
+{
+    ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+    ctx->set_font_size(size);
+    Cairo::FontExtents fontExtents;
+    ctx->get_font_extents(fontExtents);
+
+    struct utsname utsname;
+    int ret = uname(&utsname);
+    if (ret == 0) {
+        ctx->move_to(20.0, fontExtents.height * 2.0);
+        ctx->show_text(utsname.nodename);
+        ctx->move_to(20.0, fontExtents.height * 3.0);
+        ctx->show_text(utsname.machine);
+        ctx->move_to(20.0, fontExtents.height * 4.0);
+        ctx->show_text(Glib::ustring::sprintf("%s %s", utsname.sysname, utsname.release));
+        //ctx->show_text(utsname.domainname);  // (none)
+    }
+    else {
+        std::cout << "Error " << ret << " uname" << std::endl;
+    }
+}
+
+
+// draw line from center outwards
+static void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer) {
+	double angleRad = 2.0 * M_PI * (double)value / (double)full;
+	double xv = std::sin(angleRad);
+	double yv = -std::cos(angleRad);
+    ctx->move_to(inner * xv, inner * yv);
+    ctx->line_to(outer * xv, outer * yv);
+    ctx->stroke();
+}
+
+void
+StarDraw::drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
+{
+    ctx->move_to(radius, 0.0);  // as we get a strange stoke otherwise
+    ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+    ctx->set_line_width(2.0);
+    ctx->arc(0.0, 0.0, radius, 0, 2.0 * M_PI);
+    ctx->stroke();
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    drawRadialLine(ctx, dateTime.get_minute(), 60, 0.0, radius * 0.8);
+    int hourM = (dateTime.get_hour() % 12) * 60 + dateTime.get_minute();
+    drawRadialLine(ctx, hourM, 12 * 60, 0.0, radius * 0.6);
+    ctx->set_line_width(1.0);
+	const double inner15 = 0.9 * radius ;
+	const double inner5 = 0.95 * radius;
+	const double inner1 = 0.98 * radius;
+	for (int i = 0; i < 60; ++i) {
+	    double inner;
+	    if (i % 15 == 0) {
+            inner = inner15;
+	    }
+	    else if (i % 5 == 0) {
+            inner = inner5;
+	    }
+	    else {
+            inner = inner1;
+	    }
+	    drawRadialLine(ctx, i, 60, inner, radius);
+	}
+}
+
+void
+StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout)
+{
+    double gray = TEXT_GRAY;
+    ctx->set_source_rgb(gray, gray, gray);
+    ctx->set_font_size(size);
+    Cairo::FontExtents fontExtents;
+    ctx->get_font_extents(fontExtents);
+    ctx->translate(20.0, layout.getHeight() - 7.5 * fontExtents.height);
+    const double colWidth = fontExtents.max_x_advance;
+    int n = 0;
+    Glib::DateTime dateNames = Glib::DateTime::create_utc(2024, 1, 1, 0, 0, 0); // start with monday
+    for (auto wd = 1; wd <= 7; ++wd) {
+        ctx->move_to(colWidth * n, 0);
+        ctx->show_text(dateNames.format("%a"));
+        dateNames = dateNames.add_days(1);
+        ++n;
+    }
+    Glib::DateTime dateToday = Glib::DateTime::create_now_local();
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    dateTime = dateTime.add_days(-(dateTime.get_day_of_month() - 1)); // beginning of month
+    for (int row = 1; row < 7; ++row) {
+        int wd = dateTime.get_day_of_week();
+        for (int w = wd; w <= 7; ++w) {
+            double gray = TEXT_GRAY;
+            if (dateTime.get_day_of_month() == dateToday.get_day_of_month()) {
+                gray = TEXT_GRAY_EMPHASIS;
+            }
+            ctx->set_source_rgb(gray, gray, gray);
+            ctx->move_to(colWidth * (w-1), row * fontExtents.height);
+            ctx->show_text(dateTime.format("%e"));
+            dateTime = dateTime.add_days(1);
+            if (dateTime.get_month() != dateToday.get_month()) {
+                break;      // if month ended stop
+            }
+        }
+        if (dateTime.get_month() != dateToday.get_month()) {
+            break;      // if month ended stop
+        }
+    }
+}
+
 
 void
 StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
@@ -86,7 +197,7 @@ StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
 	    if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
             ctx->arc(p.getX() - PLANET_READIUS, p.getY() - PLANET_READIUS, PLANET_READIUS, 0.0, 2.0*M_PI);
-            ctx->set_source_rgb(0.9, 0.9, 0.9);
+            ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
             ctx->fill();
             ctx->set_source_rgb(0.7, 0.7, 0.7);
             ctx->move_to(p.getX() + fontExtents.max_x_advance / 4.0,
@@ -106,7 +217,7 @@ StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& j
     //std::cout << "Sun az " << azAlt->getAzimutDegrees() << " az " << azAlt->getAltitudeDegrees() << std::endl;
     if (azAlt->isVisible()) {
         auto p = azAlt->toScreen(layout);
-        ctx->set_source_rgb(0.8, 0.8, 0.3);
+        ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, 0.3);
         ctx->arc(p.getX(), p.getY(), SUN_MOON_RADIUS, 0.0, M_PI * 2.0);
         ctx->fill();
     }
@@ -131,7 +242,7 @@ StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& 
 void
 StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
-    ctx->set_source_rgb(0.8, 0.8, 0.8);
+    ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
     for (auto s : m_starFormat->getStars()) {
         auto raDec = s->getRaDec();
         auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
@@ -156,12 +267,12 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
         auto polylines = c->getPolylines();
         for (auto l : polylines) {
             int prio = l->getWidth();
-            double gray = 0.8;
+            double gray = TEXT_GRAY_EMPHASIS;
             if (prio <= 1) {
-                ctx->set_line_width(2);
+                ctx->set_line_width(1.5);
             }
             else {
-                ctx->set_line_width(1);
+                ctx->set_line_width(1.0);
                 gray -= 0.2 * std::max(4 - prio, 1);
             }
             ctx->set_source_rgb(gray, gray, gray);
@@ -190,7 +301,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
             }
         }
         if (anyVisible) {
-            ctx->set_source_rgb(0.6, 0.6, 0.6);
+            ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
             double avgX = sum.getX() / (double)count;
             double avgY = sum.getY() / (double)count;
             ctx->move_to(avgX, avgY);
@@ -203,17 +314,17 @@ bool
 StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
 {
     //auto start = g_get_monotonic_time();
-    int w = get_allocated_width();
+    int width = get_allocated_width();
     int height = get_allocated_height();
     //std::cout << "draw " << w << " h " << h << "\n";
-    Layout layout(w, height);
+    Layout layout(width, height);
     auto now = Glib::DateTime::create_now_utc();
     JulianDate jd(now);
     ctx->save();
     ctx->set_source_rgb(0.06, 0.06, 0.20);
-    ctx->rectangle(0, 0, w, height);
+    ctx->rectangle(0, 0, width, height);
     ctx->fill();
-    ctx->translate((w/2), (height/2));
+    ctx->translate((width/2), (height/2));
     double r = layout.getMin() / 2.0;
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
     ctx->clip();    // as we draw some lines beyond horizon
@@ -223,7 +334,7 @@ StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
     draw_sun(ctx, jd, layout);
     draw_planets(ctx, jd, layout);
 
-    ctx->set_source_rgb(0.5, 0.5, 0.7);
+    ctx->set_source_rgb(0.5, 0.5, TEXT_GRAY);
     ctx->set_font_size(16.0);
     Cairo::FontExtents fontExtents;
     ctx->get_font_extents(fontExtents);
@@ -235,6 +346,17 @@ StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
 	ctx->show_text("N");
     ctx->move_to(r - fontExtents.max_x_advance, 0.0);
 	ctx->show_text("W");
+    ctx->restore();
+    ctx->save();
+    double cradius = 160.0;
+    ctx->translate(20.0 + cradius, (height/2));
+    drawClock(ctx, cradius);
+    ctx->restore();
+    ctx->save();
+    drawCalendar(ctx, 16.0, layout);
+    ctx->restore();
+    ctx->save();
+    drawInfo(ctx, 14.0);
     ctx->restore();
     //auto end = g_get_monotonic_time();
     //std::cout << "time to draw " << (end - start) << "us" << std::endl;

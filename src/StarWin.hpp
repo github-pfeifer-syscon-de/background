@@ -32,7 +32,10 @@ public:
         , const Gtk::Application& appl);
     explicit StarWin(const StarWin& orig) = delete;
     virtual ~StarWin() = default;
+protected:
+    bool timeoutHandler();
 private:
     StarDraw* m_drawingArea{nullptr};
+    sigc::connection m_timer;
 };
 

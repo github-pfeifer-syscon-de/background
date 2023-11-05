@@ -34,4 +34,24 @@ StarWin::StarWin(BaseObjectType* cobject
     builder->get_widget_derived("drawingArea", m_drawingArea, appl);
     set_decorated(false);
     maximize();
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    m_timer = Glib::signal_timeout().connect_seconds(
+            sigc::mem_fun(*this, &StarWin::timeoutHandler), 60 - dateTime.get_second());
+    signal_hide().connect([this] {
+        if (m_timer) {
+            m_timer.disconnect();
+        }
+    });
+}
+
+bool
+StarWin::timeoutHandler()
+{
+    if (m_drawingArea) {
+        m_drawingArea->queue_draw();
+    }
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    m_timer = Glib::signal_timeout().connect_seconds(
+            sigc::mem_fun(*this, &StarWin::timeoutHandler), 60 - dateTime.get_second());
+    return false;
 }

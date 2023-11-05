@@ -54,9 +54,15 @@ protected:
     void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
     void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
     void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
+    void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout);
+    void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size);
 
     std::string get_config_name();
     void setupConfig();
+
+    static constexpr auto TEXT_GRAY = 0.7;
+    static constexpr auto TEXT_GRAY_EMPHASIS = 0.9;
 protected:
     std::array<std::shared_ptr<Planet>,7> planets =
                         {std::make_shared<Mercury>(),
