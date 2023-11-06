@@ -17,13 +17,13 @@
  */
 
 #include <iostream>
-#include <sys/utsname.h>        // uname
 
 #include "StarDraw.hpp"
 #include "HipparcosFormat.hpp"
 #include "ConstellationFormat.hpp"
 #include "Moon.hpp"
 #include "Sun.hpp"
+#include "SysInfo.hpp"
 
 StarDraw::StarDraw(BaseObjectType* cobject
                   , const Glib::RefPtr<Gtk::Builder>& builder
@@ -83,19 +83,11 @@ StarDraw::drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size)
     Cairo::FontExtents fontExtents;
     ctx->get_font_extents(fontExtents);
 
-    struct utsname utsname;
-    int ret = uname(&utsname);
-    if (ret == 0) {
-        ctx->move_to(20.0, fontExtents.height * 2.0);
-        ctx->show_text(utsname.nodename);
-        ctx->move_to(20.0, fontExtents.height * 3.0);
-        ctx->show_text(utsname.machine);
-        ctx->move_to(20.0, fontExtents.height * 4.0);
-        ctx->show_text(Glib::ustring::sprintf("%s %s", utsname.sysname, utsname.release));
-        //ctx->show_text(utsname.domainname);  // (none)
-    }
-    else {
-        std::cout << "Error " << ret << " uname" << std::endl;
+    SysInfo sysInfo;
+    int n = 2;
+    for (auto info : sysInfo.allInfos()) {
+        ctx->move_to(20.0, fontExtents.height * n++);
+        ctx->show_text(info);
     }
 }
 
@@ -310,22 +302,32 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
     }
 }
 
-bool
-StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
+void
+StarDraw::compute()
 {
-    //auto start = g_get_monotonic_time();
     int width = get_allocated_width();
     int height = get_allocated_height();
+    if (!m_image
+      || m_image->get_width() != width
+      || m_image->get_height() != height) {
+        m_image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
+    }
+    //m_image->flush(); // not needed? as we do it all by cairo!
+    auto ctx = Cairo::Context::create(m_image);
+    //auto start = g_get_monotonic_time();
     //std::cout << "draw " << w << " h " << h << "\n";
     Layout layout(width, height);
     auto now = Glib::DateTime::create_now_utc();
     JulianDate jd(now);
     ctx->save();
-    ctx->set_source_rgb(0.06, 0.06, 0.20);
+    const double r = layout.getMin() / 2.0;
+    auto grad = Cairo::RadialGradient::create((width/2), (height/2), r / 3.0, (width/2), (height/2), r);
+    grad->add_color_stop_rgb(0.0, 0.06, 0.06, 0.15);
+    grad->add_color_stop_rgb(1.0, 0.10, 0.10, 0.20);
     ctx->rectangle(0, 0, width, height);
+    ctx->set_source(grad);
     ctx->fill();
     ctx->translate((width/2), (height/2));
-    double r = layout.getMin() / 2.0;
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
     ctx->clip();    // as we draw some lines beyond horizon
     draw_constl(ctx, jd, layout);
@@ -360,5 +362,20 @@ StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
     ctx->restore();
     //auto end = g_get_monotonic_time();
     //std::cout << "time to draw " << (end - start) << "us" << std::endl;
+    // this is much faster than draw to screen directly, and is slightly faster than java
+    // mark the image dirty so Cairo clears its caches.
+    //m_image->mark_dirty();
+}
+
+bool
+StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
+{
+    if (!m_image) {
+        compute();
+    }
+    if (m_image) {
+        ctx->set_source(m_image, 0, 0);
+        ctx->paint();
+    }
     return true;
 }

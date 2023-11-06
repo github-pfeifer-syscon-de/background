@@ -78,6 +78,8 @@ background_SOURCES = resources.c \
 	Mars.cpp \
 	Venus.hpp \
 	Venus.cpp \
+	SysInfo.hpp \
+	SysInfo.cpp \
 	Mercury.hpp \
 	Mercury.cpp
 

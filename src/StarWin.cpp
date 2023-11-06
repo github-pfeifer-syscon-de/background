@@ -48,6 +48,7 @@ bool
 StarWin::timeoutHandler()
 {
     if (m_drawingArea) {
+        m_drawingArea->compute();
         m_drawingArea->queue_draw();
     }
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();

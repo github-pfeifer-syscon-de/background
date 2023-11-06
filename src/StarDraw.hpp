@@ -46,6 +46,8 @@ public:
 
     static constexpr auto SUN_MOON_RADIUS = 7.0;
     static constexpr  double PLANET_READIUS = 3.0;
+
+    void compute();
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
@@ -57,13 +59,16 @@ protected:
     void drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
     void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout);
     void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size);
-
+    std::string cpuInfo();
+    std::string memInfo();
+    std::string netInfo();
+    std::string netConn();
     std::string get_config_name();
     void setupConfig();
 
     static constexpr auto TEXT_GRAY = 0.7;
     static constexpr auto TEXT_GRAY_EMPHASIS = 0.9;
-protected:
+
     std::array<std::shared_ptr<Planet>,7> planets =
                         {std::make_shared<Mercury>(),
                         std::make_shared<Venus>(),
@@ -77,6 +82,7 @@ private:
     std::shared_ptr<HipparcosFormat> m_starFormat;
     std::shared_ptr<ConstellationFormat> m_constlFormat;
     GeoPosition m_geoPos;
+    Cairo::RefPtr<Cairo::ImageSurface> m_image;
 
     static constexpr auto GRP_MAIN{"globe"};
     static constexpr auto LATITUDE{"lat"};

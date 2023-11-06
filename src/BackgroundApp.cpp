@@ -64,7 +64,6 @@ BackgroundApp::getOrCreateStarWindow()
         add_window(*m_starAppWindow);
     }
     else {
-        // need to add to mode
         m_starAppWindow = appwindow;
     }
     return m_starAppWindow;
@@ -76,6 +75,7 @@ BackgroundApp::on_activate()
     // either on_activate is called (no args)
     StarWin* imageView = getOrCreateStarWindow(); // on instance shoud be sufficent
     imageView->show();
+    // gdk_window_show_unraised might be better?
 }
 
 void
