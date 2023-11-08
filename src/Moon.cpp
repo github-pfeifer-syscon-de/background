@@ -25,10 +25,10 @@ Moon::Moon()
 
 }
 
-    /**
-     * @param radius
-     * @param phase 0 right .. 1 center .. 2 left
-     */
+/**
+ * @param radius
+ * @param phase 0 right .. 1 center .. 2 left
+ */
 void
 Moon::halfRight(const Cairo::RefPtr<Cairo::Context>& cr, double radius, double phase)
 {

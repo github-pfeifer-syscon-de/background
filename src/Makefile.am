@@ -34,6 +34,8 @@ background_SOURCES = resources.c \
 	Math.cpp \
 	RaDec.hpp \
 	RaDec.cpp \
+	RaDecPlanet.hpp \
+	RaDecPlanet.cpp \
 	AzimutAltitude.hpp \
 	AzimutAltitude.cpp \
 	Point2D.hpp \

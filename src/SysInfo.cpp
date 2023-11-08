@@ -264,6 +264,8 @@ SysInfo::cpuInfo()
 std::string
 SysInfo::memInfo()
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
     unsigned int readmask = 0;
     const unsigned int ALL_MASK = 0x0f;
     unsigned long mem_total = 0l,mem_avail = 0l,mem_buffers = 0l,mem_cached = 0l;
@@ -311,6 +313,7 @@ SysInfo::memInfo()
 	std::ostringstream oss1;
 	oss1 << (mem_total - mem_avail) / 1024 << "MB used of " <<  mem_total / 1024 << "MB";
 	return oss1.str();
+#pragma GCC diagnostic pop
 }
 
 std::string

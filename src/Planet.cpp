@@ -17,6 +17,7 @@
  */
 
 #include <cmath>
+#include <iostream>
 
 #include "Planet.hpp"
 #include "Math.hpp"
@@ -122,14 +123,14 @@ Planet::posToEarth(const JulianDate& jd)
 	return sub(xyz, earth.computePlanetPosition(jd));
 }
 
-std::shared_ptr<RaDec>
+std::shared_ptr<RaDecPlanet>
 Planet::getRaDecPositon(const JulianDate& jd)
 {
 	std::array<double,3> xyzRel = posToEarth(jd);
 	return rectToPolar(xyzRel);
 }
 
-std::shared_ptr<RaDec>
+std::shared_ptr<RaDecPlanet>
 Planet::rectToPolar(std::array<double,3> xyz)
 {
     // convert from Cartesian to polar coordinates
@@ -143,5 +144,5 @@ Planet::rectToPolar(std::array<double,3> xyz)
 	}
 	// Make dec is in range +/-90deg
 	dec = 0.5 * M_PI - dec;
-	return std::make_shared<RaDec>(ra, dec);
+	return std::make_shared<RaDecPlanet>(ra, dec, r);
 }

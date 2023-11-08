@@ -78,6 +78,8 @@ BackgroundApp::on_activate()
     // gdk_window_show_unraised might be better?
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void
 BackgroundApp::on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint)
 {
@@ -94,6 +96,7 @@ BackgroundApp::on_open(const Gio::Application::type_vec_files& files, const Glib
         std::cerr << "BackgroundApp::on_open() except: " << ex.what() << std::endl;
     }
 }
+#pragma GCC diagnostic pop
 
 void
 BackgroundApp::on_action_quit()

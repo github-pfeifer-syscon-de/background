@@ -25,6 +25,8 @@
 #include "Sun.hpp"
 #include "SysInfo.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 StarDraw::StarDraw(BaseObjectType* cobject
                   , const Glib::RefPtr<Gtk::Builder>& builder
                   , const Gtk::Application& appl)
@@ -36,6 +38,7 @@ StarDraw::StarDraw(BaseObjectType* cobject
     //m_constlFormat->getConstellations();
     setupConfig();
 }
+#pragma GCC diagnostic pop
 
 void
 StarDraw::setupConfig()
@@ -194,7 +197,7 @@ StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
             ctx->set_source_rgb(0.7, 0.7, 0.7);
             ctx->move_to(p.getX() + fontExtents.max_x_advance / 4.0,
                          p.getY() + fontExtents.height / 4.0);
-            ctx->show_text(planet->getName());
+            ctx->show_text(Glib::ustring::sprintf("%s %.1fAU", planet->getName(), raDec->getDistanceAU()));
 	    }
 	}
     ctx->restore();
@@ -370,7 +373,9 @@ StarDraw::compute()
 bool
 StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
 {
-    if (!m_image) {
+    if (!m_image
+      || m_image->get_width() != get_allocated_width()
+      || m_image->get_height() != get_allocated_height()) {
         compute();
     }
     if (m_image) {

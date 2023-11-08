@@ -22,7 +22,7 @@
 #include <string>
 #include <memory>
 
-#include "RaDec.hpp"
+#include "RaDecPlanet.hpp"
 #include "JulianDate.hpp"
 
 class Planet
@@ -34,13 +34,11 @@ public:
 
     virtual std::string getName() = 0;
 
-    std::shared_ptr<RaDec> getRaDecPositon(const JulianDate& jd);
-
-
+    std::shared_ptr<RaDecPlanet> getRaDecPositon(const JulianDate& jd);
 protected:
     std::array<double,3> computePlanetPosition(const JulianDate& jd);
     std::array<double,3> posToEarth(const JulianDate& jd);
-    std::shared_ptr<RaDec> rectToPolar(std::array<double,3> xyz);
+    std::shared_ptr<RaDecPlanet> rectToPolar(std::array<double,3> xyz);
 
     //https://ssd.jpl.nasa.gov/planets/approx_pos.html
     // at the moment using "short" term values (1850-2050)

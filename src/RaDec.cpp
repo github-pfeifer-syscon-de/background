@@ -27,9 +27,9 @@ RaDec::RaDec()
 
 
 RaDec::RaDec(double _ra, double _dec)
+: ra{_ra}
+, dec{_dec}
 {
-    ra = _ra;
-    dec = _dec;
 }
 
 void

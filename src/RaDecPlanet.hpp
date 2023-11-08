@@ -18,36 +18,17 @@
 
 #pragma once
 
-/**
- * Right Ascension, Declination
- *
- * @author RPf <gpl3@pfeifer-syscon.de>
- */
-class RaDec
+#include "RaDec.hpp"
+
+class RaDecPlanet
+: public RaDec
 {
 public:
-    RaDec();
-    RaDec(double ra, double dec);
-    explicit RaDec(const RaDec& orig) = delete;
-    virtual ~RaDec() = default;
+    RaDecPlanet(double ra, double dec, double distanceAU);
+    explicit RaDecPlanet(const RaDecPlanet& orig) = delete;
+    virtual ~RaDecPlanet() = default;
 
-    void setRaRad(double ra);
-    double getRaRad() const;
-    void setDecRad(double dec);
-    double getDecRad() const;
-    void setRaDegrees(double raDeg);
-    double getRaDegrees();
-    void setRaHours(double raHours);
-    double getRaHours();
-    void setDecDegrees(double decDeg);
-    void setDecDegreesPolar(double decDegPolar);
-    double getDecDegrees();
-
-    bool operator==(const RaDec& rhs);
-
-    static constexpr auto DEGREE2HOUR = 24.0 / 360.0;
+    double getDistanceAU();
 private:
-    double ra{0.0}; // values in radians
-    double dec{0.0};
-
+    double distanceAU{0.0};
 };
