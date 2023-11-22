@@ -26,19 +26,22 @@
 #include "Sun.hpp"
 #include "SysInfo.hpp"
 #include "Math.hpp"
+#include "BackgroundApp.hpp"
+#include "FileLoader.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 StarDraw::StarDraw(BaseObjectType* cobject
                   , const Glib::RefPtr<Gtk::Builder>& builder
-                  , const Gtk::Application& appl)
+                  ,  const BackgroundApp& appl)
 : Gtk::DrawingArea(cobject)
 {
-    m_starFormat = std::make_shared<HipparcosFormat>(appl);
+    auto fileLoader = std::make_shared<FileLoader>(appl.get_exec_path());
+    m_starFormat = std::make_shared<HipparcosFormat>(fileLoader);
     //m_starFormat->getStars();       // preinit
-    m_constlFormat = std::make_shared<ConstellationFormat>(appl);
+    m_constlFormat = std::make_shared<ConstellationFormat>(fileLoader);
     //m_constlFormat->getConstellations();
-    m_milkyway = std::make_shared<Milkyway>(appl);
+    m_milkyway = std::make_shared<Milkyway>(fileLoader);
     setupConfig();
 }
 #pragma GCC diagnostic pop

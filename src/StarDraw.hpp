@@ -36,6 +36,7 @@
 class NetConnection;
 class HipparcosFormat;
 class ConstellationFormat;
+class BackgroundApp;
 
 class StarDraw
 : public Gtk::DrawingArea
@@ -43,7 +44,7 @@ class StarDraw
 public:
     StarDraw(BaseObjectType* cobject
             , const Glib::RefPtr<Gtk::Builder>& builder
-            , const Gtk::Application& appl);
+            , const BackgroundApp& appl);
     explicit StarDraw(const StarDraw& orig) = delete;
     virtual ~StarDraw() = default;
 

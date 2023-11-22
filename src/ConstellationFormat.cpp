@@ -20,9 +20,10 @@
 #include <LocaleContext.hpp>
 
 #include "ConstellationFormat.hpp"
+#include "FileLoader.hpp"
 
-ConstellationFormat::ConstellationFormat(const Gtk::Application& appl)
-: m_appl{appl}
+ConstellationFormat::ConstellationFormat(const std::shared_ptr<FileLoader>& fileLoader)
+: m_fileLoader{fileLoader}
 {
 }
 
@@ -91,16 +92,10 @@ ConstellationFormat::readConstellations()
 {
 	std::map<std::string, std::shared_ptr<Constellation>> constellations;
 	try {
-        auto resource_path = m_appl.get_resource_base_path() + "/SnT_constellation.txt";
-        auto bytes = Gio::Resource::lookup_data_global(resource_path);
-        gsize size;
-        auto data = bytes->get_data(size);
-        //std::cout << "ConstellationFormat::readConstellations bytes " << size << std::endl;
-	    if (data != nullptr
-         && size > 0) {
-            auto memStrm = Gio::MemoryInputStream::create();
-            memStrm->add_data(data, size);
-            auto dataStrm = Gio::DataInputStream::create(memStrm);
+        auto file = m_fileLoader->findFile(constlDataFile);
+        if (file) {
+            auto fileStrm = file->read();
+            auto dataStrm = Gio::DataInputStream::create(fileStrm);
 		    while (true) {  // dataStrm->get_available() > 0u
                 std::string line;
                 dataStrm->read_line_utf8(line);
@@ -110,13 +105,14 @@ ConstellationFormat::readConstellations()
                 parseLine(line, constellations);
 		    }
             dataStrm->close();
+            fileStrm->close();
 	    }
 	    else {
-            std::cout << "The constellation data " << resource_path << " was not found!" << std::endl;
+            std::cout << "The constellation data " << constlDataFile << " was not found!" << std::endl;
 	    }
 	}
 	catch (const Gio::Error& exc) {
-	    std::cout << "Error " << exc.what() << " reading constellations!" << std::endl;
+	    std::cout << "Error " << exc.what() << " reading constellations " << constlDataFile << "!" << std::endl;
 	}
     std::list<std::shared_ptr<Constellation>> list;
     for (auto pair : constellations) {

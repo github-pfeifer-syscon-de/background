@@ -24,10 +24,12 @@
 
 #include "Poly.hpp"
 
+class FileLoader;
+
 class Milkyway
 {
 public:
-    Milkyway(const Gtk::Application& appl);
+    Milkyway(const std::shared_ptr<FileLoader>& fileLoader);
     explicit Milkyway(const Milkyway& orig) = delete;
     virtual ~Milkyway() = default;
 
@@ -37,7 +39,8 @@ protected:
 
     std::list<std::shared_ptr<Poly>> readBounds();
 private:
-    const Gtk::Application& m_appl;
+    static constexpr auto milkywayDataFile = "mw.json";
+    std::shared_ptr<FileLoader> m_fileLoader;
     std::list<std::shared_ptr<Poly>> m_bounds;
 };
 

@@ -21,10 +21,11 @@
 
 #include "StarWin.hpp"
 #include "StarDraw.hpp"
+#include "BackgroundApp.hpp"
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , const Gtk::Application& appl)
+        , const BackgroundApp& appl)
 : Gtk::ApplicationWindow(cobject)
 {
     set_title("Star");

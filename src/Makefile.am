@@ -86,6 +86,8 @@ background_SOURCES = resources.c \
 	Mercury.cpp \
 	Milkyway.hpp \
 	Milkyway.cpp \
+	FileLoader.hpp \
+	FileLoader.cpp \
 	Poly.hpp \
 	Poly.cpp
 

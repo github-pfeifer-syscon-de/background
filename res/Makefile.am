@@ -24,8 +24,10 @@ appicondir = $(datadir)/icons/hicolor/64x64/apps
 appicon_DATA = background.png
 appdir_icon=$(appicondir)/$(appicon_DATA)
 
+dist_pkgdata_DATA = hipparcos.json mw.json SnT_constellation.txt
+
 # include source for build
-EXTRA_DIST = $(RESOURCE_XML) $(RESOURCES) $(desktop_in_files) $(appicon_DATA)
+EXTRA_DIST = $(RESOURCE_XML) $(RESOURCES) $(desktop_in_files) $(appicon_DATA) $(dist_pkgdata_DATA)
 
 clean-local:
 	-rm -rf $(RESOURCE_C)

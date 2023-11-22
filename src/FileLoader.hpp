@@ -18,28 +18,20 @@
 
 #pragma once
 
-#include <gtkmm.h>
-#include <string>
-#include <memory>
+#include <glibmm.h>
+#include <giomm.h>
 
-#include "Constellation.hpp"
-#include "RaDec.hpp"
-
-class FileLoader;
-
-class ConstellationFormat
+class FileLoader
 {
 public:
-    ConstellationFormat(const std::shared_ptr<FileLoader>& fileLoader);
-    explicit ConstellationFormat(const ConstellationFormat& orig) = delete;
-    virtual ~ConstellationFormat() = default;
+    FileLoader(const Glib::ustring& startPath);
+    explicit FileLoader(const FileLoader& orig) = delete;
+    virtual ~FileLoader() = default;
 
-    std::list<std::shared_ptr<Constellation>> getConstellations();
+    Glib::ustring find(const Glib::ustring& name);
+    Glib::RefPtr<Gio::File> findFile(const Glib::ustring& name);
+
 private:
-    static constexpr auto constlDataFile = "SnT_constellation.txt";
-    const std::shared_ptr<FileLoader> m_fileLoader;
-    std::list<std::shared_ptr<Constellation>> m_list;
-    std::list<std::shared_ptr<Constellation>> readConstellations();
-    void parseLine(const std::string& line, std::map<std::string, std::shared_ptr<Constellation>>& constellations);
+    Glib::ustring m_startPath;
 };
 

@@ -27,6 +27,8 @@
 #include "Star.hpp"
 #include "HipparcosStar.hpp"
 
+class FileLoader;
+
 class Field {
 public:
     /**
@@ -64,7 +66,7 @@ private:
 class HipparcosFormat
 {
 public:
-    HipparcosFormat(const Gtk::Application& appl);
+    HipparcosFormat(const std::shared_ptr<FileLoader>& fileLoader);
     explicit HipparcosFormat(const HipparcosFormat& orig) = delete;
     virtual ~HipparcosFormat() = default;
 
@@ -72,8 +74,9 @@ public:
 
 
 private:
+    static constexpr auto starsDataFile = "hipparcos.json";
     std::vector<std::shared_ptr<HipparcosStar>> readStars();
     std::vector<std::shared_ptr<HipparcosStar>> stars;
-    const Gtk::Application& m_appl;
+    const std::shared_ptr<FileLoader> m_fileLoader;
 };
 

@@ -37,7 +37,7 @@ public:
     void on_startup() override;
     Glib::RefPtr<Gtk::Builder> get_menu_builder();
 
-    Glib::ustring get_exec_path();
+    Glib::ustring get_exec_path() const;
 
     void on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint) override;
 protected:

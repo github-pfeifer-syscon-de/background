@@ -137,7 +137,7 @@ BackgroundApp::on_action_help() {
 }
 
 Glib::ustring
-BackgroundApp::get_exec_path()
+BackgroundApp::get_exec_path() const
 {
     return m_exec;
 }

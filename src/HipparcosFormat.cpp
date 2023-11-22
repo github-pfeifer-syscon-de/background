@@ -21,9 +21,10 @@
 
 #include "HipparcosFormat.hpp"
 #include "Math.hpp"
+#include "FileLoader.hpp"
 
-HipparcosFormat::HipparcosFormat(const Gtk::Application& appl)
-: m_appl{appl}
+HipparcosFormat::HipparcosFormat(const std::shared_ptr<FileLoader>& fileLoader)
+: m_fileLoader{fileLoader}
 {
 }
 
@@ -45,16 +46,11 @@ std::vector<std::shared_ptr<HipparcosStar>>
 HipparcosFormat::readStars()
 {
     std::vector<std::shared_ptr<HipparcosStar>> stars;
-    JsonHelper jsonHelper;
-    auto resource_path = m_appl.get_resource_base_path() + "/hipparcos.json";
-    auto bytes = Gio::Resource::lookup_data_global(resource_path);
-    gsize size{0};
-    auto data = bytes->get_data(size);
-    if (data != nullptr && size > 0u) {
+    auto file = m_fileLoader->find(starsDataFile);
+    if (!file.empty()) {
         try {
-            auto array = Glib::ByteArray::create();
-            array->append(static_cast<const guint8*>(data), static_cast<guint>(size));
-            jsonHelper.load_data(array);
+            JsonHelper jsonHelper;
+            jsonHelper.load_from_file(file);
             stars.reserve(1700);
             JsonObject* root = jsonHelper.get_root_object();
             JsonArray* metadatas = jsonHelper.get_array(root, "metadata");
@@ -95,7 +91,7 @@ HipparcosFormat::readStars()
         }
     }
     else {
-        std::cout << "The star data " << resource_path << " was not found!" << std::endl;
+        std::cout << "The star data " << starsDataFile << " was not found!" << std::endl;
     }
     return stars;
 }

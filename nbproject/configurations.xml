@@ -9,6 +9,8 @@
         <in>ConstellationFormat.cpp</in>
         <in>Earth.cpp</in>
         <in>Earth.hpp</in>
+        <in>FileLoader.cpp</in>
+        <in>FileLoader.hpp</in>
         <in>GeoPosition.cpp</in>
         <in>HipparcosFormat.cpp</in>
         <in>HipparcosStar.cpp</in>
@@ -213,6 +215,10 @@
       <item path="src/Earth.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="src/Earth.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/FileLoader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/FileLoader.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/GeoPosition.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">

@@ -19,10 +19,11 @@
 #include <iostream>
 
 #include "Milkyway.hpp"
+#include "FileLoader.hpp"
 
 // descr https://astronomy.stackexchange.com/questions/18229/milky-way-position-on-the-sky
-Milkyway::Milkyway(const Gtk::Application& appl)
-: m_appl{appl}
+Milkyway::Milkyway(const std::shared_ptr<FileLoader>& fileLoader)
+: m_fileLoader{fileLoader}
 {
 
 }
@@ -65,16 +66,11 @@ std::list<std::shared_ptr<Poly>>
 Milkyway::readBounds()
 {
     std::list<std::shared_ptr<Poly>> polys;
-    JsonHelper jsonHelper;
-    auto resource_path = m_appl.get_resource_base_path() + "/mw.json";
-    auto bytes = Gio::Resource::lookup_data_global(resource_path);
-    gsize size{0};
-    auto data = bytes->get_data(size);
-    if (data != nullptr && size > 0u) {
+    auto file = m_fileLoader->find(milkywayDataFile);
+    if (!file.empty()) {
         try {
-            auto array = Glib::ByteArray::create();
-            array->append(static_cast<const guint8*>(data), static_cast<guint>(size));
-            jsonHelper.load_data(array);
+            JsonHelper jsonHelper;
+            jsonHelper.load_from_file(file);
             JsonObject* root = jsonHelper.get_root_object();
             JsonArray* features = jsonHelper.get_array(root, "features");
             for (uint32_t m = 0; m < json_array_get_length(features); ++m) {
@@ -87,7 +83,7 @@ Milkyway::readBounds()
         }
     }
     else {
-        std::cout << "The milkyway data " << resource_path << " was not found!" << std::endl;
+        std::cout << "The milkyway data " << milkywayDataFile << " was not found!" << std::endl;
     }
     return polys;
 }
