@@ -83,7 +83,11 @@ background_SOURCES = resources.c \
 	SysInfo.hpp \
 	SysInfo.cpp \
 	Mercury.hpp \
-	Mercury.cpp
+	Mercury.cpp \
+	Milkyway.hpp \
+	Milkyway.cpp \
+	Poly.hpp \
+	Poly.cpp
 
 
 if HAVE_PDF

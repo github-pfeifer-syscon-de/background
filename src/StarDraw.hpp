@@ -23,6 +23,7 @@
 #include "Layout.hpp"
 #include "GeoPosition.hpp"
 #include "JulianDate.hpp"
+#include "SysInfo.hpp"
 #include "Mercury.hpp"
 #include "Venus.hpp"
 #include "Mars.hpp"
@@ -30,7 +31,9 @@
 #include "Saturn.hpp"
 #include "Uranus.hpp"
 #include "Neptune.hpp"
+#include "Milkyway.hpp"
 
+class NetConnection;
 class HipparcosFormat;
 class ConstellationFormat;
 
@@ -44,32 +47,28 @@ public:
     explicit StarDraw(const StarDraw& orig) = delete;
     virtual ~StarDraw() = default;
 
+    static constexpr auto TEXT_GRAY = 0.6;
+    static constexpr auto TEXT_GRAY_EMPHASIS = 0.9;
     static constexpr auto SUN_MOON_RADIUS = 7.0;
-    static constexpr  double PLANET_READIUS = 3.0;
+    static constexpr auto PLANET_READIUS = 3.0;
 
     void compute();
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
-    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size);
     void drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
     void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout);
-    void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size);
-    std::string cpuInfo();
-    std::string memInfo();
-    std::string netInfo();
-    std::string netConn();
-    std::string get_config_name();
-    void setupConfig();
 
-    static constexpr auto TEXT_GRAY = 0.7;
-    static constexpr auto TEXT_GRAY_EMPHASIS = 0.9;
+    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
 
-    std::array<std::shared_ptr<Planet>,7> planets =
+    const std::array<std::shared_ptr<Planet>,7> planets =
                         {std::make_shared<Mercury>(),
                         std::make_shared<Venus>(),
                         std::make_shared<Mars>(),
@@ -78,14 +77,19 @@ protected:
                         std::make_shared<Uranus>(),
                         std::make_shared<Neptune>()};
 
+    std::string get_config_name();
+    void setupConfig();
+
+
 private:
     std::shared_ptr<HipparcosFormat> m_starFormat;
     std::shared_ptr<ConstellationFormat> m_constlFormat;
     GeoPosition m_geoPos;
-    Cairo::RefPtr<Cairo::ImageSurface> m_image;
 
     static constexpr auto GRP_MAIN{"globe"};
     static constexpr auto LATITUDE{"lat"};
     static constexpr auto LONGITUDE{"lon"};
+    Cairo::RefPtr<Cairo::ImageSurface> m_image;
+    std::shared_ptr<Milkyway> m_milkyway;
 };
 

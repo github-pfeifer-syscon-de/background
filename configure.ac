@@ -28,7 +28,7 @@ PKG_CHECK_MODULES([GLIBMM], [glibmm-2.4 giomm-2.4])
 
 AC_SEARCH_LIBS([HPDF_Page_BeginText], [hpdf], [USE_LIBHARU="true"])
 
-PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.2.0])
+PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.2.1])
 
 PKG_CHECK_MODULES(JSONGLIB1, [json-glib-1.0])
 

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cmath>
 
 #include "Point2D.hpp"
 
@@ -59,4 +60,10 @@ Point2D::add(const Point2D& add)
 {
     x += add.getX();
     y += add.getY();
+}
+
+double
+Point2D::getDist()
+{
+    return std::sqrt(x*x + y*y);
 }

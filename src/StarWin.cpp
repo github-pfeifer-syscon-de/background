@@ -34,14 +34,24 @@ StarWin::StarWin(BaseObjectType* cobject
     builder->get_widget_derived("drawingArea", m_drawingArea, appl);
     set_decorated(false);
     maximize();
-    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-    m_timer = Glib::signal_timeout().connect_seconds(
-            sigc::mem_fun(*this, &StarWin::timeoutHandler), 60 - dateTime.get_second());
+    updateTimer();
     signal_hide().connect([this] {
-        if (m_timer) {
+        if (m_timer.connected()) {
             m_timer.disconnect();
         }
     });
+}
+
+void
+StarWin::updateTimer()
+{
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    // aim for next minute change,
+    //  with some extra to prevent a underrun
+    //  (overall there seems rather be a chance to overshoot especially with load)
+    m_timer = Glib::signal_timeout().connect(
+            sigc::mem_fun(*this, &StarWin::timeoutHandler),
+            60050u - static_cast<unsigned int>(dateTime.get_seconds() * 1000.0));
 }
 
 bool
@@ -51,8 +61,6 @@ StarWin::timeoutHandler()
         m_drawingArea->compute();
         m_drawingArea->queue_draw();
     }
-    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-    m_timer = Glib::signal_timeout().connect_seconds(
-            sigc::mem_fun(*this, &StarWin::timeoutHandler), 60 - dateTime.get_second());
+    updateTimer();
     return false;
 }

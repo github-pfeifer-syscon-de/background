@@ -6,5 +6,6 @@
     <file>background.png</file>
     <file>hipparcos.json</file>
     <file>SnT_constellation.txt</file>
+    <file>mw.json</file>
   </gresource>
 </gresources>

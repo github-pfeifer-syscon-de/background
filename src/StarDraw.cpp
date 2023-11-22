@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <StringUtils.hpp>
 
 #include "StarDraw.hpp"
 #include "HipparcosFormat.hpp"
@@ -24,6 +25,7 @@
 #include "Moon.hpp"
 #include "Sun.hpp"
 #include "SysInfo.hpp"
+#include "Math.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -36,6 +38,7 @@ StarDraw::StarDraw(BaseObjectType* cobject
     //m_starFormat->getStars();       // preinit
     m_constlFormat = std::make_shared<ConstellationFormat>(appl);
     //m_constlFormat->getConstellations();
+    m_milkyway = std::make_shared<Milkyway>(appl);
     setupConfig();
 }
 #pragma GCC diagnostic pop
@@ -108,7 +111,7 @@ static void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, 
 void
 StarDraw::drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
 {
-    ctx->move_to(radius, 0.0);  // as we get a strange stoke otherwise
+    ctx->begin_new_path();  // as we get a strange stoke otherwise
     ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
     ctx->set_line_width(2.0);
     ctx->arc(0.0, 0.0, radius, 0, 2.0 * M_PI);
@@ -235,6 +238,58 @@ StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& 
 
 
 void
+StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+{
+    for (auto poly : m_milkyway->getBounds()) {
+        ctx->begin_new_path();
+        int intens = poly->getIntensity();
+        double dintens = 0.1 + (double)intens / 20.0;
+        ctx->set_source_rgb(dintens, dintens, 0.25 + dintens);
+        ctx->set_line_width(1.0);
+        std::list<std::shared_ptr<AzimutAltitude>> azAlts;  // saving intermediate saves us recalculation
+        bool anyVisible = false;
+        for (auto raDec : poly->getPoints()) {
+            auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+            azAlts.push_back(azAlt);
+            anyVisible |= azAlt->isVisible();
+        }
+        uint32_t skipped = 0;
+        if (anyVisible) {       // do not draw if outside
+            bool move = true;
+            for (auto azAlt : azAlts) {
+                if (azAlt->isVisible()) { // stop drawing beyond horizont, with some additional to allow closing
+                    auto p = azAlt->toScreen(layout);
+                    if (move) {
+                        ctx->move_to(p.getX(), p.getY());
+                        move = false;
+                    }
+                    else {
+                        ctx->line_to(p.getX(), p.getY());
+                    }
+                }
+                else {
+                    move = true;
+                    ++skipped;
+                }
+            }
+        }
+        else {
+            skipped = static_cast<uint32_t>(azAlts.size());
+        }
+        //if (skipped > 0) {
+        //    std::cout << __FILE__ << "::draw_milkyway"
+        //              << " intens " << intens
+        //              << " skipped " << skipped << "/" << azAlts.size() << std::endl;
+        //}
+        // the given data wraps nicely onto a sphere,
+        //   but here we live in a rectangular box, so we stick to some abstraction
+        //ctx->close_path();
+        //ctx->fill();
+        ctx->stroke();
+    }
+}
+
+void
 StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
     ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
@@ -250,6 +305,7 @@ StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate&
         }
     }
 }
+
 
 void
 StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
@@ -306,33 +362,19 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
 }
 
 void
-StarDraw::compute()
+StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
 {
-    int width = get_allocated_width();
-    int height = get_allocated_height();
-    if (!m_image
-      || m_image->get_width() != width
-      || m_image->get_height() != height) {
-        m_image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
-    }
-    //m_image->flush(); // not needed? as we do it all by cairo!
-    auto ctx = Cairo::Context::create(m_image);
-    //auto start = g_get_monotonic_time();
-    //std::cout << "draw " << w << " h " << h << "\n";
-    Layout layout(width, height);
-    auto now = Glib::DateTime::create_now_utc();
-    JulianDate jd(now);
-    ctx->save();
     const double r = layout.getMin() / 2.0;
-    auto grad = Cairo::RadialGradient::create((width/2), (height/2), r / 3.0, (width/2), (height/2), r);
+    auto grad = Cairo::RadialGradient::create((layout.getWidth()/2), (layout.getHeight()/2), r / 3.0, (layout.getWidth()/2), (layout.getHeight()/2), r);
     grad->add_color_stop_rgb(0.0, 0.06, 0.06, 0.15);
     grad->add_color_stop_rgb(1.0, 0.10, 0.10, 0.20);
-    ctx->rectangle(0, 0, width, height);
+    ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
     ctx->set_source(grad);
     ctx->fill();
-    ctx->translate((width/2), (height/2));
+    ctx->translate((layout.getWidth()/2), (layout.getHeight()/2));
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
     ctx->clip();    // as we draw some lines beyond horizon
+    draw_milkyway(ctx, jd, layout);
     draw_constl(ctx, jd, layout);
     draw_stars(ctx, jd, layout);
     draw_moon(ctx, jd, layout);
@@ -351,17 +393,43 @@ StarDraw::compute()
 	ctx->show_text("N");
     ctx->move_to(r - fontExtents.max_x_advance, 0.0);
 	ctx->show_text("W");
-    ctx->restore();
+}
+
+
+void
+StarDraw::compute()
+{
+    int width = get_allocated_width();
+    int height = get_allocated_height();
+    if (!m_image
+      || m_image->get_width() != width
+      || m_image->get_height() != height) {
+        m_image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
+    }
+    //m_image->flush(); // not needed? as we do it all by cairo!
+    auto ctx = Cairo::Context::create(m_image);
+    //auto start = g_get_monotonic_time();
+    //std::cout << "draw " << w << " h " << h << "\n";
+    Layout layout(width, height);
+    auto now = Glib::DateTime::create_now_utc();
+    JulianDate jd(now);
     ctx->save();
-    double cradius = 160.0;
-    ctx->translate(20.0 + cradius, (height/2));
-    drawClock(ctx, cradius);
-    ctx->restore();
-    ctx->save();
-    drawCalendar(ctx, 16.0, layout);
+    drawSky(ctx, jd, layout);
     ctx->restore();
     ctx->save();
     drawInfo(ctx, 14.0);
+    ctx->restore();
+    //double cradius = 160.0;
+    //ctx->save();  as we have this elsewhere disable for now
+    //ctx->translate(20.0 + cradius, 160.0 + cradius);
+    //drawClock(ctx, cradius);
+    //ctx->restore();
+    //ctx->save();
+    //ctx->translate(20.0, 200.0); //  + cradius, layout.getHeight() / 2.0
+    //drawNetInfo(ctx, cradius);
+    //ctx->restore();
+    ctx->save();
+    drawCalendar(ctx, 16.0, layout);
     ctx->restore();
     //auto end = g_get_monotonic_time();
     //std::cout << "time to draw " << (end - start) << "us" << std::endl;

@@ -29,7 +29,7 @@ class GeoPosition
 {
 public:
     GeoPosition();
-    explicit GeoPosition(const GeoPosition& orig) = delete;
+    GeoPosition(const GeoPosition& orig) = default;
     virtual ~GeoPosition() = default;
     GeoPosition(const double& _lon, const double& _lat);
 

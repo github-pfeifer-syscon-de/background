@@ -74,8 +74,10 @@ BackgroundApp::on_activate()
 {
     // either on_activate is called (no args)
     StarWin* imageView = getOrCreateStarWindow(); // on instance shoud be sufficent
+    imageView->set_keep_below(true);
     imageView->show();
-    // gdk_window_show_unraised might be better?
+    // this crashes (probably need to show first...)
+    //imageView->get_parent_window()->show_unraised();
 }
 
 #pragma GCC diagnostic push

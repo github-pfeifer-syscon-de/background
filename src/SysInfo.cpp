@@ -155,68 +155,6 @@ SysInfo::netConn(const std::string& netintf)
 }
 
 
-// nice if connections infos are of interest
-//
-//    std::string ip;
-//    int conn = 0;
-//    int line = 0;
-//    std::ifstream stat;
-//    std::ios_base::iostate exceptionMask = stat.exceptions() | std::ios::failbit | std::ios::badbit | std::ios::eofbit;
-//    stat.exceptions(exceptionMask);
-//    try {
-//        // without any connection we wont get the info :(
-//        stat.open("/proc/net/tcp");
-//        while (!stat.eof()) {
-//            std::string buf;
-//            std::getline(stat, buf);
-//            if (buf.starts_with("   ")) {   // these lines we are looking for
-//                auto addr = buf.find(' ', 4);
-//                if (ip.empty()
-//                 && addr != buf.npos) {
-//                    ++addr;
-//                    auto end = buf.find(':', addr);
-//                    if (end  != buf.npos) {
-//                        auto hexip = buf.substr(addr, end - addr);
-//                        if (hexip.length() == 8) {
-//                            //std::cout << "Handling hexip " << hexip << std::endl;
-//                            auto h2 = std::stoi(hexip.substr(6, 2), nullptr, 16);
-//                            auto h1 = std::stoi(hexip.substr(4, 2), nullptr, 16);
-//                            auto l2 = std::stoi(hexip.substr(2, 2), nullptr, 16);
-//                            auto l1 = std::stoi(hexip.substr(0, 2), nullptr, 16);
-//                            ip = Glib::ustring::sprintf("%d.%d.%d.%d", h2, h1, l2, l1);
-//                        }
-//                        else {
-//                            std::cout << "StarDraw::netConn unexpected len " << hexip.length() << std::endl;
-//                            break;
-//                        }
-//                    }
-//                    else {
-//                        std::cout << "StarDraw::netConn delimiter ':' not found from " << addr << std::endl;
-//                        break;
-//                    }
-//                }
-//                ++conn;
-//            }
-//            ++line;
-//        }
-//    }
-//    catch (const std::ios_base::failure& e) {
-//        if (errno != EAGAIN) {  //we get no eof as this no "normal" file...
-//            std::ostringstream oss1;
-//            oss1 << "Could not open /proc/net/tcp " << errno
-//                 << " " << strerror(errno)
-//                 << " line " << line
-//                 << " ecode " << e.code();
-//            // e.code() == std::io_errc::stream doesn't help either
-//            ip = oss1.str();
-//        }
-//    }
-//    if (stat.is_open()) {
-//        stat.close();
-//    }
-//    return ip; //Glib::ustring::sprintf("%s conn %d", ip, conn);
-
-
 std::string
 SysInfo::cpuInfo()
 {

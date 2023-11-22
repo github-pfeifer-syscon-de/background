@@ -31,6 +31,7 @@ public:
     void setX(double x);
     void setY(double y);
     void add(const Point2D& add);
+    double getDist();
 private:
     double x;
     double y;

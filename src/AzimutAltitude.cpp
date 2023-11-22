@@ -25,14 +25,14 @@
 #include "Layout.hpp"
 
 AzimutAltitude::AzimutAltitude()
+: AzimutAltitude(0.0, 0.0)
 {
-
 }
 
-AzimutAltitude::AzimutAltitude(const double& _azimut, const double& _altitude)
+AzimutAltitude::AzimutAltitude(double _azimut, double _altitude)
+: azimut{_azimut}
+, altitude{_altitude}
 {
-    azimut = _azimut;
-    altitude = _altitude;
 }
 
 bool

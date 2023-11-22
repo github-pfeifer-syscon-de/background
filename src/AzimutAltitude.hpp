@@ -33,7 +33,7 @@ class AzimutAltitude
 {
 public:
     AzimutAltitude();
-    AzimutAltitude(const double& azimut, const double& altitude);
+    AzimutAltitude(double azimut, double altitude);
     explicit AzimutAltitude(const AzimutAltitude& orig) = delete;
     virtual ~AzimutAltitude() = default;
 
@@ -43,7 +43,7 @@ public:
     //Released as public domain
 
     //Angles must be in radians
-    //Polar cooridnates:
+    //Polar coordinates:
     //Theta is vertical pi/2 to -pi/2 (usually lattitude or declination)
     //Phi is horizontal 0 to 2pi, or -pi to pi (usually longitude or Right Ascension)
     //R is the radius in any units
@@ -61,8 +61,8 @@ public:
 
 
 private:
-    double azimut{0.0};    // the values are in radians
-    double altitude{0.0};
+    double azimut;    // the values are in radians
+    double altitude;
 
 };
 

@@ -34,6 +34,7 @@ public:
     virtual ~StarWin() = default;
 protected:
     bool timeoutHandler();
+    void updateTimer();
 private:
     StarDraw* m_drawingArea{nullptr};
     sigc::connection m_timer;

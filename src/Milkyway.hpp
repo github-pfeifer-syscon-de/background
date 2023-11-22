@@ -18,36 +18,26 @@
 
 #pragma once
 
-/**
- * Right Ascension, Declination
- *
- * @author RPf <gpl3@pfeifer-syscon.de>
- */
-class RaDec
+#include <gtkmm.h>
+#include <list>
+#include <memory>
+
+#include "Poly.hpp"
+
+class Milkyway
 {
 public:
-    RaDec();
-    RaDec(double ra, double dec);
-    RaDec(const RaDec& orig) = default;
-    virtual ~RaDec() = default;
+    Milkyway(const Gtk::Application& appl);
+    explicit Milkyway(const Milkyway& orig) = delete;
+    virtual ~Milkyway() = default;
 
-    void setRaRad(double ra);
-    double getRaRad() const;
-    void setDecRad(double dec);
-    double getDecRad() const;
-    void setRaDegrees(double raDeg);
-    double getRaDegrees();
-    void setRaHours(double raHours);
-    double getRaHours();
-    void setDecDegrees(double decDeg);
-    void setDecDegreesPolar(double decDegPolar);
-    double getDecDegrees();
+    std::list<std::shared_ptr<Poly>> getBounds();
+protected:
+    void readFeature(JsonObject* feature, JsonHelper& jsonHelper, std::list<std::shared_ptr<Poly>>& polys);
 
-    bool operator==(const RaDec& rhs);
-
-    static constexpr auto DEGREE2HOUR = 24.0 / 360.0;
+    std::list<std::shared_ptr<Poly>> readBounds();
 private:
-    double ra{0.0}; // values in radians
-    double dec{0.0};
-
+    const Gtk::Application& m_appl;
+    std::list<std::shared_ptr<Poly>> m_bounds;
 };
+
