@@ -25,7 +25,6 @@
 Milkyway::Milkyway(const std::shared_ptr<FileLoader>& fileLoader)
 : m_fileLoader{fileLoader}
 {
-
 }
 
 std::list<std::shared_ptr<Poly>>
@@ -86,4 +85,13 @@ Milkyway::readBounds()
         std::cout << "The milkyway data " << milkywayDataFile << " was not found!" << std::endl;
     }
     return polys;
+}
+
+std::shared_ptr<RaDec>
+Milkyway::getGalacticCenter()
+{
+    auto raDec = std::make_shared<RaDec>();
+    raDec->setRaDegrees(gaCentRa);
+    raDec->setDecDegrees(gaCentDec);
+    return raDec;
 }

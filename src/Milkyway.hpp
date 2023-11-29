@@ -34,11 +34,15 @@ public:
     virtual ~Milkyway() = default;
 
     std::list<std::shared_ptr<Poly>> getBounds();
+    std::shared_ptr<RaDec> getGalacticCenter();
 protected:
     void readFeature(JsonObject* feature, JsonHelper& jsonHelper, std::list<std::shared_ptr<Poly>>& polys);
 
     std::list<std::shared_ptr<Poly>> readBounds();
 private:
+    // see https://en.wikipedia.org/wiki/Milky_Way
+    static constexpr auto gaCentRa = 102.761121;
+    static constexpr auto gaCentDec = -29.007825;
     static constexpr auto milkywayDataFile = "mw.json";
     std::shared_ptr<FileLoader> m_fileLoader;
     std::list<std::shared_ptr<Poly>> m_bounds;

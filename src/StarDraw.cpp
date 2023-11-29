@@ -285,10 +285,26 @@ StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
         //              << " skipped " << skipped << "/" << azAlts.size() << std::endl;
         //}
         // the given data wraps nicely onto a sphere,
-        //   but here we live in a rectangular box, so we stick to some abstraction
+        //   but here we have a disc view (world),
+        //    so we stick to some abstraction
         //ctx->close_path();
         //ctx->fill();
         ctx->stroke();
+        auto raDec = m_milkyway->getGalacticCenter();
+        auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+        if (azAlt->isVisible()) {
+            auto p = azAlt->toScreen(layout);
+            auto w = static_cast<double>(layout.getMin()) / 200.0;
+            ctx->move_to(p.getX()-w,p.getY());
+            ctx->line_to(p.getX()+w,p.getY());
+            ctx->move_to(p.getX(),p.getY()-w);
+            ctx->line_to(p.getX(),p.getY()+w);
+            ctx->set_source_rgb(0.6, 0.6, 0.6);
+            ctx->set_line_width(1.0);
+            ctx->stroke();
+            ctx->move_to(p.getX()+w,p.getY()+w);
+            ctx->show_text("Gal.cent.");
+        }
     }
 }
 

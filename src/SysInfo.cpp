@@ -123,15 +123,12 @@ SysInfo::netConn(const std::string& netintf)
 
         /* For an AF_INET* interface address, display the address. */
         if (strcmp(ifa->ifa_name, netintf.c_str()) == 0) {
-            if (family == AF_INET ) {   // for now use ipv4|| family == AF_INET6
+            if (family == AF_INET) {
                 auto sa = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask);
                 std::bitset<32>bs{sa->sin_addr.s_addr};     // this is ipv4 specific
                 char host[NI_MAXHOST];
-                int32_t addrSize = (family == AF_INET)
-                        ? sizeof(struct sockaddr_in)
-                        : sizeof(struct sockaddr_in6);
                 int s = getnameinfo(ifa->ifa_addr,
-                                    addrSize,
+                                    sizeof(struct sockaddr_in),
                                     host, NI_MAXHOST,
                                     NULL, 0, NI_NUMERICHOST);
                 if (s == 0) {
@@ -141,13 +138,29 @@ SysInfo::netConn(const std::string& netintf)
                     printf("getnameinfo() failed: %s\n", gai_strerror(s));
                 }
             }
-            else if (family == AF_PACKET && ifa->ifa_data != NULL) {
-                //struct rtnl_link_stats *stats = static_cast<struct rtnl_link_stats *>(ifa->ifa_data);
-                //printf("\t\ttx_packets = %10u; rx_packets = %10u\n"
-                //      "\t\ttx_bytes   = %10u; rx_bytes   = %10u\n",
-                //      stats->tx_packets, stats->rx_packets,
-                //      stats->tx_bytes, stats->rx_bytes);
-            }
+            // not that informative & issue getting netmask
+            //else if (family == AF_INET6) {
+            //    auto sa = reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_netmask);
+            //    std::bitset<128>bs{sa->sin6_addr.s6_addr};
+            //    char host[NI_MAXHOST];
+            //    int s = getnameinfo(ifa->ifa_addr,
+            //                        sizeof(struct sockaddr_in6),
+            //                        host, NI_MAXHOST,
+            //                        NULL, 0, NI_NUMERICHOST);
+            //    if (s == 0) {
+            //        netInfo += Glib::ustring::sprintf("%s/%d ", host, bs.count());
+            //    }
+            //    else {
+            //        printf("getnameinfo() failed: %s\n", gai_strerror(s));
+            //    }
+            //}
+            //else if (family == AF_PACKET && ifa->ifa_data != NULL) {
+            //    struct rtnl_link_stats *stats = static_cast<struct rtnl_link_stats *>(ifa->ifa_data);
+            //    printf("\t\ttx_packets = %10u; rx_packets = %10u\n"
+            //          "\t\ttx_bytes   = %10u; rx_bytes   = %10u\n",
+            //          stats->tx_packets, stats->rx_packets,
+            //          stats->tx_bytes, stats->rx_bytes);
+            //}
         }
     }
     freeifaddrs(ifaddr);
@@ -264,28 +277,32 @@ SysInfo::netInfo()
 		while ((ent = readdir(dir)) != NULL) {
 			if (ent->d_type == DT_LNK
 				&& strncmp(ent->d_name, "e", 1) == 0) {
-				auto path = Glib::ustring::sprintf("%s/%s/speed", sdir, ent->d_name);
-				unsigned int speed = std::stoi(cat(path));
-				char unit = 'M';
-				if (speed >= 1000) {
-					speed /= 1000;
-					unit = 'G';
-				}
-
-				path = Glib::ustring::sprintf("%s/%s/duplex", sdir, ent->d_name);
-				auto duplex = cat(path);
-
-				path = Glib::ustring::sprintf("%s/%s/operstate", sdir, ent->d_name);
+   				std::ostringstream oss1;
+				auto path = Glib::ustring::sprintf("%s/%s/operstate", sdir, ent->d_name);
 				auto updown = cat(path);
+                if (updown == "up") {
+                    path = Glib::ustring::sprintf("%s/%s/speed", sdir, ent->d_name);
+                    unsigned int speed = std::stoi(cat(path));
+                    char unit = 'M';
+                    if (speed >= 1000) {
+                        speed /= 1000;
+                        unit = 'G';
+                    }
 
-                auto conn = netConn(ent->d_name);
+                    path = Glib::ustring::sprintf("%s/%s/duplex", sdir, ent->d_name);
+                    auto duplex = cat(path);
 
-				std::ostringstream oss1;
-				oss1 << ent->d_name
-					 << " " << speed << unit
-					 << " " << duplex
-					 << " " << updown
-					 << " " << conn;
+                    auto conn = netConn(ent->d_name);
+                    oss1 << ent->d_name
+                         << " " << speed << unit
+                         << " " << duplex
+                         << " " << updown
+                         << " " << conn;
+                }
+                else {      // not much infos for this case
+                    oss1 << ent->d_name
+                         << " " << updown;
+                }
 				closedir(dir);
 				return oss1.str();		// show only first adapter
 			}
