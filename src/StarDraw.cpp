@@ -150,17 +150,17 @@ StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, co
     ctx->set_font_size(size);
     Cairo::FontExtents fontExtents;
     ctx->get_font_extents(fontExtents);
-    ctx->translate(20.0, layout.getHeight() - 7.5 * fontExtents.height);
+    ctx->translate(20.0, layout.getHeight() - 8.5 * fontExtents.height);
     const double colWidth = fontExtents.max_x_advance;
-    int n = 0;
+    Glib::DateTime dateToday = Glib::DateTime::create_now_local();
+    ctx->move_to(colWidth * 2, 0);
+    ctx->show_text(dateToday.format("%B"));
     Glib::DateTime dateNames = Glib::DateTime::create_utc(2024, 1, 1, 0, 0, 0); // start with monday
     for (auto wd = 1; wd <= 7; ++wd) {
-        ctx->move_to(colWidth * n, 0);
+        ctx->move_to(colWidth * (wd-1), fontExtents.height);
         ctx->show_text(dateNames.format("%a"));
         dateNames = dateNames.add_days(1);
-        ++n;
     }
-    Glib::DateTime dateToday = Glib::DateTime::create_now_local();
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();
     dateTime = dateTime.add_days(-(dateTime.get_day_of_month() - 1)); // beginning of month
     for (int row = 1; row < 7; ++row) {
@@ -171,7 +171,7 @@ StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, co
                 gray = TEXT_GRAY_EMPHASIS;
             }
             ctx->set_source_rgb(gray, gray, gray);
-            ctx->move_to(colWidth * (w-1), row * fontExtents.height);
+            ctx->move_to(colWidth * (w-1), (1 + row) * fontExtents.height);
             ctx->show_text(dateTime.format("%e"));
             dateTime = dateTime.add_days(1);
             if (dateTime.get_month() != dateToday.get_month()) {
