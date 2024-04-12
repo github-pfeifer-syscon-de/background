@@ -22,15 +22,14 @@ LT_INIT
 AC_CANONICAL_HOST
 AC_MSG_NOTICE([host_os $host_os])
 
-PKG_CHECK_MODULES([GTKMM], [gtkmm-3.0])
-
-PKG_CHECK_MODULES([GLIBMM], [glibmm-2.4 giomm-2.4])
-
-AC_SEARCH_LIBS([HPDF_Page_BeginText], [hpdf], [USE_LIBHARU="true"])
-
 PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.2.1])
 
-PKG_CHECK_MODULES(JSONGLIB1, [json-glib-1.0])
+dnl dont repeat dependies from genericimg
+dnl PKG_CHECK_MODULES([GTKMM], [gtkmm-3.0])
+dnl PKG_CHECK_MODULES([GLIBMM], [glibmm-2.4 giomm-2.4])
+dnl PKG_CHECK_MODULES(JSONGLIB1, [json-glib-1.0])
+
+AC_SEARCH_LIBS([HPDF_Page_BeginText], [hpdf], [USE_LIBHARU="true"])
 
 AM_CONDITIONAL([HAVE_PDF], [test x$USE_LIBHARU = xtrue])
 

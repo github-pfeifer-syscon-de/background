@@ -5,20 +5,33 @@ AM_CPPFLAGS = \
 	-DPACKAGE_LOCALE_DIR=\""$(localedir)"\" \
         -DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
         -DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
-	$(GLIBMM_CFLAGS) \
-	$(GTKMM_CFLAGS) \
 	$(GENERICIMG_CFLAGS) \
-	$(JSONGLIB1_CFLAGS) \
 	$(HARU_CFLAGS)
 
-background_CFLAGS = -Wall -Wconversion -Wextra
-background_CXXFLAGS = -Wall -Wconversion -Wextra
+#	-Wpedantic -pedantic-errors -Wsign-conversion e.g. breaks resource.c, report many headers impractical to use
+background_CFLAGS = \
+	-Wall \
+	-Wshadow \
+	-Wcast-align \
+        -Wlogical-op \
+        -Wno-unused-parameter \
+	-Wconversion \
+	-Wextra
+
+#	 -Wpedantic -pedantic-errors -Weffc++ -Wsign-conversion, report many headers impractical to use
+background_CXXFLAGS = \
+	-Wall \
+	-Wshadow \
+	-Wcast-align \
+        -Wlogical-op \
+        -Wno-unused-parameter \
+	-Wconversion \
+	-Wextra
+
 
 background_LDFLAGS = @EXTRA_LDFLAGS@
 
 background_LDADD =  \
-	$(GLIBMM_LIBS) \
-	$(GTKMM_LIBS) \
 	$(GENERICIMG_LIBS) \
 	$(JSONGLIB1_LIBS) \
 	$(HARU_LIBS)
