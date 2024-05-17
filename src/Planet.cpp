@@ -118,9 +118,14 @@ Planet::sub(const std::array<double,3>& xyz1, const std::array<double,3>& xyz2) 
 std::array<double,3>
 Planet::posToEarth(const JulianDate& jd)
 {
-	std::array<double,3> xyz = computePlanetPosition(jd);
+	auto xyzPlanet = computePlanetPosition(jd);
+    //std::cout << getName() << xyzPlanet[0] << "," << xyzPlanet[1] << "," << xyzPlanet[2] << std::endl;
 	Earth earth;
-	return sub(xyz, earth.computePlanetPosition(jd));
+    auto xyzEarth = earth.computePlanetPosition(jd);
+    //std::cout << "earth " << xyzEarth[0] << "," << xyzEarth[1] << "," << xyzEarth[2] << std::endl;
+    auto xyz = sub(xyzPlanet, xyzEarth);
+    //std::cout << getName() << " xyz " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
+	return xyz;
 }
 
 std::shared_ptr<RaDecPlanet>

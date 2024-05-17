@@ -102,7 +102,9 @@ background_SOURCES = resources.c \
 	FileLoader.hpp \
 	FileLoader.cpp \
 	Poly.hpp \
-	Poly.cpp
+	Poly.cpp \
+	ParamDlg.hpp \
+	ParamDlg.cpp
 
 
 if HAVE_PDF

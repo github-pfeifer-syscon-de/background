@@ -1,5 +1,5 @@
 
-SUBDIRS = res src
+SUBDIRS = test res src
 
 dist_doc_DATA = \
 	README \

@@ -40,6 +40,7 @@ public:
     Glib::ustring get_exec_path() const;
 
     void on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint) override;
+    void on_action_about();
 protected:
     StarWin* getOrCreateStarWindow();
     StarWin* createStarWindow();
@@ -50,6 +51,5 @@ private:
     //Glib::RefPtr<Gtk::Builder> m_builder;
 
     void on_action_quit();
-    void on_action_about();
     void on_action_help();
 };

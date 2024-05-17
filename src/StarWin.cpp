@@ -25,10 +25,10 @@
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , const BackgroundApp& appl)
+        , BackgroundApp& appl)
 : Gtk::ApplicationWindow(cobject)
 {
-    set_title("Star");
+    set_title("Stars");
     auto pix = Gdk::Pixbuf::create_from_resource(appl.get_resource_base_path() + "/background.png");
     set_icon(pix);
 
@@ -60,7 +60,6 @@ StarWin::timeoutHandler()
 {
     if (m_drawingArea) {
         m_drawingArea->compute();
-        m_drawingArea->queue_draw();
     }
     updateTimer();
     return false;

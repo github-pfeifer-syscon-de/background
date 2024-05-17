@@ -44,7 +44,7 @@ class StarDraw
 public:
     StarDraw(BaseObjectType* cobject
             , const Glib::RefPtr<Gtk::Builder>& builder
-            , const BackgroundApp& appl);
+            , BackgroundApp& appl);
     explicit StarDraw(const StarDraw& orig) = delete;
     virtual ~StarDraw() = default;
 
@@ -54,6 +54,8 @@ public:
     static constexpr auto PLANET_READIUS = 3.0;
 
     void compute();
+    void update(Glib::DateTime dateTime, GeoPosition& pos);
+    GeoPosition getGeoPosition();
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
@@ -61,13 +63,13 @@ protected:
     void drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
     void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout);
 
-    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
-    void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout);
+    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
 
     const std::array<std::shared_ptr<Planet>,7> planets =
                         {std::make_shared<Mercury>(),
@@ -81,7 +83,10 @@ protected:
     std::string get_config_name();
     void setupConfig();
 
-
+    bool on_button_press_event(GdkEventButton* event) override;
+    Gtk::Menu *build_popup();
+    void on_menu_param();
+    void saveConfig();
 private:
     std::shared_ptr<HipparcosFormat> m_starFormat;
     std::shared_ptr<ConstellationFormat> m_constlFormat;
@@ -92,5 +97,8 @@ private:
     static constexpr auto LONGITUDE{"lon"};
     Cairo::RefPtr<Cairo::ImageSurface> m_image;
     std::shared_ptr<Milkyway> m_milkyway;
+    bool m_updateBlocked{false};
+    Glib::DateTime m_displayTimeUtc;
+    BackgroundApp& m_appl;
 };
 

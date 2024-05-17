@@ -28,13 +28,15 @@
 #include "Math.hpp"
 #include "BackgroundApp.hpp"
 #include "FileLoader.hpp"
+#include "ParamDlg.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 StarDraw::StarDraw(BaseObjectType* cobject
                   , const Glib::RefPtr<Gtk::Builder>& builder
-                  ,  const BackgroundApp& appl)
+                  , BackgroundApp& appl)
 : Gtk::DrawingArea(cobject)
+, m_appl{appl}
 {
     auto fileLoader = std::make_shared<FileLoader>(appl.get_exec_path());
     m_starFormat = std::make_shared<HipparcosFormat>(fileLoader);
@@ -42,6 +44,8 @@ StarDraw::StarDraw(BaseObjectType* cobject
     m_constlFormat = std::make_shared<ConstellationFormat>(fileLoader);
     //m_constlFormat->getConstellations();
     m_milkyway = std::make_shared<Milkyway>(fileLoader);
+	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
+
     setupConfig();
 }
 #pragma GCC diagnostic pop
@@ -49,17 +53,18 @@ StarDraw::StarDraw(BaseObjectType* cobject
 void
 StarDraw::setupConfig()
 {
-    auto config = new Glib::KeyFile();
+    //m_config = Glib::KeyFile::create(); not available ...
     std::string cfg = get_config_name();
     try {
         auto cfgFile = Gio::File::create_for_path(cfg);
         if (!cfgFile->query_exists()) {
-            std::cerr << "Creating config " << cfg << " please set your location." << std::endl;
-            config->set_double(GRP_MAIN, LATITUDE, m_geoPos.getLatDegrees());
-            config->set_double(GRP_MAIN, LONGITUDE, m_geoPos.getLonDegrees());
-            config->save_to_file(cfg);
+            Glib::ustring msg("No config found, please enter your position.");
+            Gtk::MessageDialog dlg(msg);
+            dlg.run();
+            on_menu_param();
         }
         else {
+            auto config = std::make_shared<Glib::KeyFile>();
             if (config->load_from_file(cfg, Glib::KEY_FILE_NONE)
              && config->has_group(GRP_MAIN)) {
                 if (config->has_key(GRP_MAIN, LATITUDE))
@@ -70,7 +75,8 @@ StarDraw::setupConfig()
         }
     }
     catch (const Glib::Error &ex) {
-        std::cerr << "Error " << ex.what() << " loading " << cfg << std::endl;
+        auto msg = Glib::ustring::sprintf("Error %s loading %s", ex.what(), cfg);
+        Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
     }
 }
 
@@ -102,7 +108,8 @@ StarDraw::drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size)
 
 
 // draw line from center outwards
-static void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer) {
+static void
+drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer) {
 	double angleRad = 2.0 * M_PI * (double)value / (double)full;
 	double xv = std::sin(angleRad);
 	double yv = -std::cos(angleRad);
@@ -166,11 +173,11 @@ StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, co
     for (int row = 1; row < 7; ++row) {
         int wd = dateTime.get_day_of_week();
         for (int w = wd; w <= 7; ++w) {
-            double gray = TEXT_GRAY;
+            double grayText = TEXT_GRAY;
             if (dateTime.get_day_of_month() == dateToday.get_day_of_month()) {
-                gray = TEXT_GRAY_EMPHASIS;
+                grayText = TEXT_GRAY_EMPHASIS;
             }
-            ctx->set_source_rgb(gray, gray, gray);
+            ctx->set_source_rgb(grayText, grayText, grayText);
             ctx->move_to(colWidth * (w-1), (1 + row) * fontExtents.height);
             ctx->show_text(dateTime.format("%e"));
             dateTime = dateTime.add_days(1);
@@ -186,7 +193,7 @@ StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, co
 
 
 void
-StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     ctx->save();
     ctx->set_font_size(10.0);
@@ -194,7 +201,7 @@ StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
     ctx->get_font_extents(fontExtents);
 	for (auto planet : planets) {
 	    auto raDec = planet->getRaDecPositon(jd);
-	    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+	    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
 	    if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
             ctx->arc(p.getX() - PLANET_READIUS, p.getY() - PLANET_READIUS, PLANET_READIUS, 0.0, 2.0*M_PI);
@@ -210,11 +217,11 @@ StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
 }
 
 void
-StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     auto raDec = Sun::position(jd);
     //std::cout << "Sun ra " << raDec->getRaDegrees() << " dec " << raDec->getDecDegrees() << std::endl;
-    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
     //std::cout << "Sun az " << azAlt->getAzimutDegrees() << " az " << azAlt->getAltitudeDegrees() << std::endl;
     if (azAlt->isVisible()) {
         auto p = azAlt->toScreen(layout);
@@ -225,10 +232,10 @@ StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& j
 }
 
 void
-StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     auto raDec = Moon::position(jd);
-    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
     if (azAlt->isVisible()) {
         Moon moon;
         ctx->save();
@@ -241,7 +248,7 @@ StarDraw::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& 
 
 
 void
-StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     for (auto poly : m_milkyway->getBounds()) {
         ctx->begin_new_path();
@@ -252,7 +259,7 @@ StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
         std::list<std::shared_ptr<AzimutAltitude>> azAlts;  // saving intermediate saves us recalculation
         bool anyVisible = false;
         for (auto raDec : poly->getPoints()) {
-            auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+            auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
             azAlts.push_back(azAlt);
             anyVisible |= azAlt->isVisible();
         }
@@ -291,7 +298,7 @@ StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
         //ctx->fill();
         ctx->stroke();
         auto raDec = m_milkyway->getGalacticCenter();
-        auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+        auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
         if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
             auto w = static_cast<double>(layout.getMin()) / 200.0;
@@ -309,12 +316,12 @@ StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
 }
 
 void
-StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
     for (auto s : m_starFormat->getStars()) {
         auto raDec = s->getRaDec();
-        auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+        auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
         if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
             auto rs = std::max(3.0 - (s->getVmagnitude() / 2.0), 1.0);
@@ -327,7 +334,7 @@ StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate&
 
 
 void
-StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     ctx->set_font_size(10.0);
     for (auto c : m_constlFormat->getConstellations()) {
@@ -348,7 +355,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
             ctx->set_source_rgb(gray, gray, gray);
             bool visible = false;
             for (auto raDec : l->getPoints()) {
-                auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+                auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
                 if (azAlt->isVisible()) {
                     visible = true;
                 }
@@ -356,7 +363,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
             if (visible) {
                 anyVisible = true;
                 for (auto raDec : l->getPoints()) {
-                    auto azAlt = m_geoPos.toAzimutAltitude(raDec, jd);
+                    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
                     auto p = azAlt->toScreen(layout);
                     sum.add(p);
                     if (count == 0) {
@@ -381,7 +388,7 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
 }
 
 void
-StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, const Layout& layout)
+StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     const double r = layout.getMin() / 2.0;
     auto grad = Cairo::RadialGradient::create((layout.getWidth()/2), (layout.getHeight()/2), r / 3.0, (layout.getWidth()/2), (layout.getHeight()/2), r);
@@ -393,12 +400,12 @@ StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd
     ctx->translate((layout.getWidth()/2), (layout.getHeight()/2));
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
     ctx->clip();    // as we draw some lines beyond horizon
-    draw_milkyway(ctx, jd, layout);
-    draw_constl(ctx, jd, layout);
-    draw_stars(ctx, jd, layout);
-    draw_moon(ctx, jd, layout);
-    draw_sun(ctx, jd, layout);
-    draw_planets(ctx, jd, layout);
+    draw_milkyway(ctx, jd, geoPos, layout);
+    draw_constl(ctx, jd, geoPos, layout);
+    draw_stars(ctx, jd, geoPos, layout);
+    draw_moon(ctx, jd, geoPos, layout);
+    draw_sun(ctx, jd, geoPos, layout);
+    draw_planets(ctx, jd, geoPos, layout);
 
     ctx->set_source_rgb(0.5, 0.5, TEXT_GRAY);
     ctx->set_font_size(16.0);
@@ -418,6 +425,17 @@ StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd
 void
 StarDraw::compute()
 {
+    if (!m_updateBlocked) { // no default updating while dialog is showing
+        auto now = Glib::DateTime::create_now_utc();
+        update(now, m_geoPos);
+    }
+}
+
+
+void
+StarDraw::update(Glib::DateTime now, GeoPosition& pos)
+{
+    m_displayTimeUtc = now;
     int width = get_allocated_width();
     int height = get_allocated_height();
     if (!m_image
@@ -430,10 +448,10 @@ StarDraw::compute()
     //auto start = g_get_monotonic_time();
     //std::cout << "draw " << w << " h " << h << "\n";
     Layout layout(width, height);
-    auto now = Glib::DateTime::create_now_utc();
     JulianDate jd(now);
+    //std::cout << std::fixed << "jd " << jd.getJulianDate() << std::endl;
     ctx->save();
-    drawSky(ctx, jd, layout);
+    drawSky(ctx, jd, pos, layout);
     ctx->restore();
     ctx->save();
     drawInfo(ctx, 14.0);
@@ -455,6 +473,7 @@ StarDraw::compute()
     // this is much faster than draw to screen directly, and is slightly faster than java
     // mark the image dirty so Cairo clears its caches.
     //m_image->mark_dirty();
+    queue_draw();
 }
 
 bool
@@ -470,4 +489,78 @@ StarDraw::on_draw(const Cairo::RefPtr<Cairo::Context>& ctx)
         ctx->paint();
     }
     return true;
+}
+
+bool
+StarDraw::on_button_press_event(GdkEventButton* event)
+{
+    if (event->button == 3) {
+		Gtk::Menu* popupMenu = build_popup();
+		// deactivate prevent item signals to get generated ...
+		// signal_unrealize will never get generated
+		popupMenu->attach_to_widget(*this); // this does the trick and calls the destructor
+		popupMenu->popup(event->button, event->time);
+
+		return true; // It has been handled.
+	}
+	return false;
+}
+
+Gtk::Menu *
+StarDraw::build_popup()
+{
+	// managed works when used with attach ...
+	auto pMenuPopup = Gtk::make_managed<Gtk::Menu>();
+	auto mparam = Gtk::make_managed<Gtk::MenuItem>("_Parameter", true);
+	mparam->signal_activate().connect(sigc::mem_fun(*this, &StarDraw::on_menu_param));
+	pMenuPopup->append(*mparam);
+
+	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
+	mabout->signal_activate().connect(sigc::mem_fun(m_appl, &BackgroundApp::on_action_about));
+	pMenuPopup->append(*mabout);
+
+
+
+	pMenuPopup->show_all();
+	return pMenuPopup;
+}
+
+void
+StarDraw::on_menu_param()
+{
+    m_updateBlocked = true;
+	ParamDlg paramDlg(get_parent(), this);
+	if (paramDlg.run() == Gtk::RESPONSE_OK) {
+		//std::cout << "on_menu_param ok" << std::endl;
+        m_geoPos = paramDlg.getGeoPosition();
+        saveConfig();
+	}
+    m_updateBlocked = false;
+    compute();      // reset to default view
+}
+
+GeoPosition
+StarDraw::getGeoPosition()
+{
+    return m_geoPos;
+}
+
+void
+StarDraw::saveConfig()
+{
+    std::string cfg = get_config_name();
+    try {
+        auto config = std::make_shared<Glib::KeyFile>();
+        auto cfgFile = Gio::File::create_for_path(cfg);
+        if (cfgFile->query_exists()) {     // do load as file may contains other stuff
+            config->load_from_file(cfg, Glib::KEY_FILE_NONE);
+        }
+        config->set_double(GRP_MAIN, LATITUDE, m_geoPos.getLatDegrees());
+        config->set_double(GRP_MAIN, LONGITUDE, m_geoPos.getLonDegrees());
+        config->save_to_file(cfg);
+    }
+    catch (const Glib::Error &ex) {
+        auto msg = Glib::ustring::sprintf("Error %s saving %s", ex.what(), cfg);
+        Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
+    }
 }

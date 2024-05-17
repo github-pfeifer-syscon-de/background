@@ -76,7 +76,7 @@ public:
 private:
     static constexpr auto starsDataFile = "hipparcos.json";
     std::vector<std::shared_ptr<HipparcosStar>> readStars();
-    std::vector<std::shared_ptr<HipparcosStar>> stars;
+    std::vector<std::shared_ptr<HipparcosStar>> m_stars;
     const std::shared_ptr<FileLoader> m_fileLoader;
 };
 

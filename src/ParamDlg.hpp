@@ -1,6 +1,5 @@
-/* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2018 rpf
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,25 +17,24 @@
 
 #pragma once
 
-#include <cmath>
+#include <gtkmm.h>
 
-// these are remnants of porting from java...
-class Math
-{
+class StarDraw;
+class GeoPosition;
+
+class ParamDlg : public Gtk::Dialog {
 public:
-    Math();
-    explicit Math(const Math& orig) = delete;
-    virtual ~Math() = default;
-    static constexpr auto DEGREEE2RADIANS = M_PI / 180.0;
-    static inline double toRadians(double deg)
-    {
-        return deg * DEGREEE2RADIANS;
-    }
-    static inline double toDegrees(double rad)
-    {
-        return rad / DEGREEE2RADIANS;
-    }
+    ParamDlg(Gtk::Container* parent, StarDraw* starDraw);
+    virtual ~ParamDlg() = default;
+
+    GeoPosition getGeoPosition() const;
+protected:
+    void on_time_changed();
 private:
-
+    Gtk::Calendar* m_calendar;
+    Gtk::SpinButton* m_spinH;
+    Gtk::SpinButton* m_spinM;
+    StarDraw* m_starDraw;
+    Gtk::SpinButton* m_latitude;
+    Gtk::SpinButton* m_longitude;
 };
-

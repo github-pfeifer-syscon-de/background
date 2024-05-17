@@ -30,7 +30,7 @@ class StarWin
 public:
     StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , const BackgroundApp& appl);
+        , BackgroundApp& appl);
     explicit StarWin(const StarWin& orig) = delete;
     virtual ~StarWin() = default;
 protected:

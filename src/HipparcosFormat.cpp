@@ -31,12 +31,12 @@ HipparcosFormat::HipparcosFormat(const std::shared_ptr<FileLoader>& fileLoader)
 std::vector<std::shared_ptr<Star>>
 HipparcosFormat::getStars()
 {
-    if (stars.empty()) {
-        stars = readStars();
+    if (m_stars.empty()) {
+        m_stars = readStars();
     }
     std::vector<std::shared_ptr<Star>> rstars;
-    rstars.reserve(stars.size());
-    for (auto s : stars) {
+    rstars.reserve(m_stars.size());
+    for (auto s : m_stars) {
         rstars.push_back(s);
     }
     return rstars;	// keep internal structure
