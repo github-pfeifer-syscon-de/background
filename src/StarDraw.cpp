@@ -77,6 +77,7 @@ StarDraw::setupConfig()
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s loading %s", ex.what(), cfg);
         Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
+        dlg.run();
     }
 }
 
@@ -562,5 +563,6 @@ StarDraw::saveConfig()
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s saving %s", ex.what(), cfg);
         Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
+        dlg.run();
     }
 }

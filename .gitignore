@@ -111,7 +111,6 @@
 /test/climits.cpp
 /test/stl_deque.h.cpp
 /test/cctype.cpp
-/src/ParamDlg.cpp
 /test/beta_function.tcc.cpp
 /test/alloc_traits.h.cpp
 /nbproject/launcher.properties
