@@ -17,6 +17,7 @@
  */
 
 
+#include "Math.hpp"
 #include "Earth.hpp"
 
 Earth::Earth()
@@ -33,7 +34,7 @@ Earth::getName() {
 std::array<double,6>
 Earth::getElements()
 {
-    return std::array<double,6>{ 1.00000261,      0.01671123,     -0.00001531,      100.46457166,    102.93768193,      0.0};
+    return std::array<double,6>{ 1.00000261_AU,      0.01671123,     -0.00001531,      100.46457166,    102.93768193,      0.0};
 }
 
 std::array<double,6>

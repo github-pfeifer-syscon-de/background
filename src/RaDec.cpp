@@ -71,13 +71,13 @@ return Math::toDegrees(ra);
 void
 RaDec::setRaHours(double raHours)
 {
-    ra = Math::toRadians(raHours / DEGREE2HOUR);
+    ra = Math::toRadianHours(raHours);
 }
 
 double
 RaDec::getRaHours()
 {
-    return Math::toDegrees(ra) * DEGREE2HOUR;
+    return Math::toHoursRadian(ra);
 }
 
 void

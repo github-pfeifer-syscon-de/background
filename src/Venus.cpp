@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Venus.hpp"
 
 Venus::Venus()
@@ -33,7 +33,7 @@ Venus::getName()
 
 std::array<double,6> Venus::getElements()
 {
-	return std::array<double,6>{ 0.72333566,      0.00677672,      3.39467605,      181.97909950,    131.60246718,     76.67984255};
+	return std::array<double,6>{ 0.72333566_AU,      0.00677672,      3.39467605,      181.97909950,    131.60246718,     76.67984255};
 }
 
 std::array<double,6> Venus::getRates()

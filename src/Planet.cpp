@@ -27,8 +27,6 @@ Planet::Planet()
 {
 }
 
-
-
 // will give value relative to sun
 std::array<double,3>
 Planet::computePlanetPosition(const JulianDate& jd)

@@ -45,7 +45,6 @@ public:
 
     bool operator==(const RaDec& rhs);
 
-    static constexpr auto DEGREE2HOUR = 24.0 / 360.0;
 private:
     double ra{0.0}; // values in radians
     double dec{0.0};

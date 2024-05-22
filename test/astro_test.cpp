@@ -55,7 +55,7 @@ static bool
 test_deg2rad()
 {
     auto rad = Math::toRadians(10.0);
-    std::cout << "   rad " << rad << std::endl;
+    std::cout << "   deg rad " << rad << std::endl;
     if (std::abs(rad - 0.174533) > 0.00001) {
         return false;
     }
@@ -68,6 +68,22 @@ test_deg2rad()
     return true;
 }
 
+static bool
+test_hour2rad()
+{
+    auto rad = Math::toRadianHours(10.0);
+    std::cout << "   hour rad " << rad << std::endl;
+    if (std::abs(rad - 2.61799) > 0.00001) {
+        return false;
+    }
+    auto hour = Math::toHoursRadian(rad);
+    std::cout << "is  hour " << hour << std::endl;
+    std::cout << "exp hour " << 10.0 << std::endl;
+    if (std::abs(hour - 10.0) > 0.001) {
+        return false;
+    }
+    return true;
+}
 
 static bool
 test_planet()
@@ -98,8 +114,11 @@ int main(int argc, char** argv)
     if (!test_deg2rad()) {
         return 2;
     }
-    if (!test_planet()) {
+    if (!test_hour2rad()) {
         return 3;
+    }
+    if (!test_planet()) {
+        return 4;
     }
     return 0;
 }

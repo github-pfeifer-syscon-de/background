@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Jupiter.hpp"
 
 Jupiter::Jupiter()
@@ -31,7 +31,7 @@ Jupiter::getName() {
 
 std::array<double,6>
 Jupiter::getElements() {
-    return std::array<double,6>{ 5.20288700,      0.04838624,      1.30439695,       34.39644051,     14.72847983,    100.47390909};
+    return std::array<double,6>{ 5.20288700_AU,      0.04838624,      1.30439695,       34.39644051,     14.72847983,    100.47390909};
 }
 
 std::array<double,6>

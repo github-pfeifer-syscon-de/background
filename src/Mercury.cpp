@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Mercury.hpp"
 
 Mercury::Mercury()
@@ -31,7 +31,7 @@ std::string Mercury::getName() {
 std::array<double,6>
 Mercury::getElements()
 {
-    return std::array<double,6> { 0.38709927,      0.20563593,      7.00497902,      252.25032350,     77.45779628,     48.33076593};
+    return std::array<double,6> { 0.38709927_AU,      0.20563593,      7.00497902,      252.25032350,     77.45779628,     48.33076593};
 }
 
 std::array<double,6>

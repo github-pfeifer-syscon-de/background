@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Mars.hpp"
 
 Mars::Mars()
@@ -33,7 +33,7 @@ Mars::getName()
 std::array<double,6>
 Mars::getElements()
 {
-    return std::array<double,6>{ 1.52371034,      0.09339410,      1.84969142,       -4.55343205,    -23.94362959,     49.55953891};
+    return std::array<double,6>{ 1.52371034_AU,      0.09339410,      1.84969142,       -4.55343205,    -23.94362959,     49.55953891};
 }
 
 std::array<double,6>

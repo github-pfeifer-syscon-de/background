@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Saturn.hpp"
 
 Saturn::Saturn()
@@ -33,7 +33,7 @@ Saturn::getName()
 std::array<double,6>
 Saturn::getElements()
 {
-    return std::array<double,6> { 9.53667594,      0.05386179,      2.48599187,       49.95424423,     92.59887831,    113.66242448};
+    return std::array<double,6> { 9.53667594_AU,      0.05386179,      2.48599187,       49.95424423,     92.59887831,    113.66242448};
 }
 
 std::array<double,6>

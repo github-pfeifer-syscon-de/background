@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Neptune.hpp"
 
 Neptune::Neptune()
@@ -34,7 +34,7 @@ Neptune::getName()
 std::array<double,6>
 Neptune::getElements()
 {
-    return std::array<double,6>{30.06992276,      0.00859048,      1.77004347,      -55.12002969,     44.96476227,    131.78422574};
+    return std::array<double,6>{30.06992276_AU,      0.00859048,      1.77004347,      -55.12002969,     44.96476227,    131.78422574};
 }
 
 std::array<double,6>

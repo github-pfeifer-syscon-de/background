@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "Math.hpp"
 #include "Uranus.hpp"
 
 Uranus::Uranus()
@@ -32,7 +32,7 @@ Uranus::getName()
 
 std::array<double,6>
 Uranus::getElements() {
-    return std::array<double,6>{19.18916464,      0.04725744,      0.77263783,      313.23810451,    170.95427630,     74.01692503};
+    return std::array<double,6>{19.18916464_AU,      0.04725744,      0.77263783,      313.23810451,    170.95427630,     74.01692503};
 }
 
 std::array<double,6>

@@ -20,6 +20,12 @@
 
 #include <cmath>
 
+// distance, astronomic unit (distance earth to sun)
+constexpr double operator ""_AU(long double dist)
+{
+    return static_cast<double>(dist);
+}
+
 // these are remnants of porting from java...
 class Math
 {
@@ -28,6 +34,7 @@ public:
     explicit Math(const Math& orig) = delete;
     virtual ~Math() = default;
     static constexpr auto DEGREEE2RADIANS = M_PI / 180.0;
+    static constexpr auto HOURS2RADIANS = M_PI / 12.0;
     static inline double toRadians(double deg)
     {
         return deg * DEGREEE2RADIANS;
@@ -35,6 +42,14 @@ public:
     static inline double toDegrees(double rad)
     {
         return rad / DEGREEE2RADIANS;
+    }
+    static inline double toRadianHours(double hours)
+    {
+        return hours * HOURS2RADIANS;
+    }
+    static inline double toHoursRadian(double rad)
+    {
+        return rad / HOURS2RADIANS;
     }
 private:
 
