@@ -29,13 +29,13 @@ Jupiter::getName() {
 	return "Jupiter";
 }
 
-std::array<double,6>
+const Elements&
 Jupiter::getElements() {
-    return std::array<double,6>{ 5.20288700_AU,      0.04838624,      1.30439695,       34.39644051,     14.72847983,    100.47390909};
+    return jupiterElements;
 }
 
-std::array<double,6>
+const Elements&
 Jupiter::getRates() {
-    return std::array<double,6>{-0.00011607,     -0.00013253,     -0.00183714,     3034.74612775,      0.21252668,      0.20469106};
+    return jupiterRates;
 }
 

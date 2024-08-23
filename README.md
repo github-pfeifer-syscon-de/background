@@ -21,3 +21,5 @@ not take a whole bunch of resources
 (but i must admit there are more needed than i expected).
 And as a side effect, some insight might be easier to gain
 at a somewhat smaller scale...
+
+Depends on genericImg see there for build instructions.

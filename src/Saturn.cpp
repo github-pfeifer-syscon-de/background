@@ -30,14 +30,14 @@ Saturn::getName()
 	return "Saturn";
 }
 
-std::array<double,6>
+const Elements&
 Saturn::getElements()
 {
-    return std::array<double,6> { 9.53667594_AU,      0.05386179,      2.48599187,       49.95424423,     92.59887831,    113.66242448};
+    return saturnElements;
 }
 
-std::array<double,6>
+const Elements&
 Saturn::getRates()
 {
-    return std::array<double,6> {-0.00125060,     -0.00050991,      0.00193609,     1222.49362201,     -0.41897216,     -0.28867794};
+    return saturnRates;
 }

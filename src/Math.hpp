@@ -1,4 +1,4 @@
-/* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4; coding: utf-8; -*-  */
 /*
  * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
  *
@@ -20,11 +20,18 @@
 
 #include <cmath>
 
-// distance, astronomic unit (distance earth to sun)
-constexpr double operator ""_AU(long double dist)
+// decorator, astronomic unit (distance earth to sun)
+consteval double operator ""_AU(const long double dist)
 {
     return static_cast<double>(dist);
 }
+
+// decorator unit for angle ° \u00ba not going to work c++ 14 see makefile as well
+//consteval double operator ""_°(long double dist)
+//{
+//    return static_cast<double>(dist);
+//}
+
 
 // these are remnants of porting from java...
 class Math
@@ -52,6 +59,21 @@ public:
         return rad / HOURS2RADIANS;
     }
 private:
+
+};
+
+class Angle
+{
+public:
+    Angle();
+    Angle(double _radians);
+    virtual ~Angle() = default;
+
+    double toDegrees();
+    static Angle fromDegrees(double degrees);
+
+private:
+    double radians;
 
 };
 

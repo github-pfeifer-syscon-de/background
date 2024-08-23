@@ -25,6 +25,16 @@
 #include "RaDecPlanet.hpp"
 #include "JulianDate.hpp"
 
+struct Elements
+{
+    double a;
+    double e;
+    double I;
+    double L;
+    double w;
+    double O;
+};
+
 class Planet
 {
 public:
@@ -38,13 +48,13 @@ public:
 protected:
     std::array<double,3> computePlanetPosition(const JulianDate& jd);
     std::array<double,3> posToEarth(const JulianDate& jd);
-    std::shared_ptr<RaDecPlanet> rectToPolar(std::array<double,3> xyz);
+    std::shared_ptr<RaDecPlanet> rectToPolar(const std::array<double,3>& xyz);
 
     //https://ssd.jpl.nasa.gov/planets/approx_pos.html
     // at the moment using "short" term values (1850-2050)
-    virtual std::array<double,6> getElements() = 0;
+    virtual const Elements& getElements() = 0;
 
-    virtual std::array<double,6> getRates() = 0;
+    virtual const Elements& getRates() = 0;
 
     virtual std::array<double,4> getExtraTerms() {	// these will be used for long method
 	return std::array<double,4>();

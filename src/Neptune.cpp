@@ -31,14 +31,14 @@ Neptune::getName()
 	return "Neptune";
 }
 
-std::array<double,6>
+const Elements&
 Neptune::getElements()
 {
-    return std::array<double,6>{30.06992276_AU,      0.00859048,      1.77004347,      -55.12002969,     44.96476227,    131.78422574};
+    return neptuneElements;
 }
 
-std::array<double,6>
+const Elements&
 Neptune::getRates()
 {
-    return std::array<double,6>{ 0.00026291,      0.00005105,      0.00035372,      218.45945325,     -0.32241464,     -0.00508664};
+    return neptuneRates;
 }

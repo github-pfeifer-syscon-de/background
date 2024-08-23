@@ -24,18 +24,19 @@ Mercury::Mercury()
 {
 }
 
-std::string Mercury::getName() {
+std::string
+Mercury::getName() {
 	return "Mercury";
 }
 
-std::array<double,6>
+const Elements&
 Mercury::getElements()
 {
-    return std::array<double,6> { 0.38709927_AU,      0.20563593,      7.00497902,      252.25032350,     77.45779628,     48.33076593};
+    return mercuryElements;
 }
 
-std::array<double,6>
+const Elements&
 Mercury::getRates()
 {
-    return std::array<double,6> { 0.00000037,      0.00001906,     -0.00594749,   149472.67411175,      0.16047689,     -0.12534081};
+    return mercuryRates;
 }

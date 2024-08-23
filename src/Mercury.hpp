@@ -20,6 +20,7 @@
 
 #include <array>
 
+#include "Math.hpp"
 #include "Planet.hpp"
 
 class Mercury
@@ -31,8 +32,24 @@ public:
     virtual ~Mercury() = default;
     std::string getName() override;
 protected:
-    std::array<double,6> getElements() override;
-    std::array<double,6> getRates() override;
+    static constexpr Elements mercuryElements = {
+        .a{0.38709927_AU},
+        .e{0.20563593},
+        .I{7.00497902},
+        .L{252.25032350},
+        .w{77.45779628},
+        .O{48.33076593}
+    };
+    static constexpr Elements mercuryRates = {
+        .a{0.00000037},
+        .e{0.00001906},
+        .I{-0.00594749},
+        .L{149472.67411175},
+        .w{0.16047689},
+        .O{-0.12534081}
+    };
+    const Elements& getElements() override;
+    const Elements& getRates() override;
 
 };
 

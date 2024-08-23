@@ -29,12 +29,27 @@ public:
     Venus();
     explicit Venus(const Venus& orig) = delete;
     virtual ~Venus() = default;
-    
+
     std::string getName() override;
 protected:
-    std::array<double,6> getElements() override;
-    std::array<double,6> getRates() override;
+    static constexpr Elements venusElements = {
+        .a{0.72333566_AU},
+        .e{0.00677672},
+        .I{3.39467605},
+        .L{181.97909950},
+        .w{131.60246718},
+        .O{76.67984255}
+    };
+    static constexpr Elements venusRates = {
+        .a{0.00000390},
+        .e{-0.00004107},
+        .I{-0.00078890},
+        .L{58517.81538729},
+        .w{0.00268329},
+        .O{-0.27769418}
+    };
 
-
+    const Elements& getElements() override;
+    const Elements& getRates() override;
 };
 

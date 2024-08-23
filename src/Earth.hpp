@@ -32,8 +32,24 @@ public:
 
     std::string getName() override;
 protected:
-    std::array<double,6> getElements() override;
-    std::array<double,6> getRates() override;
+    static constexpr Elements earthElements = {
+        .a{1.00000261_AU},
+        .e{0.01671123},
+        .I{-0.00001531},
+        .L{100.46457166},
+        .w{102.93768193},
+        .O{0.0}
+    };
+    static constexpr Elements earthRates = {
+        .a{0.00000562},
+        .e{-0.00004392},
+        .I{-0.01294668},
+        .L{35999.37244981},
+        .w{0.32327364},
+        .O{0.0}
+    };
+    const Elements& getElements() override;
+    const Elements& getRates() override;
 
 private:
 

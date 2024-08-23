@@ -30,13 +30,13 @@ Uranus::getName()
 	return "Uranus";
 }
 
-std::array<double,6>
+const Elements&
 Uranus::getElements() {
-    return std::array<double,6>{19.18916464_AU,      0.04725744,      0.77263783,      313.23810451,    170.95427630,     74.01692503};
+    return uranusElements;
 }
 
-std::array<double,6>
+const Elements&
 Uranus::getRates()
 {
-    return std::array<double,6>{-0.00196176,     -0.00004397,     -0.00242939,      428.48202785,      0.40805281,      0.04240589};
+    return uranusRates;
 }

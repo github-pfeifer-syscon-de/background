@@ -30,14 +30,14 @@ Mars::getName()
 	return "Mars";
 }
 
-std::array<double,6>
+const Elements&
 Mars::getElements()
 {
-    return std::array<double,6>{ 1.52371034_AU,      0.09339410,      1.84969142,       -4.55343205,    -23.94362959,     49.55953891};
+    return marsElements;
 }
 
-std::array<double,6>
+const Elements&
 Mars::getRates()
 {
-    return std::array<double,6>{ 0.00001847,      0.00007882,     -0.00813131,    19140.30268499,      0.44441088,     -0.29257343};
+    return marsRates;
 }

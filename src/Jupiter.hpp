@@ -32,8 +32,25 @@ public:
 
     std::string getName() override;
 protected:
-    std::array<double,6> getElements() override;
-    std::array<double,6> getRates() override;
+    static constexpr Elements jupiterElements = {
+        .a{5.20288700_AU},
+        .e{0.04838624},
+        .I{1.30439695},
+        .L{34.39644051},
+        .w{14.72847983},
+        .O{100.47390909}
+    };
+    static constexpr Elements jupiterRates = {
+        .a{-0.00011607},
+        .e{-0.00013253},
+        .I{-0.00183714},
+        .L{3034.74612775},
+        .w{0.21252668},
+        .O{0.20469106}
+    };
+
+    const Elements& getElements() override;
+    const Elements& getRates() override;
 
 };
 

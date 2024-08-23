@@ -31,12 +31,14 @@ Venus::getName()
 	return "Venus";
 }
 
-std::array<double,6> Venus::getElements()
+const Elements&
+Venus::getElements()
 {
-	return std::array<double,6>{ 0.72333566_AU,      0.00677672,      3.39467605,      181.97909950,    131.60246718,     76.67984255};
+	return venusElements;
 }
 
-std::array<double,6> Venus::getRates()
+const Elements&
+Venus::getRates()
 {
-	return std::array<double,6>{ 0.00000390,     -0.00004107,     -0.00078890,    58517.81538729,      0.00268329,     -0.27769418};
+	return venusRates;
 }

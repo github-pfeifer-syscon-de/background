@@ -9,6 +9,7 @@ AM_CPPFLAGS = \
 	$(HARU_CFLAGS)
 
 #	-Wpedantic -pedantic-errors -Wsign-conversion e.g. breaks resource.c, report many headers impractical to use
+#	-finput-charset=UTF-8 -fext-numeric-literals for using ° as udl ???
 background_CFLAGS = \
 	-Wall \
 	-Wshadow \
@@ -19,6 +20,7 @@ background_CFLAGS = \
 	-Wextra
 
 #	 -Wpedantic -pedantic-errors -Weffc++ -Wsign-conversion, report many headers impractical to use
+#	-finput-charset=UTF-8 -fext-numeric-literals for using ° as udl ???
 background_CXXFLAGS = \
 	-Wall \
 	-Wshadow \

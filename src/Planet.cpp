@@ -38,12 +38,12 @@ Planet::computePlanetPosition(const JulianDate& jd)
 	//Algorithm from Explanatory Supplement to the Astronomical Almanac ch8 P340
 	//Step 1:
 	double T = jd.toJulianDateE2000centuries();
-	double a = elements[0] + rates[0] * T;
-	double e = elements[1] + rates[1] * T;
-	double I = elements[2] + rates[2] * T;
-	double L = elements[3] + rates[3] * T;
-	double w = elements[4] + rates[4] * T;
-	double O = elements[5] + rates[5] * T;
+	double a = elements.a + rates.a * T;
+	double e = elements.e + rates.e * T;
+	double I = elements.I + rates.I * T;
+	double L = elements.L + rates.L * T;
+	double w = elements.w + rates.w * T;
+	double O = elements.O + rates.O * T;
 
 	//Step 2:
 	double ww = w - O;
@@ -134,7 +134,7 @@ Planet::getRaDecPositon(const JulianDate& jd)
 }
 
 std::shared_ptr<RaDecPlanet>
-Planet::rectToPolar(std::array<double,3> xyz)
+Planet::rectToPolar(const std::array<double,3>& xyz)
 {
     // convert from Cartesian to polar coordinates
 	const double r = std::sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1] + xyz[2] * xyz[2]);

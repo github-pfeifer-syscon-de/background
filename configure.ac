@@ -22,7 +22,7 @@ LT_INIT
 AC_CANONICAL_HOST
 AC_MSG_NOTICE([host_os $host_os])
 
-PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.2.1])
+PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.3.4])
 
 dnl dont repeat dependies from genericimg
 dnl PKG_CHECK_MODULES([GTKMM], [gtkmm-3.0])

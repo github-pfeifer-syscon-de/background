@@ -17,7 +17,7 @@
  */
 
 #include <iostream>
-#include <LocaleContext.hpp>
+#include <StringUtils.hpp>
 
 #include "ConstellationFormat.hpp"
 #include "FileLoader.hpp"
@@ -53,9 +53,8 @@ ConstellationFormat::parseLine(const std::string& line, std::map<std::string, st
 	    auto greek = line.substr(24, 4);
 	    auto width = line.substr(28, 1);
 	    auto cons = line.substr(29);
-        LocaleContext localectx(LC_NUMERIC);
-        auto dRa = localectx.parseDouble(LocaleContext::en_US, ra);
-        auto dDec = localectx.parseDouble(LocaleContext::en_US, pol);
+        auto dRa = StringUtils::parseCDouble(ra);
+        auto dDec = StringUtils::parseCDouble(pol);
 	    auto raDec = std::make_shared<RaDec>();
 	    raDec->setRaHours(dRa);
 	    raDec->setDecDegreesPolar(dDec);

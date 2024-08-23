@@ -29,12 +29,27 @@ public:
     Neptune();
     explicit Neptune(const Neptune& orig) = delete;
     virtual ~Neptune() = default;
-    
+
     std::string getName() override;
 protected:
-    std::array<double,6> getElements() override;
-    std::array<double,6> getRates() override;
+    static constexpr Elements neptuneElements = {
+        .a{30.06992276_AU},
+        .e{0.00859048},
+        .I{1.77004347},
+        .L{-55.12002969},
+        .w{44.96476227},
+        .O{131.78422574}
+    };
+    static constexpr Elements neptuneRates = {
+        .a{0.00026291},
+        .e{0.00005105},
+        .I{0.00035372},
+        .L{218.45945325},
+        .w{-0.32241464},
+        .O{-0.00508664}
+    };
 
-
+    const Elements& getElements() override;
+    const Elements& getRates() override;
 };
 

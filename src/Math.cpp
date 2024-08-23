@@ -23,3 +23,23 @@ Math::Math()
 {
 
 }
+
+Angle::Angle()
+: Angle{0.0}
+{
+}
+
+Angle::Angle(double _radians)
+: radians{_radians}
+{
+}
+
+double Angle::toDegrees()
+{
+    return Math::toDegrees(radians);
+}
+
+Angle Angle::fromDegrees(double degrees)
+{
+    return Angle(Math::toRadians(degrees));
+}
