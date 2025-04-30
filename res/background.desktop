@@ -6,4 +6,4 @@ Name=Background
 Comment=Background utility
 Categories=Application;Utility;
 Exec=background
-Icon=@APP_ICON@
+Icon=background

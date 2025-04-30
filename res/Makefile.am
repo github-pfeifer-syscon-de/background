@@ -16,22 +16,20 @@ $(RESOURCE_C): $(RESOURCE_XML) $(NOMAD_RESOURCES)
 
 # The desktop files
 desktopdir = $(datadir)/applications
-desktop_in_files=background.desktop.in
-desktop_DATA=$(desktop_in_files:.desktop.in=.desktop)
+desktop_DATA=background.desktop
 
 # application icon
-appicondir = $(datadir)/icons/hicolor/64x64/apps
-appicon_DATA = background.png
-appdir_icon=$(appicondir)/$(appicon_DATA)
+icon_basename=background
+pixmapdir=$(datadir)/icons/hicolor/64x64/apps
+pixmap_DATA=$(icon_basename).png
+appicondir=$(datadir)/icons/hicolor/scalable/apps
+appicon_DATA=$(icon_basename).svg
 
 dist_pkgdata_DATA = hipparcos.json mw.json SnT_constellation.txt
 
 # include source for build
-EXTRA_DIST = $(RESOURCE_XML) $(RESOURCES) $(desktop_in_files) $(appicon_DATA) $(dist_pkgdata_DATA)
+EXTRA_DIST = $(RESOURCE_XML) $(RESOURCES) $(desktop_DATA) $(appicon_DATA) $(pixmap_DATA) $(dist_pkgdata_DATA)
 
 clean-local:
 	-rm -rf $(RESOURCE_C)
 	-rm -rf $(desktop_DATA)
-
-$(desktop_DATA): $(desktop_in_files)
-	@regex_cmd@ -e "s,\@APP_ICON\@,$(appdir_icon),g" $? > $@

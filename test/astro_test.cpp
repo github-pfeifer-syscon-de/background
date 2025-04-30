@@ -19,6 +19,7 @@
 #include <memory>
 #include <cstdlib>
 #include <cmath>
+#include <StringUtils.hpp>
 
 #include "JulianDate.hpp"
 #include "GeoPosition.hpp"
@@ -103,6 +104,7 @@ test_planet()
     }
     return true;
 }
+
 /*
  *
  */

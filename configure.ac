@@ -37,8 +37,6 @@ if test "x$USE_LIBHARU" = xtrue; then
     AC_DEFINE([USE_PDF], [1], [Using hpdf])
 fi
 
-AX_CHECK_SED()
-
 if test "$host_os" = "mingw32" ; then
     AC_SUBST(EXTRA_LDFLAGS, "-mwindows")   dnl disabled -mwindows while debugging
 fi
