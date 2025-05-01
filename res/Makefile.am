@@ -32,4 +32,3 @@ EXTRA_DIST = $(RESOURCE_XML) $(RESOURCES) $(desktop_DATA) $(appicon_DATA) $(pixm
 
 clean-local:
 	-rm -rf $(RESOURCE_C)
-	-rm -rf $(desktop_DATA)
