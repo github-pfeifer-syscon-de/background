@@ -29,23 +29,25 @@
 #include "BackgroundApp.hpp"
 #include "FileLoader.hpp"
 #include "ParamDlg.hpp"
+#include "StarWin.hpp"
+#include "config.h"
+#include "Planets.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 StarDraw::StarDraw(BaseObjectType* cobject
                   , const Glib::RefPtr<Gtk::Builder>& builder
-                  , BackgroundApp& appl)
+                  , StarWin* starWin)
 : Gtk::DrawingArea(cobject)
-, m_appl{appl}
+, m_starWin{starWin}
 {
-    auto fileLoader = std::make_shared<FileLoader>(appl.get_exec_path());
+    auto fileLoader = std::make_shared<FileLoader>(m_starWin->getBackgroundAppl()->get_exec_path());
     m_starFormat = std::make_shared<HipparcosFormat>(fileLoader);
     //m_starFormat->getStars();       // preinit
     m_constlFormat = std::make_shared<ConstellationFormat>(fileLoader);
     //m_constlFormat->getConstellations();
     m_milkyway = std::make_shared<Milkyway>(fileLoader);
 	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
-
     setupConfig();
 }
 #pragma GCC diagnostic pop
@@ -53,8 +55,9 @@ StarDraw::StarDraw(BaseObjectType* cobject
 void
 StarDraw::setupConfig()
 {
-    //m_config = Glib::KeyFile::create(); not available ...
+    m_config = std::make_shared<KeyConfig>("background.conf");
     std::string cfg = get_config_name();
+    // since it is more convenient we use the location we saved for glglobe
     try {
         auto cfgFile = Gio::File::create_for_path(cfg);
         if (!cfgFile->query_exists()) {
@@ -66,11 +69,11 @@ StarDraw::setupConfig()
         else {
             auto config = std::make_shared<Glib::KeyFile>();
             if (config->load_from_file(cfg, Glib::KEY_FILE_NONE)
-             && config->has_group(GRP_MAIN)) {
-                if (config->has_key(GRP_MAIN, LATITUDE))
-                    m_geoPos.setLatDegrees(config->get_double(GRP_MAIN, LATITUDE));
-                if (config->has_key(GRP_MAIN, LONGITUDE))
-                    m_geoPos.setLonDegrees(config->get_double(GRP_MAIN, LONGITUDE));
+             && config->has_group(GRP_GLGLOBE_MAIN)) {
+                if (config->has_key(GRP_GLGLOBE_MAIN, LATITUDE_KEY))
+                    m_geoPos.setLatDegrees(config->get_double(GRP_GLGLOBE_MAIN, LATITUDE_KEY));
+                if (config->has_key(GRP_GLGLOBE_MAIN, LONGITUDE_KEY))
+                    m_geoPos.setLonDegrees(config->get_double(GRP_GLGLOBE_MAIN, LONGITUDE_KEY));
             }
         }
     }
@@ -92,19 +95,26 @@ StarDraw::get_config_name()
 }
 
 void
-StarDraw::drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size)
+StarDraw::drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx)
 {
-    ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
-    ctx->set_font_size(size);
-    Cairo::FontExtents fontExtents;
-    ctx->get_font_extents(fontExtents);
-
+    getInfoColor(ctx);
+    auto infoFont = getInfoFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(infoFont);
     SysInfo sysInfo;
-    int n = 2;
+    int width, height{0};
+    std::string text;
+    text.reserve(512);
     for (auto info : sysInfo.allInfos()) {
-        ctx->move_to(20.0, fontExtents.height * n++);
-        ctx->show_text(info);
+        text += info + "\n";
+        if (height == 0) {
+            pangoLayout->set_text(info);
+            pangoLayout->get_pixel_size(width, height);
+        }
     }
+    pangoLayout->set_text(text);
+    ctx->move_to(20.0, height * 2);
+    pangoLayout->show_in_cairo_context(ctx);
 }
 
 
@@ -151,22 +161,26 @@ StarDraw::drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
 }
 
 void
-StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout)
+StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, const Layout& layout)
 {
-    double gray = TEXT_GRAY;
-    ctx->set_source_rgb(gray, gray, gray);
-    ctx->set_font_size(size);
-    Cairo::FontExtents fontExtents;
-    ctx->get_font_extents(fontExtents);
-    ctx->translate(20.0, layout.getHeight() - 8.5 * fontExtents.height);
-    const double colWidth = fontExtents.max_x_advance;
+    getCalendarColor(ctx);
+    auto calFont = getCalendarFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(calFont);
+    int width, height;
+    pangoLayout->set_text("M"); // use em as reference
+    pangoLayout->get_pixel_size(width, height);
+    ctx->translate(20.0, layout.getHeight() - 8.5 * height);
+    const double colWidth = width * 2.5;
     Glib::DateTime dateToday = Glib::DateTime::create_now_local();
-    ctx->move_to(colWidth * 2, 0);
-    ctx->show_text(dateToday.format("%B"));
+    ctx->move_to(colWidth * 2.5, 0);
+    pangoLayout->set_text(dateToday.format("%B"));
+    pangoLayout->show_in_cairo_context(ctx);
     Glib::DateTime dateNames = Glib::DateTime::create_utc(2024, 1, 1, 0, 0, 0); // start with monday
     for (auto wd = 1; wd <= 7; ++wd) {
-        ctx->move_to(colWidth * (wd-1), fontExtents.height);
-        ctx->show_text(dateNames.format("%a"));
+        ctx->move_to(colWidth * (wd-1), height);
+        pangoLayout->set_text(dateNames.format("%a"));
+        pangoLayout->show_in_cairo_context(ctx);
         dateNames = dateNames.add_days(1);
     }
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();
@@ -174,20 +188,18 @@ StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, co
     for (int row = 1; row < 7; ++row) {
         int wd = dateTime.get_day_of_week();
         for (int w = wd; w <= 7; ++w) {
-            double grayText = TEXT_GRAY;
+            Gdk::RGBA calColor = getCalendarColor();
             if (dateTime.get_day_of_month() == dateToday.get_day_of_month()) {
-                grayText = TEXT_GRAY_EMPHASIS;
+                brighten(calColor, 1.3);
             }
-            ctx->set_source_rgb(grayText, grayText, grayText);
-            ctx->move_to(colWidth * (w-1), (1 + row) * fontExtents.height);
-            ctx->show_text(dateTime.format("%e"));
+            ctx->set_source_rgb(calColor.get_red(), calColor.get_green(), calColor.get_blue());
+            ctx->move_to(colWidth * (w-1), (1 + row) * height);
+            pangoLayout->set_text(dateTime.format("%e"));
+            pangoLayout->show_in_cairo_context(ctx);
             dateTime = dateTime.add_days(1);
             if (dateTime.get_month() != dateToday.get_month()) {
-                break;      // if month ended stop
+                return;      // if month ended stop
             }
-        }
-        if (dateTime.get_month() != dateToday.get_month()) {
-            break;      // if month ended stop
         }
     }
 }
@@ -197,21 +209,28 @@ void
 StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     ctx->save();
-    ctx->set_font_size(10.0);
-    Cairo::FontExtents fontExtents;
-    ctx->get_font_extents(fontExtents);
-	for (auto planet : planets) {
+    auto starDesc = getStarFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(starDesc);
+    int width, height;
+    Planets planets;
+	for (auto& planet : planets.getOtherPlanets()) {
+#       ifdef DEBUG
+        std::cout << "StarDraw::draw_planets " << planet->getName() << std::endl;
+#       endif
 	    auto raDec = planet->getRaDecPositon(jd);
 	    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
 	    if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
-            ctx->arc(p.getX() - PLANET_READIUS, p.getY() - PLANET_READIUS, PLANET_READIUS, 0.0, 2.0*M_PI);
+            ctx->arc(p.getX() - PLANET_RADIUS, p.getY() - PLANET_RADIUS, PLANET_RADIUS, 0.0, 2.0*M_PI);
             ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
             ctx->fill();
-            ctx->set_source_rgb(0.7, 0.7, 0.7);
-            ctx->move_to(p.getX() + fontExtents.max_x_advance / 4.0,
-                         p.getY() + fontExtents.height / 4.0);
-            ctx->show_text(Glib::ustring::sprintf("%s %.1fAU", planet->getName(), raDec->getDistanceAU()));
+            ctx->set_source_rgb(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
+            pangoLayout->set_text(Glib::ustring::sprintf("%s %.1fAU", planet->getName(), raDec->getDistanceAU()));
+            pangoLayout->get_pixel_size(width, height);
+            ctx->move_to( p.getX() + 4.0
+                        , p.getY() - static_cast<double>(height) / 2.0);   //
+            pangoLayout->show_in_cairo_context(ctx);
 	    }
 	}
     ctx->restore();
@@ -226,7 +245,7 @@ StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& j
     //std::cout << "Sun az " << azAlt->getAzimutDegrees() << " az " << azAlt->getAltitudeDegrees() << std::endl;
     if (azAlt->isVisible()) {
         auto p = azAlt->toScreen(layout);
-        ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, 0.3);
+        ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW);
         ctx->arc(p.getX(), p.getY(), SUN_MOON_RADIUS, 0.0, M_PI * 2.0);
         ctx->fill();
     }
@@ -301,17 +320,22 @@ StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
         auto raDec = m_milkyway->getGalacticCenter();
         auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
         if (azAlt->isVisible()) {
+            ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
             auto p = azAlt->toScreen(layout);
             auto w = static_cast<double>(layout.getMin()) / 200.0;
             ctx->move_to(p.getX()-w,p.getY());
             ctx->line_to(p.getX()+w,p.getY());
             ctx->move_to(p.getX(),p.getY()-w);
             ctx->line_to(p.getX(),p.getY()+w);
-            ctx->set_source_rgb(0.6, 0.6, 0.6);
             ctx->set_line_width(1.0);
             ctx->stroke();
             ctx->move_to(p.getX()+w,p.getY()+w);
-            ctx->show_text("Gal.cent.");
+            auto starDesc = getStarFont();
+            auto pangoLayout = Pango::Layout::create(ctx);
+            pangoLayout->set_font_description(starDesc);
+            pangoLayout->set_text("Gal.cent.");
+            pangoLayout->show_in_cairo_context(ctx);
+
         }
     }
 }
@@ -337,7 +361,12 @@ StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate&
 void
 StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
-    ctx->set_font_size(10.0);
+    auto starDesc = getStarFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(starDesc);
+    int width, height;
+    pangoLayout->set_text("M");
+    pangoLayout->get_pixel_size(width, height);
     for (auto c : m_constlFormat->getConstellations()) {
         Point2D sum;
         int count = 0;
@@ -383,7 +412,8 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
             double avgX = sum.getX() / (double)count;
             double avgY = sum.getY() / (double)count;
             ctx->move_to(avgX, avgY);
-            ctx->show_text(c->getName());
+            pangoLayout->set_text(c->getName());
+            pangoLayout->show_in_cairo_context(ctx);
         }
     }
 }
@@ -393,14 +423,16 @@ StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd
 {
     const double r = layout.getMin() / 2.0;
     auto grad = Cairo::RadialGradient::create((layout.getWidth()/2), (layout.getHeight()/2), r / 3.0, (layout.getWidth()/2), (layout.getHeight()/2), r);
-    grad->add_color_stop_rgb(0.0, 0.06, 0.06, 0.15);
-    grad->add_color_stop_rgb(1.0, 0.10, 0.10, 0.20);
+    auto startColor = getStartColor();
+    auto stopColor = getStopColor();
+    grad->add_color_stop_rgb(0.0, startColor.get_red(), startColor.get_green(), startColor.get_blue());
+    grad->add_color_stop_rgb(1.0, stopColor.get_red(), stopColor.get_green(), stopColor.get_blue());
     ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
     ctx->set_source(grad);
     ctx->fill();
     ctx->translate((layout.getWidth()/2), (layout.getHeight()/2));
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
-    ctx->clip();    // as we draw some lines beyond horizon
+    ctx->clip();    // as we draw some lines beyond the horizon
     draw_milkyway(ctx, jd, geoPos, layout);
     draw_constl(ctx, jd, geoPos, layout);
     draw_stars(ctx, jd, geoPos, layout);
@@ -408,18 +440,30 @@ StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd
     draw_sun(ctx, jd, geoPos, layout);
     draw_planets(ctx, jd, geoPos, layout);
 
-    ctx->set_source_rgb(0.5, 0.5, TEXT_GRAY);
-    ctx->set_font_size(16.0);
-    Cairo::FontExtents fontExtents;
-    ctx->get_font_extents(fontExtents);
-    ctx->move_to(0.0, r - 10.0);
-	ctx->show_text("S");
-    ctx->move_to(-r + 10.0, 0.0);
-	ctx->show_text("E");
-    ctx->move_to(0, -r + fontExtents.height);
-	ctx->show_text("N");
-    ctx->move_to(r - fontExtents.max_x_advance, 0.0);
-	ctx->show_text("W");
+    ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+    auto starFont = getStarFont();
+    std::cout << "StarDraw::drawSky starFont size before " << starFont.get_size() << std::endl;
+    enlarge(starFont, 1.75);
+    std::cout << "StarDraw::drawSky  starFont size after " << starFont.get_size() << std::endl;
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(starFont);
+    pangoLayout->set_text("S");
+    int width, height;
+    pangoLayout->get_pixel_size(width, height);
+    ctx->move_to(0.0, r - height);
+    pangoLayout->show_in_cairo_context(ctx);
+    pangoLayout->set_text("E");
+    pangoLayout->get_pixel_size(width, height);
+    ctx->move_to(-r + width, 0.0);
+    pangoLayout->show_in_cairo_context(ctx);
+    pangoLayout->set_text("N");
+    pangoLayout->get_pixel_size(width, height);
+    ctx->move_to(0.0, -r + height);
+	pangoLayout->show_in_cairo_context(ctx);
+    pangoLayout->set_text("W");
+    pangoLayout->get_pixel_size(width, height);
+    ctx->move_to(r - width, 0.0);
+	pangoLayout->show_in_cairo_context(ctx);
 }
 
 
@@ -436,6 +480,12 @@ StarDraw::compute()
 void
 StarDraw::update(Glib::DateTime now, GeoPosition& pos)
 {
+#   ifdef DEBUG
+    std::cout << "StarDraw::update"
+              << " date " << now.format_iso8601()
+              << " pos " << pos.getLatDegrees() << " " << pos.getLonDegrees()
+              << std::endl;
+#   endif
     m_displayTimeUtc = now;
     int width = get_allocated_width();
     int height = get_allocated_height();
@@ -455,7 +505,7 @@ StarDraw::update(Glib::DateTime now, GeoPosition& pos)
     drawSky(ctx, jd, pos, layout);
     ctx->restore();
     ctx->save();
-    drawInfo(ctx, 14.0);
+    drawInfo(ctx);
     ctx->restore();
     //double cradius = 160.0;
     //ctx->save();  as we have this elsewhere disable for now
@@ -467,7 +517,7 @@ StarDraw::update(Glib::DateTime now, GeoPosition& pos)
     //drawNetInfo(ctx, cradius);
     //ctx->restore();
     ctx->save();
-    drawCalendar(ctx, 16.0, layout);
+    drawCalendar(ctx, layout);
     ctx->restore();
     //auto end = g_get_monotonic_time();
     //std::cout << "time to draw " << (end - start) << "us" << std::endl;
@@ -517,7 +567,7 @@ StarDraw::build_popup()
 	pMenuPopup->append(*mparam);
 
 	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
-	mabout->signal_activate().connect(sigc::mem_fun(m_appl, &BackgroundApp::on_action_about));
+	mabout->signal_activate().connect(sigc::mem_fun(m_starWin->getBackgroundAppl(), &BackgroundApp::on_action_about));
 	pMenuPopup->append(*mabout);
 
 
@@ -530,14 +580,22 @@ void
 StarDraw::on_menu_param()
 {
     m_updateBlocked = true;
-	ParamDlg paramDlg(get_parent(), this);
-	if (paramDlg.run() == Gtk::RESPONSE_OK) {
-		//std::cout << "on_menu_param ok" << std::endl;
-        m_geoPos = paramDlg.getGeoPosition();
-        saveConfig();
-	}
+	ParamDlg::show(this);
     m_updateBlocked = false;
     compute();      // reset to default view
+}
+
+void
+StarDraw::enlarge(Pango::FontDescription& starFont, double scale)
+{
+    starFont.set_size(static_cast<int>(starFont.get_size() * scale));
+}
+
+void StarDraw::brighten(Gdk::RGBA& calColor, double factor)
+{
+    calColor.set_red(calColor.get_red() * factor);
+    calColor.set_green(calColor.get_green() * factor);
+    calColor.set_blue(calColor.get_blue() * factor);
 }
 
 GeoPosition
@@ -547,17 +605,25 @@ StarDraw::getGeoPosition()
 }
 
 void
+StarDraw::setGeoPosition(const GeoPosition& geoPos)
+{
+    m_geoPos = geoPos;
+}
+
+void
 StarDraw::saveConfig()
 {
+    // handle glglobe&background config
     std::string cfg = get_config_name();
     try {
+        m_config->saveConfig();
         auto config = std::make_shared<Glib::KeyFile>();
         auto cfgFile = Gio::File::create_for_path(cfg);
         if (cfgFile->query_exists()) {     // do load as file may contains other stuff
             config->load_from_file(cfg, Glib::KEY_FILE_NONE);
         }
-        config->set_double(GRP_MAIN, LATITUDE, m_geoPos.getLatDegrees());
-        config->set_double(GRP_MAIN, LONGITUDE, m_geoPos.getLonDegrees());
+        config->set_double(GRP_GLGLOBE_MAIN, LATITUDE_KEY, m_geoPos.getLatDegrees());
+        config->set_double(GRP_GLGLOBE_MAIN, LONGITUDE_KEY, m_geoPos.getLonDegrees());
         config->save_to_file(cfg);
     }
     catch (const Glib::Error &ex) {
@@ -565,4 +631,131 @@ StarDraw::saveConfig()
         Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
         dlg.run();
     }
+}
+
+std::shared_ptr<KeyConfig>
+StarDraw::getConfig()
+{
+    return m_config;
+}
+
+StarWin* StarDraw::getWindow()
+{
+    return m_starWin;
+}
+
+int
+StarDraw::getIntervalMinutes()
+{
+    return m_config->getInteger(MAIN_GRP, UPDATE_INTERVAL_KEY, 1);
+}
+
+void
+StarDraw::setIntervalMinutes(int intervalMinutes)
+{
+    return m_config->setInteger(MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
+}
+
+Pango::FontDescription
+StarDraw::getStarFont()
+{
+    return m_config->getFont(MAIN_GRP, STAR_FONT_KEY, DEFAULT_STAR_FONT);
+}
+
+void
+StarDraw::setStarFont(const Pango::FontDescription& descr)
+{
+    m_config->setFont(MAIN_GRP, STAR_FONT_KEY, descr);
+}
+
+Pango::FontDescription
+StarDraw::getCalendarFont()
+{
+    return m_config->getFont(MAIN_GRP, CALENDAR_FONT_KEY, DEFAULT_CALENDAR_FONT);
+}
+
+void
+StarDraw::setCalendarFont(Pango::FontDescription& descr)
+{
+    m_config->setFont(MAIN_GRP, CALENDAR_FONT_KEY, descr);
+}
+
+Pango::FontDescription
+StarDraw::getInfoFont()
+{
+    return m_config->getFont(MAIN_GRP, INFO_FONT_KEY, DEFAULT_INFO_FONT);
+}
+
+void
+StarDraw::setInfoFont(const Pango::FontDescription& descr)
+{
+    m_config->setFont(MAIN_GRP, INFO_FONT_KEY, descr);
+}
+
+Gdk::RGBA
+StarDraw::getStartColor()
+{
+    Gdk::RGBA dfltStart{"rgb(6%,6%,15%)"};
+    return m_config->getColor(MAIN_GRP, START_COLOR_KEY, dfltStart);
+}
+
+void
+StarDraw::setStartColor(const Gdk::RGBA& startColor)
+{
+    m_config->setColor(MAIN_GRP, START_COLOR_KEY, startColor);
+}
+
+
+Gdk::RGBA
+StarDraw::getStopColor()
+{
+    Gdk::RGBA dfltStop{"rgb(10%,10%,20%)"};
+    return m_config->getColor(MAIN_GRP, STOP_COLOR_KEY, dfltStop);
+}
+
+void
+StarDraw::setStopColor(const Gdk::RGBA& stopColor)
+{
+    m_config->setColor(MAIN_GRP, STOP_COLOR_KEY, stopColor);
+}
+
+Gdk::RGBA
+StarDraw::getInfoColor()
+{
+    Gdk::RGBA dfltInfo{"rgb(50%,50%,50%)"};
+    return m_config->getColor(MAIN_GRP, INFO_COLOR_KEY, dfltInfo);
+}
+
+void
+StarDraw::setInfoColor(const Gdk::RGBA& infoColor)
+{
+    m_config->setColor(MAIN_GRP, INFO_COLOR_KEY, infoColor);
+}
+
+void
+StarDraw::getInfoColor(const Cairo::RefPtr<Cairo::Context>& ctx)
+{
+    auto infoColor = getInfoColor();
+    ctx->set_source_rgb(infoColor.get_red(), infoColor.get_green(), infoColor.get_blue());
+}
+
+Gdk::RGBA
+StarDraw::getCalendarColor()
+{
+    Gdk::RGBA dfltCalendar{"rgb(50%,50%,50%)"};
+    return m_config->getColor(MAIN_GRP, CALENDAR_COLOR_KEY, dfltCalendar);
+}
+
+void
+StarDraw::setCalendarColor(const Gdk::RGBA& calColor)
+{
+    m_config->setColor(MAIN_GRP, CALENDAR_COLOR_KEY, calColor);
+}
+
+void
+StarDraw::getCalendarColor(const Cairo::RefPtr<Cairo::Context>& ctx)
+{
+    auto infoColor = getCalendarColor();
+    ctx->set_source_rgb(infoColor.get_red(), infoColor.get_green(), infoColor.get_blue());
+
 }

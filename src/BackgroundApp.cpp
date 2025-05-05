@@ -41,7 +41,7 @@ BackgroundApp::createStarWindow()
     try {
         //Gtk::Application* appl = m_appSupport.getApplication();
         builder->add_from_resource(get_resource_base_path() + "/star-win.ui");
-        builder->get_widget_derived("StarWin", starView, *this);
+        builder->get_widget_derived("StarWin", starView, this);
     }
     catch (const Glib::Error &ex) {
         std::cerr << "Unable to load imageview.ui: " << ex.what() << std::endl;

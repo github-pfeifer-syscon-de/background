@@ -22,14 +22,22 @@
 class StarDraw;
 class GeoPosition;
 
-class ParamDlg : public Gtk::Dialog {
+class ParamDlg
+: public Gtk::Dialog
+{
 public:
-    ParamDlg(Gtk::Container* parent, StarDraw* starDraw);
+    ParamDlg(BaseObjectType* cobject
+            , const Glib::RefPtr<Gtk::Builder>& builder
+            , StarDraw* starDraw);
     virtual ~ParamDlg() = default;
 
     GeoPosition getGeoPosition() const;
+    static void show(StarDraw* starDraw);
+
 protected:
     void on_time_changed();
+    void on_response(int response_id) override;
+
 private:
     Gtk::Calendar* m_calendar;
     Gtk::SpinButton* m_spinH;
@@ -37,4 +45,12 @@ private:
     StarDraw* m_starDraw;
     Gtk::SpinButton* m_latitude;
     Gtk::SpinButton* m_longitude;
+    Gtk::SpinButton* m_updateInterval;
+    Gtk::ColorButton* m_startColor;
+    Gtk::ColorButton* m_stopColor;
+    Gtk::FontButton* m_starFont;
+    Gtk::ColorButton* m_calendarColor;
+    Gtk::FontButton* m_calendarFont;
+    Gtk::ColorButton* m_infoColor;
+    Gtk::FontButton* m_infoFont;
 };

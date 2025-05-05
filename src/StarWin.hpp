@@ -30,14 +30,18 @@ class StarWin
 public:
     StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , BackgroundApp& appl);
+        , BackgroundApp* backAppl);
     explicit StarWin(const StarWin& orig) = delete;
     virtual ~StarWin() = default;
+
+    BackgroundApp* getBackgroundAppl();
+
 protected:
     bool timeoutHandler();
     void updateTimer();
 private:
     StarDraw* m_drawingArea{nullptr};
     sigc::connection m_timer;
+    BackgroundApp* m_backAppl;
 };
 

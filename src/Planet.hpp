@@ -38,11 +38,11 @@ struct Elements
 class Planet
 {
 public:
-    Planet();
+    Planet(const std::string& name, const Elements& elements, const Elements& rates, const std::array<double,4>& extraTerms = std::array<double,4>{});
+    Planet() = default;
     explicit Planet(const Planet& orig) = delete;
-    virtual ~Planet() = default;
 
-    virtual std::string getName() = 0;
+    std::string getName();
 
     std::shared_ptr<RaDecPlanet> getRaDecPositon(const JulianDate& jd);
 protected:
@@ -52,16 +52,19 @@ protected:
 
     //https://ssd.jpl.nasa.gov/planets/approx_pos.html
     // at the moment using "short" term values (1850-2050)
-    virtual const Elements& getElements() = 0;
+    const Elements& getElements();
 
-    virtual const Elements& getRates() = 0;
+    const Elements& getRates();
 
-    virtual std::array<double,4> getExtraTerms() {	// these will be used for long method
-	return std::array<double,4>();
-    }
+    std::array<double,4> getExtraTerms();	// these will be used for long method
 private:
     double solveKepler(double M, double e, double E);
     std::array<double,3> sub(const std::array<double,3>& xyz1, const std::array<double,3>& xyz2);
 
+    std::string m_name;
+    const Elements m_elements;
+    const Elements m_rates;
+    std::array<double,4> m_extraTerms;
 };
 
+using PtrPlanet = std::shared_ptr<Planet>;

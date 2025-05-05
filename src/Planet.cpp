@@ -20,10 +20,18 @@
 #include <iostream>
 
 #include "Planet.hpp"
+#include "Planets.hpp"
 #include "Math.hpp"
-#include "Earth.hpp"
+#include "config.h"
 
-Planet::Planet()
+Planet::Planet(const std::string& name
+              , const Elements& elements
+              , const Elements& rates
+              , const std::array<double,4>& extraTerms)
+: m_name{name}
+, m_elements{elements}
+, m_rates{rates}
+, m_extraTerms{extraTerms}
 {
 }
 
@@ -31,28 +39,27 @@ Planet::Planet()
 std::array<double,3>
 Planet::computePlanetPosition(const JulianDate& jd)
 {
-	auto elements = getElements();
-	auto rates = getRates();
-	auto extraTerms = getExtraTerms();
-
 	//Algorithm from Explanatory Supplement to the Astronomical Almanac ch8 P340
 	//Step 1:
 	double T = jd.toJulianDateE2000centuries();
-	double a = elements.a + rates.a * T;
-	double e = elements.e + rates.e * T;
-	double I = elements.I + rates.I * T;
-	double L = elements.L + rates.L * T;
-	double w = elements.w + rates.w * T;
-	double O = elements.O + rates.O * T;
+	double a = m_elements.a + m_rates.a * T;
+	double e = m_elements.e + m_rates.e * T;
+	double I = m_elements.I + m_rates.I * T;
+	double L = m_elements.L + m_rates.L * T;
+	double w = m_elements.w + m_rates.w * T;
+	double O = m_elements.O + m_rates.O * T;
 
 	//Step 2:
 	double ww = w - O;
 	double M = L - w;
-	if (extraTerms.size() > 0) {	// we stick to the short method so these will not be used
-	    double b = extraTerms[0];
-	    double c = extraTerms[1];
-	    double s = extraTerms[2];
-	    double f = extraTerms[3];
+	if (m_extraTerms[0] != 0.0
+     || m_extraTerms[1] != 0.0
+     || m_extraTerms[2] != 0.0
+     || m_extraTerms[3] != 0.0) {	// we stick to the short method so these will not be used
+	    double b = m_extraTerms[0];
+	    double c = m_extraTerms[1];
+	    double s = m_extraTerms[2];
+	    double f = m_extraTerms[3];
 	    M = L - w + b*T*T + c*std::cos(Math::toRadians(f*T)) + s*std::sin(Math::toRadians(f*T));
 	}
 
@@ -118,8 +125,10 @@ Planet::posToEarth(const JulianDate& jd)
 {
 	auto xyzPlanet = computePlanetPosition(jd);
     //std::cout << getName() << xyzPlanet[0] << "," << xyzPlanet[1] << "," << xyzPlanet[2] << std::endl;
-	Earth earth;
-    auto xyzEarth = earth.computePlanetPosition(jd);
+    Planets planets;
+	auto earth = planets.getEarth();
+    //Earth earth;
+    auto xyzEarth = earth->computePlanetPosition(jd);
     //std::cout << "earth " << xyzEarth[0] << "," << xyzEarth[1] << "," << xyzEarth[2] << std::endl;
     auto xyz = sub(xyzPlanet, xyzEarth);
     //std::cout << getName() << " xyz " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
@@ -148,4 +157,28 @@ Planet::rectToPolar(const std::array<double,3>& xyz)
 	// Make dec is in range +/-90deg
 	dec = 0.5 * M_PI - dec;
 	return std::make_shared<RaDecPlanet>(ra, dec, r);
+}
+
+std::string
+Planet::getName()
+{
+    return m_name;
+}
+
+const Elements&
+Planet::getElements()
+{
+    return m_elements;
+}
+
+const Elements&
+Planet::getRates()
+{
+    return m_rates;
+}
+
+std::array<double,4>
+Planet::getExtraTerms()
+{
+	return m_extraTerms;
 }

@@ -20,64 +20,60 @@
 #include "GeoPosition.hpp"
 #include "StarDraw.hpp"
 #include "ParamDlg.hpp"
+#include "StarDraw.hpp"
+#include "StarWin.hpp"
+#include "BackgroundApp.hpp"
 
-ParamDlg::ParamDlg(Gtk::Container* parent, StarDraw* starDraw)
-: m_starDraw{starDraw}
+ParamDlg::ParamDlg(BaseObjectType* cobject
+                , const Glib::RefPtr<Gtk::Builder>& builder
+                , StarDraw* starDraw)
+: Gtk::Dialog(cobject)
+, m_starDraw{starDraw}
 {
-	set_transient_for(*static_cast<Gtk::Window*>(parent));
-	set_title("Parameter");
-	auto grid = Gtk::make_managed<Gtk::Grid>();
-
     auto geoPos = m_starDraw->getGeoPosition();
-    m_longitude = Gtk::make_managed<Gtk::SpinButton>();
-    m_longitude->set_digits(0);
-    m_longitude->set_range(-180.0, 180.0);
-    m_longitude->set_increments(1.0, 10.0);
+    builder->get_widget("longitude", m_longitude);
     m_longitude->set_value(geoPos.getLonDegrees());
-	auto lblLon = Gtk::make_managed<Gtk::Label>("Longitude ");
-	grid->attach(*lblLon, 0, 0, 1, 1);
-	grid->attach(*m_longitude, 1, 0, 2, 1);
     m_longitude->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
-    m_latitude = Gtk::make_managed<Gtk::SpinButton>();
-    m_latitude->set_digits(0);
-    m_latitude->set_range(-90.0, 90.0);
-    m_latitude->set_increments(1.0, 5.0);
+    builder->get_widget("latitude", m_latitude);
     m_latitude->set_value(geoPos.getLatDegrees());
-	auto lblLat = Gtk::make_managed<Gtk::Label>("Latitude ");
-	grid->attach(*lblLat, 0, 1, 1, 1);
-	grid->attach(*m_latitude, 1, 1, 2, 1);
     m_latitude->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
 
-	m_calendar = Gtk::make_managed<Gtk::Calendar>();
-	auto lblCalendar = Gtk::make_managed<Gtk::Label>("Calendar ");
-	grid->attach(*lblCalendar, 0, 2, 1, 1);
-	grid->attach(*m_calendar, 1, 2, 2, 1);
+    builder->get_widget("calendar", m_calendar);
     m_calendar->signal_day_selected().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
+    // m_calendar requires set date ?
 
-	m_spinH = Gtk::make_managed<Gtk::SpinButton>();
-    m_spinH->set_digits(0);
-    m_spinH->set_range(0.0, 23.0);
-    m_spinH->set_increments(1.0, 3.0);
-	m_spinM = Gtk::make_managed<Gtk::SpinButton>();
-    m_spinM->set_digits(0);
-    m_spinM->set_range(0.0, 59.0);
-    m_spinM->set_increments(1.0, 5.0);
-	auto lblTime = Gtk::make_managed<Gtk::Label>("Time ");
-	grid->attach(*lblTime, 0, 3, 1, 1);
-	grid->attach(*m_spinH, 1, 3, 1, 1);
-	grid->attach(*m_spinM, 2, 3, 1, 1);
     Glib::DateTime localNow = Glib::DateTime::create_now_local();
+    builder->get_widget("hour", m_spinH);
     m_spinH->set_value(localNow.get_hour());
-    m_spinM->set_value(localNow.get_minute());
     m_spinH->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
+    builder->get_widget("minute", m_spinM);
+    m_spinM->set_value(localNow.get_minute());
     m_spinM->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
 
-	get_vbox()->pack_start(*grid);
+    builder->get_widget("updateInterval", m_updateInterval);
+    m_updateInterval->set_value(m_starDraw->getIntervalMinutes());
 
-	auto button_Close = Gtk::make_managed<Gtk::Button>("Ok");
-	add_action_widget(*button_Close, Gtk::RESPONSE_OK);
+    builder->get_widget("startColor", m_startColor);
+    m_startColor->set_rgba(m_starDraw->getStartColor());
 
-	//m_Depth.grab_default();
+    builder->get_widget("stopColor", m_stopColor);
+    m_stopColor->set_rgba(m_starDraw->getStopColor());
+
+    builder->get_widget("starFont", m_starFont);
+    m_starFont->set_font_name(m_starDraw->getStarFont().to_string());
+
+    builder->get_widget("calendarColor", m_calendarColor);
+    m_calendarColor->set_rgba(m_starDraw->getCalendarColor());
+
+    builder->get_widget("calendarFont", m_calendarFont);
+    m_calendarFont->set_font_name(m_starDraw->getCalendarFont().to_string());
+
+    builder->get_widget("infoColor", m_infoColor);
+    m_infoColor->set_rgba(m_starDraw->getInfoColor());
+
+    builder->get_widget("infoFont", m_infoFont);
+    m_infoFont->set_font_name(m_starDraw->getInfoFont().to_string());
+
 	show_all_children();
 }
 
@@ -88,12 +84,33 @@ ParamDlg::on_time_changed()
     m_calendar->get_date(calDay);
     Glib::DateTime localNow = Glib::DateTime::create_local(
             calDay.get_year(), calDay.get_month(), calDay.get_day()
-            , static_cast<int>(m_spinH->get_value()), static_cast<int>(m_spinM->get_value()), 0);
+            , m_spinH->get_value_as_int()
+            , m_spinM->get_value_as_int(), 0);
     //std::cout << "ValueH " << m_spinH->get_value()
     //          << " M " << m_spinM->get_value()
     //          << " date " << localNow.format_iso8601() << std::endl;
     auto geoPos = getGeoPosition();
     m_starDraw->update(localNow.to_utc(), geoPos);
+}
+
+void
+ParamDlg::on_response(int response_id)
+{
+    if (response_id == Gtk::RESPONSE_OK) {
+        m_starDraw->setGeoPosition(getGeoPosition());
+        m_starDraw->setIntervalMinutes(m_updateInterval->get_value_as_int());
+        m_starDraw->setStartColor(m_startColor->get_rgba());
+        m_starDraw->setStopColor(m_stopColor->get_rgba());
+        Pango::FontDescription starFont{m_starFont->get_font_name()};
+        m_starDraw->setStarFont(starFont);
+        m_starDraw->setCalendarColor(m_calendarColor->get_rgba());
+        Pango::FontDescription calFont{m_calendarFont->get_font_name()};
+        m_starDraw->setCalendarFont(calFont);
+        m_starDraw->setInfoColor(m_infoColor->get_rgba());
+        Pango::FontDescription infoFont{m_infoFont->get_font_name()};
+        m_starDraw->setInfoFont(infoFont);
+    }
+     Gtk::Dialog::on_response(response_id);
 }
 
 GeoPosition
@@ -103,4 +120,26 @@ ParamDlg::getGeoPosition() const
     return geoPos;
 }
 
-
+void
+ParamDlg::show(StarDraw* starDraw)
+{
+    auto builder = Gtk::Builder::create();
+    try {
+        auto appl = starDraw->getWindow()->getBackgroundAppl();
+        builder->add_from_resource(appl->get_resource_base_path() + "/pref-dlg.ui");
+        ParamDlg* paramDialog;
+        builder->get_widget_derived("PrefDlg", paramDialog, starDraw);
+        //auto icon = Gdk::Pixbuf::create_from_resource(appl->get_resource_base_path() + "/background.png");
+        //paramDialog->set_logo(icon);
+        paramDialog->set_transient_for(*starDraw->getWindow());
+        if (paramDialog->run() == Gtk::RESPONSE_OK) {
+            starDraw->saveConfig();
+            // compute is called from starDraw
+        }
+        paramDialog->hide();
+        delete paramDialog;
+    }
+    catch (const Glib::Error &ex) {
+        std::cerr << "Unable to load pref-dialog: " << ex.what() << std::endl;
+    }
+}

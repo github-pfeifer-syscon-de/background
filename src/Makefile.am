@@ -81,24 +81,10 @@ background_SOURCES = resources.c \
 	ConstellationFormat.cpp \
 	Planet.hpp \
 	Planet.cpp \
-	Earth.hpp \
-	Earth.cpp \
-	Neptune.hpp \
-	Neptune.cpp \
-	Uranus.hpp \
-	Uranus.cpp \
-	Saturn.hpp \
-	Saturn.cpp \
-	Jupiter.hpp \
-	Jupiter.cpp \
-	Mars.hpp \
-	Mars.cpp \
-	Venus.hpp \
-	Venus.cpp \
+	Planets.hpp \
+	Planets.cpp \
 	SysInfo.hpp \
 	SysInfo.cpp \
-	Mercury.hpp \
-	Mercury.cpp \
 	Milkyway.hpp \
 	Milkyway.cpp \
 	FileLoader.hpp \

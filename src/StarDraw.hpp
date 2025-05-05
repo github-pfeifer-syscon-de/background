@@ -19,24 +19,18 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <KeyConfig.hpp>
 
 #include "Layout.hpp"
 #include "GeoPosition.hpp"
 #include "JulianDate.hpp"
 #include "SysInfo.hpp"
-#include "Mercury.hpp"
-#include "Venus.hpp"
-#include "Mars.hpp"
-#include "Jupiter.hpp"
-#include "Saturn.hpp"
-#include "Uranus.hpp"
-#include "Neptune.hpp"
 #include "Milkyway.hpp"
 
-class NetConnection;
 class HipparcosFormat;
 class ConstellationFormat;
 class BackgroundApp;
+class StarWin;
 
 class StarDraw
 : public Gtk::DrawingArea
@@ -44,24 +38,63 @@ class StarDraw
 public:
     StarDraw(BaseObjectType* cobject
             , const Glib::RefPtr<Gtk::Builder>& builder
-            , BackgroundApp& appl);
+            , StarWin* starWin);
     explicit StarDraw(const StarDraw& orig) = delete;
     virtual ~StarDraw() = default;
 
-    static constexpr auto TEXT_GRAY = 0.6;
-    static constexpr auto TEXT_GRAY_EMPHASIS = 0.9;
-    static constexpr auto SUN_MOON_RADIUS = 7.0;
-    static constexpr auto PLANET_READIUS = 3.0;
-
+    static constexpr auto TEXT_GRAY_LOW{0.3};
+    static constexpr auto TEXT_GRAY{0.6};
+    static constexpr auto TEXT_GRAY_MID{0.75};
+    static constexpr auto TEXT_GRAY_EMPHASIS{0.9};
+    static constexpr auto SUN_MOON_RADIUS{7.0};
+    static constexpr auto PLANET_RADIUS{3.0};
+    static constexpr auto START_COLOR_KEY{"startColor"};
+    static constexpr auto STOP_COLOR_KEY{"stopColor"};
+    static constexpr auto INFO_COLOR_KEY{"infoColor"};
+    static constexpr auto CALENDAR_COLOR_KEY{"calendarColor"};
+    static constexpr auto STAR_FONT_KEY{"starFont"};
+    static constexpr auto CALENDAR_FONT_KEY{"calendarFont"};
+    static constexpr auto INFO_FONT_KEY{"infoFont"};
+    static constexpr auto DEFAULT_STAR_FONT{"Sans 7"};
+    static constexpr auto DEFAULT_INFO_FONT{"Sans 12"};
+    static constexpr auto DEFAULT_CALENDAR_FONT{"Sans 12"};
+    static constexpr auto MAIN_GRP{"main"};
+    static constexpr auto UPDATE_INTERVAL_KEY{"updateIntervalMinutes"};
     void compute();
     void update(Glib::DateTime dateTime, GeoPosition& pos);
     GeoPosition getGeoPosition();
+    void setGeoPosition(const GeoPosition& geoPos);
+
+    std::shared_ptr<KeyConfig> getConfig();
+    Pango::FontDescription getStarFont();
+    void setStarFont(const Pango::FontDescription& descr);
+    Pango::FontDescription getCalendarFont();
+    void setCalendarFont(Pango::FontDescription& descr);
+    Pango::FontDescription getInfoFont();
+    void setInfoFont(const Pango::FontDescription& descr);
+    Gdk::RGBA getStartColor();
+    void setStartColor(const Gdk::RGBA& startColor);
+    Gdk::RGBA getStopColor();
+    void setStopColor(const Gdk::RGBA& stopColor);
+    Gdk::RGBA getInfoColor();
+    void setInfoColor(const Gdk::RGBA& infoColor);
+    void getInfoColor(const Cairo::RefPtr<Cairo::Context>& ctx);
+    Gdk::RGBA getCalendarColor();
+    void setCalendarColor(const Gdk::RGBA& calColor);
+    void getCalendarColor(const Cairo::RefPtr<Cairo::Context>& ctx);
+    int getIntervalMinutes();
+    void setIntervalMinutes(int intervalMinutes);
+    StarWin* getWindow();
+    void saveConfig();
+
+
+
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
-    void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx, double size);
+    void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx);
     void drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
-    void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, double size, const Layout& layout);
+    void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, const Layout& layout);
 
     void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
@@ -71,34 +104,26 @@ protected:
     void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
 
-    const std::array<std::shared_ptr<Planet>,7> planets =
-                        {std::make_shared<Mercury>(),
-                        std::make_shared<Venus>(),
-                        std::make_shared<Mars>(),
-                        std::make_shared<Jupiter>(),
-                        std::make_shared<Saturn>(),
-                        std::make_shared<Uranus>(),
-                        std::make_shared<Neptune>()};
-
     std::string get_config_name();
     void setupConfig();
 
     bool on_button_press_event(GdkEventButton* event) override;
     Gtk::Menu *build_popup();
     void on_menu_param();
-    void saveConfig();
+    void enlarge(Pango::FontDescription& starFont, double scale);
+    void brighten(Gdk::RGBA& calColor, double factor);
 private:
     std::shared_ptr<HipparcosFormat> m_starFormat;
     std::shared_ptr<ConstellationFormat> m_constlFormat;
     GeoPosition m_geoPos;
-
-    static constexpr auto GRP_MAIN{"globe"};
-    static constexpr auto LATITUDE{"lat"};
-    static constexpr auto LONGITUDE{"lon"};
+    std::shared_ptr<KeyConfig> m_config;
+    static constexpr auto GRP_GLGLOBE_MAIN{"globe"};
+    static constexpr auto LATITUDE_KEY{"lat"};
+    static constexpr auto LONGITUDE_KEY{"lon"};
     Cairo::RefPtr<Cairo::ImageSurface> m_image;
     std::shared_ptr<Milkyway> m_milkyway;
     bool m_updateBlocked{false};
     Glib::DateTime m_displayTimeUtc;
-    BackgroundApp& m_appl;
+    StarWin* m_starWin;
 };
 

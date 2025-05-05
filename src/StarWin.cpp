@@ -25,14 +25,15 @@
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , BackgroundApp& appl)
+        , BackgroundApp* backAppl)
 : Gtk::ApplicationWindow(cobject)
+, m_backAppl{backAppl}
 {
     set_title("Stars");
-    auto pix = Gdk::Pixbuf::create_from_resource(appl.get_resource_base_path() + "/background.png");
+    auto pix = Gdk::Pixbuf::create_from_resource(m_backAppl->get_resource_base_path() + "/background.png");
     set_icon(pix);
 
-    builder->get_widget_derived("drawingArea", m_drawingArea, appl);
+    builder->get_widget_derived("drawingArea", m_drawingArea, this);
     set_decorated(false);
     maximize();
     updateTimer();
@@ -43,6 +44,12 @@ StarWin::StarWin(BaseObjectType* cobject
     });
 }
 
+BackgroundApp*
+StarWin::getBackgroundAppl()
+{
+    return m_backAppl;
+}
+
 void
 StarWin::updateTimer()
 {
@@ -50,9 +57,14 @@ StarWin::updateTimer()
     // aim for next minute change,
     //  with some extra to prevent a underrun
     //  (overall there seems rather be a chance to overshoot especially with load)
+    uint32_t intervalMinutes = 1;
+    if (m_drawingArea) {
+        intervalMinutes = m_drawingArea->getIntervalMinutes();
+    }
+    auto delay = (intervalMinutes * 60000u + 50u) - static_cast<unsigned int>(dateTime.get_seconds() * 1000.0);
     m_timer = Glib::signal_timeout().connect(
             sigc::mem_fun(*this, &StarWin::timeoutHandler),
-            60050u - static_cast<unsigned int>(dateTime.get_seconds() * 1000.0));
+            delay);
 }
 
 bool

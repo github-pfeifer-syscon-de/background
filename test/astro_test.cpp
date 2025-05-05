@@ -25,7 +25,7 @@
 #include "GeoPosition.hpp"
 #include "RaDec.hpp"
 #include "Math.hpp"
-#include "Venus.hpp"
+#include "Planets.hpp"
 
 static constexpr auto expAz = 155.96;
 static constexpr auto expAlt = 69.0103;
@@ -92,8 +92,9 @@ test_planet()
     // see https://celestialprogramming.com/planets_with_keplers_equation.html
     Glib::DateTime date = Glib::DateTime::create_utc(2024, 5, 2, 10, 21, 0);
     JulianDate jd{date};
-    Venus venus;
-    auto raDec = venus.getRaDecPositon(jd);
+    Planets planets;
+    auto venus = planets.find("Venus");
+    auto raDec = venus->getRaDecPositon(jd);
     std::cout << "Venus ra " << raDec->getRaHours()
               << " dec " << raDec->getDecDegrees()
               << " dist " << raDec->getDistanceAU() << std::endl;

@@ -28,8 +28,7 @@ astro_test_LDADD =  \
 	../src/background-Layout.o \
 	../src/background-Math.o \
 	../src/background-Planet.o \
-	../src/background-Earth.o \
-	../src/background-Venus.o \
+	../src/background-Planets.o \
 	$(GENERICIMG_LIBS)
 
 check_PROGRAMS = astro_test
