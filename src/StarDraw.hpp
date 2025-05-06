@@ -32,6 +32,27 @@ class ConstellationFormat;
 class BackgroundApp;
 class StarWin;
 
+
+
+class Grid
+{
+public:
+    Grid(int cellWidth, int cellHeight)
+    : m_cellWidth{cellWidth}
+    , m_cellHeight{cellHeight}
+    {
+    }
+    void put(Glib::RefPtr<Pango::Layout>& layout
+           , const Cairo::RefPtr<Cairo::Context>& ctx
+           , int col, int row
+           , double halign = 0.0, int colSpan = 1
+           , double valign = 1.0, int rowSpan = 1);
+protected:
+private:
+    int m_cellWidth;
+    int m_cellHeight;
+};
+
 class StarDraw
 : public Gtk::DrawingArea
 {
@@ -104,13 +125,13 @@ protected:
     void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
 
-    std::string get_config_name();
+    std::string getGlobeConfigName();
     void setupConfig();
 
     bool on_button_press_event(GdkEventButton* event) override;
     Gtk::Menu *build_popup();
     void on_menu_param();
-    void enlarge(Pango::FontDescription& starFont, double scale);
+    void scale(Pango::FontDescription& starFont, double scale);
     void brighten(Gdk::RGBA& calColor, double factor);
 private:
     std::shared_ptr<HipparcosFormat> m_starFormat;
