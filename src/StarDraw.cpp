@@ -48,10 +48,6 @@ Grid::put(Glib::RefPtr<Pango::Layout>& layout
     int textWidth, textHeight;
     layout->get_pixel_size(textWidth, textHeight);
     int baseline = layout->get_baseline();
-    std::cout << " t " << layout->get_text()
-              << " w " << textWidth
-              << " h " << textHeight
-              << " b " << baseline << std::endl;
     int cellWidth = colSpan * m_cellWidth;
     int cellHeight = rowSpan * m_cellHeight;
     // unsure what the exact conversion from pango base line to pixel is 1024 seems to fit here
