@@ -63,19 +63,43 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
     m_starFont->set_font_name(m_starDraw->getStarFont().to_string());
 
     builder->get_widget("calendarColor", m_calendarColor);
-    m_calendarColor->set_rgba(m_starDraw->getCalendarColor());
+    m_calendarColor->set_rgba(m_starDraw->getCalendarModule()->getPrimaryColor());
 
     builder->get_widget("calendarFont", m_calendarFont);
-    m_calendarFont->set_font_name(m_starDraw->getCalendarFont().to_string());
+    m_calendarFont->set_font_name(m_starDraw->getCalendarModule()->getFont().to_string());
 
     builder->get_widget("infoColor", m_infoColor);
-    m_infoColor->set_rgba(m_starDraw->getInfoColor());
+    m_infoColor->set_rgba(m_starDraw->getInfoModule()->getPrimaryColor());
 
     builder->get_widget("infoFont", m_infoFont);
-    m_infoFont->set_font_name(m_starDraw->getInfoFont().to_string());
+    m_infoFont->set_font_name(m_starDraw->getInfoModule()->getFont().to_string());
 
+    builder->get_widget("clockColor", m_clockColor);
+    m_clockColor->set_rgba(m_starDraw->getClockModule()->getPrimaryColor());
+
+    builder->get_widget("infoPos", m_infoPos);
+    fillPos(m_infoPos);
+    m_infoPos->set_active_id(m_starDraw->getInfoModule()->getPosition());
+    builder->get_widget("calPos", m_calPos);
+    fillPos(m_calPos);
+    m_calPos->set_active_id(m_starDraw->getCalendarModule()->getPosition());
+    builder->get_widget("clockPos", m_clockPos);
+    fillPos(m_clockPos);
+    m_clockPos->set_active_id(m_starDraw->getClockModule()->getPosition());
+    builder->get_widget("clockRadius", m_clockRadius);
+    m_clockRadius->set_value(m_starDraw->getClockModule()->getRadius());
 	show_all_children();
 }
+
+void
+ParamDlg::fillPos(Gtk::ComboBoxText* pos)
+{
+    pos->append("", "None");
+    pos->append(POS_TOP, "Top");
+    pos->append(POS_MIDDLE, "Middle");
+    pos->append(POS_BOTTOM, "Bottom");
+}
+
 
 void
 ParamDlg::on_time_changed()
@@ -103,12 +127,17 @@ ParamDlg::on_response(int response_id)
         m_starDraw->setStopColor(m_stopColor->get_rgba());
         Pango::FontDescription starFont{m_starFont->get_font_name()};
         m_starDraw->setStarFont(starFont);
-        m_starDraw->setCalendarColor(m_calendarColor->get_rgba());
+        m_starDraw->getCalendarModule()->setPrimaryColor(m_calendarColor->get_rgba());
         Pango::FontDescription calFont{m_calendarFont->get_font_name()};
-        m_starDraw->setCalendarFont(calFont);
-        m_starDraw->setInfoColor(m_infoColor->get_rgba());
+        m_starDraw->getCalendarModule()->setFont(calFont);
+        m_starDraw->getInfoModule()->setPrimaryColor(m_infoColor->get_rgba());
         Pango::FontDescription infoFont{m_infoFont->get_font_name()};
-        m_starDraw->setInfoFont(infoFont);
+        m_starDraw->getInfoModule()->setFont(infoFont);
+        m_starDraw->getClockModule()->setPrimaryColor(m_clockColor->get_rgba());
+        m_starDraw->getInfoModule()->setPosition(m_infoPos->get_active_id());
+        m_starDraw->getClockModule()->setPosition(m_clockPos->get_active_id());
+        m_starDraw->getCalendarModule()->setPosition(m_calPos->get_active_id());
+        m_starDraw->getClockModule()->setRadius(m_clockRadius->get_value());
     }
      Gtk::Dialog::on_response(response_id);
 }

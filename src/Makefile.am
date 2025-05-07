@@ -45,6 +45,8 @@ background_SOURCES = resources.c \
 	StarWin.cpp \
 	StarDraw.hpp \
 	StarDraw.cpp \
+	Module.hpp \
+	Module.cpp \
 	Math.hpp \
 	Math.cpp \
 	RaDec.hpp \

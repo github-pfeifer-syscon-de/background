@@ -26,6 +26,7 @@
 #include "JulianDate.hpp"
 #include "SysInfo.hpp"
 #include "Milkyway.hpp"
+#include "Module.hpp"
 
 class HipparcosFormat;
 class ConstellationFormat;
@@ -33,24 +34,9 @@ class BackgroundApp;
 class StarWin;
 
 
-
-class Grid
-{
-public:
-    Grid(int cellWidth, int cellHeight)
-    : m_cellWidth{cellWidth}
-    , m_cellHeight{cellHeight}
-    {
-    }
-    void put(Glib::RefPtr<Pango::Layout>& layout
-           , const Cairo::RefPtr<Cairo::Context>& ctx
-           , int col, int row
-           , double halign = 0.0, int colSpan = 1
-           , double valign = 1.0, int rowSpan = 1);
-protected:
-private:
-    int m_cellWidth;
-    int m_cellHeight;
+struct Pos {
+    double x;
+    double y;
 };
 
 class StarDraw
@@ -71,14 +57,8 @@ public:
     static constexpr auto PLANET_RADIUS{3.0};
     static constexpr auto START_COLOR_KEY{"startColor"};
     static constexpr auto STOP_COLOR_KEY{"stopColor"};
-    static constexpr auto INFO_COLOR_KEY{"infoColor"};
-    static constexpr auto CALENDAR_COLOR_KEY{"calendarColor"};
     static constexpr auto STAR_FONT_KEY{"starFont"};
-    static constexpr auto CALENDAR_FONT_KEY{"calendarFont"};
-    static constexpr auto INFO_FONT_KEY{"infoFont"};
     static constexpr auto DEFAULT_STAR_FONT{"Sans 7"};
-    static constexpr auto DEFAULT_INFO_FONT{"Sans 12"};
-    static constexpr auto DEFAULT_CALENDAR_FONT{"Sans 12"};
     static constexpr auto MAIN_GRP{"main"};
     static constexpr auto UPDATE_INTERVAL_KEY{"updateIntervalMinutes"};
     void compute();
@@ -89,33 +69,32 @@ public:
     std::shared_ptr<KeyConfig> getConfig();
     Pango::FontDescription getStarFont();
     void setStarFont(const Pango::FontDescription& descr);
-    Pango::FontDescription getCalendarFont();
-    void setCalendarFont(Pango::FontDescription& descr);
-    Pango::FontDescription getInfoFont();
-    void setInfoFont(const Pango::FontDescription& descr);
     Gdk::RGBA getStartColor();
     void setStartColor(const Gdk::RGBA& startColor);
     Gdk::RGBA getStopColor();
     void setStopColor(const Gdk::RGBA& stopColor);
-    Gdk::RGBA getInfoColor();
-    void setInfoColor(const Gdk::RGBA& infoColor);
-    void getInfoColor(const Cairo::RefPtr<Cairo::Context>& ctx);
-    Gdk::RGBA getCalendarColor();
-    void setCalendarColor(const Gdk::RGBA& calColor);
-    void getCalendarColor(const Cairo::RefPtr<Cairo::Context>& ctx);
     int getIntervalMinutes();
     void setIntervalMinutes(int intervalMinutes);
     StarWin* getWindow();
     void saveConfig();
+    void scale(Pango::FontDescription& starFont, double scale);
+    void brighten(Gdk::RGBA& calColor, double factor);
 
-
+    std::shared_ptr<InfoModule> getInfoModule()
+    {
+        return m_infoModule;
+    }
+    std::shared_ptr<ClockModule> getClockModule()
+    {
+        return m_clockModule;
+    }
+    std::shared_ptr<CalendarModule> getCalendarModule()
+    {
+        return m_calendarModule;
+    }
 
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
-
-    void drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx);
-    void drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
-    void drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, const Layout& layout);
 
     void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
@@ -131,8 +110,12 @@ protected:
     bool on_button_press_event(GdkEventButton* event) override;
     Gtk::Menu *build_popup();
     void on_menu_param();
-    void scale(Pango::FontDescription& starFont, double scale);
-    void brighten(Gdk::RGBA& calColor, double factor);
+
+    std::vector<PtrModule> findModules(const char* pos);
+    void drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+    void drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+    void drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+
 private:
     std::shared_ptr<HipparcosFormat> m_starFormat;
     std::shared_ptr<ConstellationFormat> m_constlFormat;
@@ -146,5 +129,8 @@ private:
     bool m_updateBlocked{false};
     Glib::DateTime m_displayTimeUtc;
     StarWin* m_starWin;
+    std::shared_ptr<InfoModule> m_infoModule;
+    std::shared_ptr<ClockModule> m_clockModule;
+    std::shared_ptr<CalendarModule> m_calendarModule;
 };
 

@@ -24,7 +24,6 @@
 #include "ConstellationFormat.hpp"
 #include "Moon.hpp"
 #include "Sun.hpp"
-#include "SysInfo.hpp"
 #include "Math.hpp"
 #include "BackgroundApp.hpp"
 #include "FileLoader.hpp"
@@ -32,29 +31,8 @@
 #include "StarWin.hpp"
 #include "config.h"
 #include "Planets.hpp"
+#include "Module.hpp"
 
-
-void
-Grid::put(Glib::RefPtr<Pango::Layout>& layout
-           , const Cairo::RefPtr<Cairo::Context>& ctx
-           , int col, int row
-           , double halign, int colSpan
-           , double valign, int rowSpan)
-{
-    // the pango layout alignment did not work as expected with with
-    // to make text look nicely put it on exact pixel location
-    int x = col * m_cellWidth;
-    int y = row * m_cellHeight;
-    int textWidth, textHeight;
-    layout->get_pixel_size(textWidth, textHeight);
-    int baseline = layout->get_baseline();
-    int cellWidth = colSpan * m_cellWidth;
-    int cellHeight = rowSpan * m_cellHeight;
-    // unsure what the exact conversion from pango base line to pixel is 1024 seems to fit here
-    ctx->move_to(static_cast<int>(x + (cellWidth - textWidth) * halign)
-               , static_cast<int>(y + (cellHeight - baseline / 1024) * valign));
-    layout->show_in_cairo_context(ctx);
-}
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -72,6 +50,9 @@ StarDraw::StarDraw(BaseObjectType* cobject
     m_milkyway = std::make_shared<Milkyway>(fileLoader);
 	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
     setupConfig();
+    m_infoModule = std::make_shared<InfoModule>(m_config);
+    m_clockModule = std::make_shared<ClockModule>(m_config);
+    m_calendarModule = std::make_shared<CalendarModule>(m_config);
 }
 #pragma GCC diagnostic pop
 
@@ -117,121 +98,6 @@ StarDraw::getGlobeConfigName()
     //std::cout << "using config " << fullPath << std::endl;
     return fullPath;
 }
-
-void
-StarDraw::drawInfo(const Cairo::RefPtr<Cairo::Context>& ctx)
-{
-    getInfoColor(ctx);
-    auto infoFont = getInfoFont();
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(infoFont);
-    SysInfo sysInfo;
-    int width, height{0};
-    std::string text;
-    text.reserve(512);
-    for (auto info : sysInfo.allInfos()) {
-        text += info + "\n";
-        if (height == 0) {
-            pangoLayout->set_text(info);
-            pangoLayout->get_pixel_size(width, height);
-        }
-    }
-    pangoLayout->set_text(text);
-    ctx->move_to(20.0, height * 2);
-    pangoLayout->show_in_cairo_context(ctx);
-}
-
-
-// draw line from center outwards
-static void
-drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer) {
-	double angleRad = 2.0 * M_PI * (double)value / (double)full;
-	double xv = std::sin(angleRad);
-	double yv = -std::cos(angleRad);
-    ctx->move_to(inner * xv, inner * yv);
-    ctx->line_to(outer * xv, outer * yv);
-    ctx->stroke();
-}
-
-void
-StarDraw::drawClock(const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
-{
-    ctx->begin_new_path();  // as we get a strange stoke otherwise
-    ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
-    ctx->set_line_width(2.0);
-    ctx->arc(0.0, 0.0, radius, 0, 2.0 * M_PI);
-    ctx->stroke();
-    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-    drawRadialLine(ctx, dateTime.get_minute(), 60, 0.0, radius * 0.8);
-    int hourM = (dateTime.get_hour() % 12) * 60 + dateTime.get_minute();
-    drawRadialLine(ctx, hourM, 12 * 60, 0.0, radius * 0.6);
-    ctx->set_line_width(1.0);
-	const double inner15 = 0.9 * radius ;
-	const double inner5 = 0.95 * radius;
-	const double inner1 = 0.98 * radius;
-	for (int i = 0; i < 60; ++i) {
-	    double inner;
-	    if (i % 15 == 0) {
-            inner = inner15;
-	    }
-	    else if (i % 5 == 0) {
-            inner = inner5;
-	    }
-	    else {
-            inner = inner1;
-	    }
-	    drawRadialLine(ctx, i, 60, inner, radius);
-	}
-}
-
-void
-StarDraw::drawCalendar(const Cairo::RefPtr<Cairo::Context>& ctx, const Layout& layout)
-{
-    // since there seems no way to diffrentiate the locale
-    //  dependent we use the Glib::DateTime default (monday)
-    getCalendarColor(ctx);
-    auto calFont = getCalendarFont();
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(calFont);
-    scale(calFont, 0.6);
-    auto smallLayout = Pango::Layout::create(ctx);
-    smallLayout->set_font_description(calFont);
-    int width, height;
-    pangoLayout->set_text("M"); // use em as reference
-    pangoLayout->get_pixel_size(width, height);
-    ctx->translate(30.0, layout.getHeight() - 8.5 * height);
-    Grid grid{static_cast<int>(width * 2.5), height};
-    Glib::DateTime dateToday = Glib::DateTime::create_now_local();
-    pangoLayout->set_text(dateToday.format("%B"));  // month name
-    grid.put(pangoLayout, ctx, 1, 0, 0.5, 7);
-    Glib::DateTime dateNames = Glib::DateTime::create_utc(2024, 1, 1, 0, 0, 0); // start with a monday
-    for (auto wd = 1; wd <= 7; ++wd) {
-        pangoLayout->set_text(dateNames.format("%a"));  // weekday abbr.
-        grid.put(pangoLayout, ctx, wd, 1, 1.0);
-        dateNames = dateNames.add_days(1);
-    }
-    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-    dateTime = dateTime.add_days(-(dateTime.get_day_of_month() - 1)); // beginning of month
-    for (int row = 2; row < 8; ++row) {
-        smallLayout->set_text(dateTime.format("%V"));
-        grid.put(smallLayout, ctx, 0, row, 1.0);
-        int wd = dateTime.get_day_of_week();
-        for (int w = wd; w <= 7; ++w) {
-            Gdk::RGBA calColor = getCalendarColor();
-            if (dateTime.get_day_of_month() == dateToday.get_day_of_month()) {
-                brighten(calColor, 1.3);
-            }
-            ctx->set_source_rgb(calColor.get_red(), calColor.get_green(), calColor.get_blue());
-            pangoLayout->set_text(dateTime.format("%e"));
-            grid.put(pangoLayout, ctx, w, row, 1.0);
-            dateTime = dateTime.add_days(1);
-            if (dateTime.get_month() != dateToday.get_month()) {
-                return;      // if month ended stop
-            }
-        }
-    }
-}
-
 
 void
 StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
@@ -530,27 +396,76 @@ StarDraw::update(Glib::DateTime now, GeoPosition& pos)
     ctx->save();
     drawSky(ctx, jd, pos, layout);
     ctx->restore();
-    ctx->save();
-    drawInfo(ctx);
-    ctx->restore();
-    //double cradius = 160.0;
-    //ctx->save();  as we have this elsewhere disable for now
-    //ctx->translate(20.0 + cradius, 160.0 + cradius);
-    //drawClock(ctx, cradius);
-    //ctx->restore();
-    //ctx->save();
-    //ctx->translate(20.0, 200.0); //  + cradius, layout.getHeight() / 2.0
-    //drawNetInfo(ctx, cradius);
-    //ctx->restore();
-    ctx->save();
-    drawCalendar(ctx, layout);
-    ctx->restore();
-    //auto end = g_get_monotonic_time();
-    //std::cout << "time to draw " << (end - start) << "us" << std::endl;
-    // this is much faster than draw to screen directly, and is slightly faster than java
-    // mark the image dirty so Cairo clears its caches.
-    //m_image->mark_dirty();
+
+    drawTop(ctx, layout, findModules(ParamDlg::POS_TOP));
+    drawMiddle(ctx, layout, findModules(ParamDlg::POS_MIDDLE));
+    drawBottom(ctx, layout, findModules(ParamDlg::POS_BOTTOM));
+
     queue_draw();
+}
+
+std::vector<PtrModule>
+StarDraw::findModules(const char* pos)
+{
+    std::vector<PtrModule> mods;
+    mods.reserve(4);
+    if (m_infoModule->getPosition() == pos) {
+        mods.push_back(m_infoModule);
+    }
+    if (m_clockModule->getPosition() == pos) {
+        mods.push_back(m_clockModule);
+    }
+    if (m_calendarModule->getPosition() == pos) {
+        mods.push_back(m_calendarModule);
+    }
+    return mods;
+}
+
+void
+StarDraw::drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
+{
+    Pos pos{.x{20.0}, .y{20.0}};
+    for (auto& mod : modules) {
+        ctx->save();
+        ctx->translate(pos.x, pos.y);
+        mod->display(ctx, this);
+        ctx->restore();
+        pos.y += mod->getHeight(ctx, this);
+    }
+}
+
+void
+StarDraw::drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
+{
+    int sumHeight{0};
+    for (auto& mod : modules) {
+        sumHeight += mod->getHeight(ctx, this);
+    }
+    Pos pos{.x{20.0}, .y{(layout.getHeight() - sumHeight) / 2.0}};
+    for (auto& mod : modules) {
+        ctx->save();
+        ctx->translate(pos.x, pos.y);
+        mod->display(ctx, this);
+        ctx->restore();
+        pos.y += mod->getHeight(ctx, this);
+    }
+}
+
+void
+StarDraw::drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
+{
+    int sumHeight{0};
+    for (auto& mod : modules) {
+        sumHeight += mod->getHeight(ctx, this);
+    }
+    Pos pos{.x{20.0}, .y{layout.getHeight() - sumHeight - 20.0}};
+    for (auto& mod : modules) {
+        ctx->save();
+        ctx->translate(pos.x, pos.y);
+        mod->display(ctx, this);
+        ctx->restore();
+        pos.y += mod->getHeight(ctx, this);
+    }
 }
 
 bool
@@ -617,7 +532,8 @@ StarDraw::scale(Pango::FontDescription& starFont, double scale)
     starFont.set_size(static_cast<int>(starFont.get_size() * scale));
 }
 
-void StarDraw::brighten(Gdk::RGBA& calColor, double factor)
+void
+StarDraw::brighten(Gdk::RGBA& calColor, double factor)
 {
     calColor.set_red(calColor.get_red() * factor);
     calColor.set_green(calColor.get_green() * factor);
@@ -694,30 +610,6 @@ StarDraw::setStarFont(const Pango::FontDescription& descr)
     m_config->setFont(MAIN_GRP, STAR_FONT_KEY, descr);
 }
 
-Pango::FontDescription
-StarDraw::getCalendarFont()
-{
-    return m_config->getFont(MAIN_GRP, CALENDAR_FONT_KEY, DEFAULT_CALENDAR_FONT);
-}
-
-void
-StarDraw::setCalendarFont(Pango::FontDescription& descr)
-{
-    m_config->setFont(MAIN_GRP, CALENDAR_FONT_KEY, descr);
-}
-
-Pango::FontDescription
-StarDraw::getInfoFont()
-{
-    return m_config->getFont(MAIN_GRP, INFO_FONT_KEY, DEFAULT_INFO_FONT);
-}
-
-void
-StarDraw::setInfoFont(const Pango::FontDescription& descr)
-{
-    m_config->setFont(MAIN_GRP, INFO_FONT_KEY, descr);
-}
-
 Gdk::RGBA
 StarDraw::getStartColor()
 {
@@ -745,43 +637,3 @@ StarDraw::setStopColor(const Gdk::RGBA& stopColor)
     m_config->setColor(MAIN_GRP, STOP_COLOR_KEY, stopColor);
 }
 
-Gdk::RGBA
-StarDraw::getInfoColor()
-{
-    Gdk::RGBA dfltInfo{"rgb(50%,50%,50%)"};
-    return m_config->getColor(MAIN_GRP, INFO_COLOR_KEY, dfltInfo);
-}
-
-void
-StarDraw::setInfoColor(const Gdk::RGBA& infoColor)
-{
-    m_config->setColor(MAIN_GRP, INFO_COLOR_KEY, infoColor);
-}
-
-void
-StarDraw::getInfoColor(const Cairo::RefPtr<Cairo::Context>& ctx)
-{
-    auto infoColor = getInfoColor();
-    ctx->set_source_rgb(infoColor.get_red(), infoColor.get_green(), infoColor.get_blue());
-}
-
-Gdk::RGBA
-StarDraw::getCalendarColor()
-{
-    Gdk::RGBA dfltCalendar{"rgb(50%,50%,50%)"};
-    return m_config->getColor(MAIN_GRP, CALENDAR_COLOR_KEY, dfltCalendar);
-}
-
-void
-StarDraw::setCalendarColor(const Gdk::RGBA& calColor)
-{
-    m_config->setColor(MAIN_GRP, CALENDAR_COLOR_KEY, calColor);
-}
-
-void
-StarDraw::getCalendarColor(const Cairo::RefPtr<Cairo::Context>& ctx)
-{
-    auto infoColor = getCalendarColor();
-    ctx->set_source_rgb(infoColor.get_red(), infoColor.get_green(), infoColor.get_blue());
-
-}
