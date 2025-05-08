@@ -33,14 +33,10 @@ public:
 
     GeoPosition getGeoPosition() const;
     static void show(StarDraw* starDraw);
-    static constexpr auto POS_TOP{"top"};
-    static constexpr auto POS_MIDDLE{"mid"};
-    static constexpr auto POS_BOTTOM{"bot"};
 
 protected:
     void on_time_changed();
     void on_response(int response_id) override;
-    void fillPos(Gtk::ComboBoxText* pos);
 
 private:
     Gtk::Calendar* m_calendar;
@@ -53,13 +49,4 @@ private:
     Gtk::ColorButton* m_startColor;
     Gtk::ColorButton* m_stopColor;
     Gtk::FontButton* m_starFont;
-    Gtk::ColorButton* m_calendarColor;
-    Gtk::FontButton* m_calendarFont;
-    Gtk::ColorButton* m_infoColor;
-    Gtk::FontButton* m_infoFont;
-    Gtk::ColorButton* m_clockColor;
-    Gtk::ComboBoxText* m_infoPos;
-    Gtk::ComboBoxText* m_calPos;
-    Gtk::ComboBoxText* m_clockPos;
-    Gtk::Scale* m_clockRadius;
 };

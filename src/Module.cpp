@@ -91,6 +91,15 @@ Module::setFont(Pango::FontDescription& descr)
 }
 
 
+void
+Module::fillPos(Gtk::ComboBoxText* pos)
+{
+    pos->append("", "None");
+    pos->append(POS_TOP, "Top");
+    pos->append(POS_MIDDLE, "Middle");
+    pos->append(POS_BOTTOM, "Bottom");
+}
+
 int
 CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
@@ -148,8 +157,28 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     }
 }
 
+void
+CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
+{
+    builder->get_widget("calendarColor", m_calendarColor);
+    m_calendarColor->set_rgba(getPrimaryColor());
 
+    builder->get_widget("calendarFont", m_calendarFont);
+    m_calendarFont->set_font_name(getFont().to_string());
 
+    builder->get_widget("calPos", m_calPos);
+    fillPos(m_calPos);
+    m_calPos->set_active_id(getPosition());
+}
+
+void
+CalendarModule::saveParam()
+{
+    setPrimaryColor(m_calendarColor->get_rgba());
+    Pango::FontDescription calFont{m_calendarFont->get_font_name()};
+    setFont(calFont);
+    setPosition(m_calPos->get_active_id());
+}
 
 int
 InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
@@ -181,18 +210,51 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
     pangoLayout->show_in_cairo_context(ctx);
 }
 
+void
+InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
+{
+    builder->get_widget("infoColor", m_infoColor);
+    m_infoColor->set_rgba(getPrimaryColor());
 
+    builder->get_widget("infoFont", m_infoFont);
+    m_infoFont->set_font_name(getFont().to_string());
+
+    builder->get_widget("infoPos", m_infoPos);
+    fillPos(m_infoPos);
+    m_infoPos->set_active_id(getPosition());
+}
+
+void
+InfoModule::saveParam()
+{
+    setPrimaryColor(m_infoColor->get_rgba());
+    Pango::FontDescription infoFont{m_infoFont->get_font_name()};
+    setFont(infoFont);
+    setPosition(m_infoPos->get_active_id());
+}
 
 int
 ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
-    return static_cast<int>(m_radius * 2.0);
+    if (getDisplay() == DISPLAY_ANALOG) {
+        return static_cast<int>(m_radius * 2.0);
+    }
+    else {
+        auto clockFont = getFont();
+        auto pangoLayout = Pango::Layout::create(ctx);
+        pangoLayout->set_font_description(clockFont);
+        pangoLayout->set_text("M"); // use em as reference
+        int width, height;
+        pangoLayout->get_pixel_size(width, height);
+        return static_cast<int>(height * 1.25);
+    }
 }
 
 
 // draw line from center outwards
 void
-ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer) {
+ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer)
+{
 	double angleRad = 2.0 * M_PI * static_cast<double>(value) / static_cast<double>(full);
 	double xv = std::sin(angleRad);
 	double yv = -std::cos(angleRad);
@@ -202,11 +264,10 @@ ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value,
 }
 
 void
-ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
     ctx->translate(m_radius, m_radius);
     ctx->begin_new_path();  // as we get a strange stoke otherwise
-    getPrimaryColor(ctx);
     ctx->set_line_width(2.0);
     ctx->arc(0.0, 0.0, m_radius, 0, 2.0 * M_PI);
     ctx->stroke();
@@ -231,4 +292,96 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 	    }
 	    drawRadialLine(ctx, i, 60, inner, m_radius);
 	}
+}
+
+void
+ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+{
+    auto fmt = getFormat();
+    if (fmt.empty()) {
+        fmt = "%X";
+    }
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    auto clockFont = getFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(clockFont);
+    pangoLayout->set_text(dateTime.format(fmt));
+    ctx->move_to(0.0, 0.0);
+    pangoLayout->show_in_cairo_context(ctx);
+}
+
+
+void
+ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+{
+    getPrimaryColor(ctx);
+    if (getDisplay() == DISPLAY_ANALOG) {
+        displayAnalog(ctx, starDraw);
+    }
+    else {
+        displayDigital(ctx, starDraw);
+    }
+
+}
+
+void
+ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
+{
+    builder->get_widget("clockColor", m_clockColor);
+    m_clockColor->set_rgba(getPrimaryColor());
+
+    builder->get_widget("clockRadius", m_clockRadius);
+    m_clockRadius->set_value(getRadius());
+
+    builder->get_widget("clockFormat", m_clockFormat);
+    m_clockFormat->set_text(getFormat());
+
+    builder->get_widget("clockFont", m_clockFont);
+    m_clockFont->set_font_name(getFont().to_string());
+
+    builder->get_widget("radioAnalog", m_displayAnalog);
+    builder->get_widget("radioDigital", m_displayDigital);
+    //Gtk::RadioButtonGroup group = m_displayDigital->get_group();
+    if (getDisplay() == DISPLAY_ANALOG) {
+        m_displayAnalog->set_active(true);
+    }
+    else {
+        m_displayDigital->set_active(true);
+    }
+    m_displayAnalog->signal_clicked().connect(
+            sigc::mem_fun(*this, &ClockModule::update));
+    m_displayDigital->signal_clicked().connect(
+            sigc::mem_fun(*this, &ClockModule::update));
+    update();
+
+    builder->get_widget("clockPos", m_clockPos);
+    fillPos(m_clockPos);
+    m_clockPos->set_active_id(getPosition());
+}
+
+void
+ClockModule::update()
+{
+    if (m_displayAnalog->get_active()) {
+        m_clockFormat->set_sensitive(false);
+        m_clockFont->set_sensitive(false);
+        m_clockRadius->set_sensitive(true);
+    }
+    else {
+        m_clockFormat->set_sensitive(true);
+        m_clockFont->set_sensitive(true);
+        m_clockRadius->set_sensitive(false);
+    }
+}
+
+void
+ClockModule::saveParam()
+{
+    setPrimaryColor(m_clockColor->get_rgba());
+    setPosition(m_clockPos->get_active_id());
+    setRadius(m_clockRadius->get_value());
+    Pango::FontDescription clockFont{m_clockFont->get_font_name()};
+    setFont(clockFont);
+    setDisplay(m_displayAnalog->get_active() ? DISPLAY_ANALOG : DISPLAY_DIGITAL);
+    setFormat(m_clockFormat->get_text());
 }

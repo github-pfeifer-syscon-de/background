@@ -54,6 +54,8 @@ public:
 
     virtual int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
     virtual void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
+    virtual void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) = 0;
+    virtual void saveParam() = 0;
     std::string getName()
     {
         return m_name;
@@ -70,9 +72,13 @@ public:
     static constexpr auto POS_KEY{"Pos"};
     static constexpr auto FONT_KEY{"Font"};
     static constexpr auto DEFAULT_FONT{"Sans 12"};
-
+    static constexpr auto POS_TOP{"top"};
+    static constexpr auto POS_MIDDLE{"mid"};
+    static constexpr auto POS_BOTTOM{"bot"};
 
 protected:
+    void fillPos(Gtk::ComboBoxText* pos);
+
     const std::string m_name;
     Glib::ustring m_position;
     Gdk::RGBA m_primaryColor;
@@ -95,10 +101,15 @@ public:
 
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
+    void saveParam() override;
+
 private:
     int m_width;
     int m_height{0};
-
+    Gtk::ColorButton* m_calendarColor;
+    Gtk::FontButton* m_calendarFont;
+    Gtk::ComboBoxText* m_calPos;
 };
 
 class InfoModule
@@ -114,6 +125,12 @@ public:
 
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
+    void saveParam() override;
+private:
+    Gtk::ColorButton* m_infoColor;
+    Gtk::FontButton* m_infoFont;
+    Gtk::ComboBoxText* m_infoPos;
 
 };
 
@@ -132,7 +149,13 @@ public:
 
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
+    void saveParam() override;
     static constexpr auto RADIUS{"radius"};
+    static constexpr auto FORMAT{"format"};
+    static constexpr auto DISPLAY{"display"};
+    static constexpr auto DISPLAY_ANALOG{"a"};
+    static constexpr auto DISPLAY_DIGITAL{"d"};
     double getRadius()
     {
         return m_config->getDouble(getName().c_str(), RADIUS, 160.0);
@@ -142,7 +165,34 @@ public:
         m_radius = radius;
         m_config->setDouble(getName().c_str(), RADIUS, m_radius);
     }
+    Glib::ustring getFormat()
+    {
+        return m_config->getString(getName().c_str(), FORMAT, "%X");
+    }
+    void setFormat(const Glib::ustring& format)
+    {
+        return m_config->setString(getName().c_str(), FORMAT, format);
+    }
+    Glib::ustring getDisplay()
+    {
+        return m_config->getString(getName().c_str(), DISPLAY, DISPLAY_ANALOG);
+    }
+    void setDisplay(const Glib::ustring& display)
+    {
+        return m_config->setString(getName().c_str(), DISPLAY, display);
+    }
 protected:
+    void update();
     void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer);
+    void displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
+    void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
+
     double m_radius;
+    Gtk::ColorButton* m_clockColor;
+    Gtk::Scale* m_clockRadius;
+    Gtk::Entry* m_clockFormat;
+    Gtk::RadioButton* m_displayAnalog;
+    Gtk::RadioButton* m_displayDigital;
+    Gtk::FontButton* m_clockFont;
+    Gtk::ComboBoxText* m_clockPos;
 };

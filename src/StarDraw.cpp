@@ -397,9 +397,9 @@ StarDraw::update(Glib::DateTime now, GeoPosition& pos)
     drawSky(ctx, jd, pos, layout);
     ctx->restore();
 
-    drawTop(ctx, layout, findModules(ParamDlg::POS_TOP));
-    drawMiddle(ctx, layout, findModules(ParamDlg::POS_MIDDLE));
-    drawBottom(ctx, layout, findModules(ParamDlg::POS_BOTTOM));
+    drawTop(ctx, layout, findModules(Module::POS_TOP));
+    drawMiddle(ctx, layout, findModules(Module::POS_MIDDLE));
+    drawBottom(ctx, layout, findModules(Module::POS_BOTTOM));
 
     queue_draw();
 }
