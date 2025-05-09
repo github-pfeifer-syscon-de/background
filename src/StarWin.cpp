@@ -22,6 +22,7 @@
 #include "StarWin.hpp"
 #include "StarDraw.hpp"
 #include "BackgroundApp.hpp"
+#include "StarMountOperation.hpp"
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
@@ -164,7 +165,8 @@ StarWin::on_eject(Glib::RefPtr<Gio::AsyncResult>& result)
 {
     try {
         if (m_activeVolume->eject_finish(result)) {
-            showMessage(Glib::ustring::sprintf("Eject succeeded %s", m_activeVolume->get_name()));
+            //showMessage(Glib::ustring::sprintf("Eject succeeded %s", m_activeVolume->get_name()));
+            // no news, good news
         }
         else {
             showMessage(Glib::ustring::sprintf("Eject %s failed", m_activeVolume->get_name()), Gtk::MessageType::MESSAGE_ERROR);
@@ -251,10 +253,10 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
         pMenuPopup->append(*cancel);
     }
 
-    auto mounts = m_volumeMonitor->get_mounts();
-    for (auto mount : mounts) {
-        std::cout << "Mount " << mount->get_name() << std::endl;
-    }
+    //auto mounts = m_volumeMonitor->get_mounts();
+    //for (auto mount : mounts) {
+    //    std::cout << "Mount " << mount->get_name() << std::endl;
+    //}
 }
 
 void
@@ -263,26 +265,5 @@ StarWin::showMessage(const Glib::ustring& msg, Gtk::MessageType msgType)
     Gtk::MessageDialog messagedialog(*this, msg, false, msgType);
     messagedialog.run();
     messagedialog.hide();
-}
-
-StarMountOp::StarMountOp(StarWin* starWin)
-: Gio::MountOperation()
-, m_starWin{starWin}
-{
-}
-
-Glib::RefPtr<StarMountOp>
-StarMountOp::create(StarWin* starWin)
-{
-    return Glib::RefPtr<StarMountOp>(new StarMountOp(starWin));
-}
-
-void
-StarMountOp::on_ask_password(const Glib::ustring& message
-        , const Glib::ustring &default_user
-        , const Glib::ustring &default_domain
-        , Gio::AskPasswordFlags	flags)
-{
-    std::cout << "StarMountOp::on_ask_password user " << default_user << std::endl;
 }
 

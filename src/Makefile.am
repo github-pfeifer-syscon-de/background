@@ -43,6 +43,8 @@ background_SOURCES = resources.c \
 	BackgroundApp.cpp \
 	StarWin.hpp \
 	StarWin.cpp \
+	StarMountOperation.hpp \
+	StarMountOperation.cpp \
 	StarDraw.hpp \
 	StarDraw.cpp \
 	Module.hpp \

@@ -34,7 +34,7 @@ Polyline::add(const std::shared_ptr<RaDec>& raDec)
 const std::list<std::shared_ptr<RaDec>>
 Polyline::getPoints()
 {
-    return m_points;      // c++ equivalent Collections.unmodifiableList ?
+    return m_points;
 }
 
 int

@@ -193,6 +193,8 @@ protected:
     void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer);
     void displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
     void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center);
+    Glib::RefPtr<Pango::Layout> createLayout(const Cairo::RefPtr<Cairo::Context>& ctx);
+
     Glib::ustring getEffectiveFormat();
 
     double m_radius;

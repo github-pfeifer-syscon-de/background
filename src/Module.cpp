@@ -234,6 +234,19 @@ InfoModule::saveParam()
     setPosition(m_infoPos->get_active_id());
 }
 
+Glib::RefPtr<Pango::Layout>
+ClockModule::createLayout(const Cairo::RefPtr<Cairo::Context>& ctx)
+{
+    auto fmt = getEffectiveFormat();
+    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
+    auto clockFont = getFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_line_spacing(1.2f);    // move lines out of center
+    pangoLayout->set_font_description(clockFont);
+    pangoLayout->set_text(dateTime.format(fmt));
+    return pangoLayout;
+}
+
 int
 ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
@@ -242,12 +255,7 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
         analogHeight = static_cast<int>(m_radius * 2.0);
     }
     if (isDisplayDigital()) {
-        auto fmt = getEffectiveFormat();
-        Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-        auto clockFont = getFont();
-        auto pangoLayout = Pango::Layout::create(ctx);
-        pangoLayout->set_font_description(clockFont);
-        pangoLayout->set_text(dateTime.format(fmt));
+        auto pangoLayout = createLayout(ctx);
         int width;
         pangoLayout->get_pixel_size(width, digitalHeight);
     }
@@ -270,6 +278,7 @@ ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value,
 void
 ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
+    ctx->save();
     ctx->translate(m_radius, m_radius);
     ctx->begin_new_path();  // as we get a strange stoke otherwise
     ctx->set_line_width(2.0);
@@ -296,6 +305,7 @@ ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* s
 	    }
 	    drawRadialLine(ctx, i, 60, inner, m_radius);
 	}
+    ctx->restore();
 }
 
 Glib::ustring
@@ -313,12 +323,7 @@ void
 ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center)
 {
     ctx->save();
-    auto fmt = getEffectiveFormat();
-    Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-    auto clockFont = getFont();
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(clockFont);
-    pangoLayout->set_text(dateTime.format(fmt));
+    auto pangoLayout = createLayout(ctx);
     if (!center) {
         ctx->move_to(0.0, 0.0);
     }
@@ -327,6 +332,8 @@ ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* 
         pangoLayout->get_pixel_size(width, height);
         ctx->move_to(m_radius - width / 2.0, m_radius - height / 2.0);
     }
+    auto color = getPrimaryColor();
+    ctx->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), 0.6);
     pangoLayout->show_in_cairo_context(ctx);
     ctx->restore();
 }
@@ -336,11 +343,11 @@ void
 ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
     getPrimaryColor(ctx);
-    if (isDisplayDigital()) {
-        displayDigital(ctx, starDraw, isDisplayAnalog());
-    }
     if (isDisplayAnalog()) {
         displayAnalog(ctx, starDraw);
+    }
+    if (isDisplayDigital()) {
+        displayDigital(ctx, starDraw, isDisplayAnalog());
     }
 }
 

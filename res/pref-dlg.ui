@@ -287,6 +287,7 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="title" translatable="yes">Start color</property>
+                    <property name="show-editor">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -312,6 +313,7 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="title" translatable="yes">Stop color</property>
+                    <property name="show-editor">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -336,6 +338,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="hexpand">True</property>
                     <property name="font">Sans 12</property>
                     <property name="language">en-us</property>
                     <property name="preview-text"/>
@@ -376,6 +379,7 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="title" translatable="yes">Info color</property>
+                    <property name="show-editor">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -413,6 +417,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="hexpand">True</property>
                     <property name="font">Sans 12</property>
                     <property name="language">en-us</property>
                     <property name="preview-text"/>
@@ -488,6 +493,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="hexpand">True</property>
                     <property name="font">Sans 12</property>
                     <property name="language">en-us</property>
                     <property name="preview-text"/>
@@ -517,6 +523,7 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="title" translatable="yes">Calendar color</property>
+                    <property name="show-editor">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -701,6 +708,7 @@
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="title" translatable="yes">Clock color</property>
+                    <property name="show-editor">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>

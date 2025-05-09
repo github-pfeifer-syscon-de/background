@@ -59,22 +59,3 @@ private:
     GPid m_pid;
 };
 
-
-class StarMountOp
-: public Gio::MountOperation
-{
-public:
-    explicit StarMountOp(const StarMountOp& orig) = delete;
-    virtual ~StarMountOp() = default;
-    void on_ask_password(const Glib::ustring& message
-                , const Glib::ustring& default_user
-                , const Glib::ustring& default_domain
-                , Gio::AskPasswordFlags flags) override;
-    static Glib::RefPtr<StarMountOp> create(StarWin* starWin);
-
-protected:
-    StarMountOp(StarWin* starWin);
-private:
-    StarWin* m_starWin;
-};
-
