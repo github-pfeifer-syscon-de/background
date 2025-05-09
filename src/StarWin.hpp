@@ -23,6 +23,7 @@
 
 class StarDraw;
 class BackgroundApp;
+class StarMountOp;
 
 class StarWin
 : public Gtk::ApplicationWindow
@@ -35,13 +36,45 @@ public:
     virtual ~StarWin() = default;
 
     BackgroundApp* getBackgroundAppl();
+    void showMessage(const Glib::ustring& msg, Gtk::MessageType msgType = Gtk::MessageType::MESSAGE_INFO);
+    void mount(Glib::RefPtr<Gio::Volume>& volume);
+    void eject(Glib::RefPtr<Gio::Volume>& volume);
 
+    void addMenuItems(Gtk::Menu* menu);
 protected:
     bool timeoutHandler();
     void updateTimer();
+    void cancel();
+    void on_mount(Glib::RefPtr<Gio::AsyncResult>& result);
+    void on_eject(Glib::RefPtr<Gio::AsyncResult>& result);
 private:
     StarDraw* m_drawingArea{nullptr};
     sigc::connection m_timer;
     BackgroundApp* m_backAppl;
+
+    Glib::RefPtr<Gio::VolumeMonitor> m_volumeMonitor;
+    Glib::RefPtr<Gio::Cancellable> m_cancelable;
+    Glib::RefPtr<StarMountOp> m_starMountOp;
+    Glib::RefPtr<Gio::Volume> m_activeVolume;   // e.g. the volume we are currently working on opening, ejecting...
+    GPid m_pid;
+};
+
+
+class StarMountOp
+: public Gio::MountOperation
+{
+public:
+    explicit StarMountOp(const StarMountOp& orig) = delete;
+    virtual ~StarMountOp() = default;
+    void on_ask_password(const Glib::ustring& message
+                , const Glib::ustring& default_user
+                , const Glib::ustring& default_domain
+                , Gio::AskPasswordFlags flags) override;
+    static Glib::RefPtr<StarMountOp> create(StarWin* starWin);
+
+protected:
+    StarMountOp(StarWin* starWin);
+private:
+    StarWin* m_starWin;
 };
 

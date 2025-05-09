@@ -32,7 +32,7 @@ class HipparcosFormat;
 class ConstellationFormat;
 class BackgroundApp;
 class StarWin;
-
+class StarMountOp;
 
 struct Pos {
     double x;
@@ -133,4 +133,3 @@ private:
     std::shared_ptr<ClockModule> m_clockModule;
     std::shared_ptr<CalendarModule> m_calendarModule;
 };
-

@@ -511,7 +511,7 @@ StarDraw::build_popup()
 	mabout->signal_activate().connect(sigc::mem_fun(m_starWin->getBackgroundAppl(), &BackgroundApp::on_action_about));
 	pMenuPopup->append(*mabout);
 
-
+    m_starWin->addMenuItems(pMenuPopup);
 
 	pMenuPopup->show_all();
 	return pMenuPopup;

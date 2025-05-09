@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <StringUtils.hpp>
 
 
 #include "StarDraw.hpp"
@@ -117,7 +118,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     if (m_height == 0) {
         getHeight(ctx, starDraw);
     }
-    // as there seems no way to diffrentiate the locale start with monday
+    // as there seems no way to diffrentiate the locale start with monday (but it's the iso way)
     getPrimaryColor(ctx);
     auto calFont = getFont();
     auto pangoLayout = Pango::Layout::create(ctx);
@@ -236,18 +237,21 @@ InfoModule::saveParam()
 int
 ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
-    if (getDisplay() == DISPLAY_ANALOG) {
-        return static_cast<int>(m_radius * 2.0);
+    int analogHeight{},digitalHeight{};
+    if (isDisplayAnalog()) {
+        analogHeight = static_cast<int>(m_radius * 2.0);
     }
-    else {
+    if (isDisplayDigital()) {
+        auto fmt = getEffectiveFormat();
+        Glib::DateTime dateTime = Glib::DateTime::create_now_local();
         auto clockFont = getFont();
         auto pangoLayout = Pango::Layout::create(ctx);
         pangoLayout->set_font_description(clockFont);
-        pangoLayout->set_text("M"); // use em as reference
-        int width, height;
-        pangoLayout->get_pixel_size(width, height);
-        return static_cast<int>(height * 1.25);
+        pangoLayout->set_text(dateTime.format(fmt));
+        int width;
+        pangoLayout->get_pixel_size(width, digitalHeight);
     }
+    return std::max(analogHeight, digitalHeight);
 }
 
 
@@ -272,10 +276,10 @@ ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* s
     ctx->arc(0.0, 0.0, m_radius, 0, 2.0 * M_PI);
     ctx->stroke();
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();
-    drawRadialLine(ctx, dateTime.get_minute(), 60, 0.0, m_radius * 0.8);
     int hourM = (dateTime.get_hour() % 12) * 60 + dateTime.get_minute();
     drawRadialLine(ctx, hourM, 12 * 60, 0.0, m_radius * 0.6);
     ctx->set_line_width(1.0);
+    drawRadialLine(ctx, dateTime.get_minute(), 60, 0.0, m_radius * 0.8);
 	const double inner10 = 0.9 * m_radius;
 	const double inner5 = 0.95 * m_radius;
 	const double inner2 = 0.98 * m_radius;
@@ -294,20 +298,37 @@ ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* s
 	}
 }
 
-void
-ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+Glib::ustring
+ClockModule::getEffectiveFormat()
 {
     auto fmt = getFormat();
     if (fmt.empty()) {
         fmt = "%X";
     }
+    fmt = StringUtils::replaceAll(fmt, "\\n", "\n");
+    return fmt;
+}
+
+void
+ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center)
+{
+    ctx->save();
+    auto fmt = getEffectiveFormat();
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();
     auto clockFont = getFont();
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(clockFont);
     pangoLayout->set_text(dateTime.format(fmt));
-    ctx->move_to(0.0, 0.0);
+    if (!center) {
+        ctx->move_to(0.0, 0.0);
+    }
+    else {
+        int width, height;
+        pangoLayout->get_pixel_size(width, height);
+        ctx->move_to(m_radius - width / 2.0, m_radius - height / 2.0);
+    }
     pangoLayout->show_in_cairo_context(ctx);
+    ctx->restore();
 }
 
 
@@ -315,13 +336,12 @@ void
 ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
     getPrimaryColor(ctx);
-    if (getDisplay() == DISPLAY_ANALOG) {
+    if (isDisplayDigital()) {
+        displayDigital(ctx, starDraw, isDisplayAnalog());
+    }
+    if (isDisplayAnalog()) {
         displayAnalog(ctx, starDraw);
     }
-    else {
-        displayDigital(ctx, starDraw);
-    }
-
 }
 
 void
@@ -339,15 +359,10 @@ ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("clockFont", m_clockFont);
     m_clockFont->set_font_name(getFont().to_string());
 
-    builder->get_widget("radioAnalog", m_displayAnalog);
-    builder->get_widget("radioDigital", m_displayDigital);
-    //Gtk::RadioButtonGroup group = m_displayDigital->get_group();
-    if (getDisplay() == DISPLAY_ANALOG) {
-        m_displayAnalog->set_active(true);
-    }
-    else {
-        m_displayDigital->set_active(true);
-    }
+    builder->get_widget("checkAnalog", m_displayAnalog);
+    builder->get_widget("checkDigital", m_displayDigital);
+    m_displayAnalog->set_active(isDisplayAnalog());
+    m_displayDigital->set_active(isDisplayDigital());
     m_displayAnalog->signal_clicked().connect(
             sigc::mem_fun(*this, &ClockModule::update));
     m_displayDigital->signal_clicked().connect(
@@ -362,16 +377,9 @@ ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
 void
 ClockModule::update()
 {
-    if (m_displayAnalog->get_active()) {
-        m_clockFormat->set_sensitive(false);
-        m_clockFont->set_sensitive(false);
-        m_clockRadius->set_sensitive(true);
-    }
-    else {
-        m_clockFormat->set_sensitive(true);
-        m_clockFont->set_sensitive(true);
-        m_clockRadius->set_sensitive(false);
-    }
+    m_clockRadius->set_sensitive(m_displayAnalog->get_active());
+    m_clockFormat->set_sensitive(m_displayDigital->get_active());
+    m_clockFont->set_sensitive(m_displayDigital->get_active());
 }
 
 void
@@ -382,6 +390,7 @@ ClockModule::saveParam()
     setRadius(m_clockRadius->get_value());
     Pango::FontDescription clockFont{m_clockFont->get_font_name()};
     setFont(clockFont);
-    setDisplay(m_displayAnalog->get_active() ? DISPLAY_ANALOG : DISPLAY_DIGITAL);
+    setDisplayAnalog(m_displayAnalog->get_active());
+    setDisplayDigital(m_displayDigital->get_active());
     setFormat(m_clockFormat->get_text());
 }

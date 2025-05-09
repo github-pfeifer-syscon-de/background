@@ -153,9 +153,8 @@ public:
     void saveParam() override;
     static constexpr auto RADIUS{"radius"};
     static constexpr auto FORMAT{"format"};
-    static constexpr auto DISPLAY{"display"};
-    static constexpr auto DISPLAY_ANALOG{"a"};
-    static constexpr auto DISPLAY_DIGITAL{"d"};
+    static constexpr auto DISPLAY_ANALOG{"analog"};
+    static constexpr auto DISPLAY_DIGITAL{"digital"};
     double getRadius()
     {
         return m_config->getDouble(getName().c_str(), RADIUS, 160.0);
@@ -173,26 +172,35 @@ public:
     {
         return m_config->setString(getName().c_str(), FORMAT, format);
     }
-    Glib::ustring getDisplay()
+    bool isDisplayAnalog()
     {
-        return m_config->getString(getName().c_str(), DISPLAY, DISPLAY_ANALOG);
+        return m_config->getBoolean(getName().c_str(), DISPLAY_ANALOG, true);
     }
-    void setDisplay(const Glib::ustring& display)
+    void setDisplayAnalog(bool displayAnalog)
     {
-        return m_config->setString(getName().c_str(), DISPLAY, display);
+        return m_config->setBoolean(getName().c_str(), DISPLAY_ANALOG, displayAnalog);
+    }
+    bool isDisplayDigital()
+    {
+        return m_config->getBoolean(getName().c_str(), DISPLAY_DIGITAL, false);
+    }
+    void setDisplayDigital(bool displayDigital)
+    {
+        return m_config->setBoolean(getName().c_str(), DISPLAY_DIGITAL, displayDigital);
     }
 protected:
     void update();
     void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer);
     void displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
-    void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
+    void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center);
+    Glib::ustring getEffectiveFormat();
 
     double m_radius;
     Gtk::ColorButton* m_clockColor;
     Gtk::Scale* m_clockRadius;
     Gtk::Entry* m_clockFormat;
-    Gtk::RadioButton* m_displayAnalog;
-    Gtk::RadioButton* m_displayDigital;
+    Gtk::CheckButton* m_displayAnalog;
+    Gtk::CheckButton* m_displayDigital;
     Gtk::FontButton* m_clockFont;
     Gtk::ComboBoxText* m_clockPos;
 };
