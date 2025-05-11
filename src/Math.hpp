@@ -44,7 +44,7 @@ public:
     static constexpr auto PI{3.141592653589793238462643383279502884};
     static constexpr auto DEGREEE2RADIANS{PI / 180.0};
     static constexpr auto HOURS2RADIANS{PI / 12.0};
-    static constexpr auto HALF_PI{PI / 2.0};
+    static constexpr auto HALF_PI{PI * 0.5};
     static constexpr auto TWO_PI{PI * 2.0};
     static inline double toRadians(double deg)
     {

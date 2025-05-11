@@ -299,26 +299,26 @@ StarDraw::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
         //ctx->close_path();
         //ctx->fill();
         ctx->stroke();
-        auto raDec = m_milkyway->getGalacticCenter();
-        auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
-        if (azAlt->isVisible()) {
-            ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
-            auto p = azAlt->toScreen(layout);
-            auto w = static_cast<double>(layout.getMin()) / 200.0;
-            ctx->move_to(p.getX()-w,p.getY());
-            ctx->line_to(p.getX()+w,p.getY());
-            ctx->move_to(p.getX(),p.getY()-w);
-            ctx->line_to(p.getX(),p.getY()+w);
-            ctx->set_line_width(1.0);
-            ctx->stroke();
-            ctx->move_to(p.getX()+w,p.getY()+w);
-            auto starDesc = getStarFont();
-            auto pangoLayout = Pango::Layout::create(ctx);
-            pangoLayout->set_font_description(starDesc);
-            pangoLayout->set_text("Gal.cent.");
-            pangoLayout->show_in_cairo_context(ctx);
+    }
+    auto raDec = m_milkyway->getGalacticCenter();
+    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+    if (azAlt->isVisible()) {
+        ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+        auto p = azAlt->toScreen(layout);
+        auto w = static_cast<double>(layout.getMin()) / 200.0;
+        ctx->move_to(p.getX()-w,p.getY());
+        ctx->line_to(p.getX()+w,p.getY());
+        ctx->move_to(p.getX(),p.getY()-w);
+        ctx->line_to(p.getX(),p.getY()+w);
+        ctx->set_line_width(1.0);
+        ctx->stroke();
+        ctx->move_to(p.getX()+w,p.getY()+w);
+        auto starDesc = getStarFont();
+        auto pangoLayout = Pango::Layout::create(ctx);
+        pangoLayout->set_font_description(starDesc);
+        pangoLayout->set_text("Gal.cent.");
+        pangoLayout->show_in_cairo_context(ctx);
 
-        }
     }
 }
 

@@ -34,7 +34,7 @@ static constexpr auto raExp = 2.09998;
 static constexpr auto decExp = 11.4938;
 static constexpr auto distExp = 1.70358;
 static constexpr auto numLowError = 0.00001;
-static constexpr auto numHightError = 0.001;
+static constexpr auto numHighError = 0.001;
 static constexpr auto numHighestError = 0.1;
 
 static bool
@@ -67,7 +67,7 @@ test_deg2rad()
     auto deg = Math::toDegrees(rad);
     std::cout << "is  deg " << deg << std::endl;
     std::cout << "exp deg " << 10.0 << std::endl;
-    if (std::abs(deg - 10.0) > numHightError) {
+    if (std::abs(deg - 10.0) > numHighError) {
         return false;
     }
     return true;
@@ -84,7 +84,7 @@ test_hour2rad()
     auto hour = Math::toHoursRadian(rad);
     std::cout << "is  hour " << hour << std::endl;
     std::cout << "exp hour " << 10.0 << std::endl;
-    if (std::abs(hour - 10.0) > numHightError) {
+    if (std::abs(hour - 10.0) > numHighError) {
         return false;
     }
     return true;
@@ -102,8 +102,8 @@ test_planet()
     std::cout << "Venus ra " << raDec->getRaHours()
               << " dec " << raDec->getDecDegrees()
               << " dist " << raDec->getDistanceAU() << std::endl;
-    if (std::abs(raDec->getRaHours() - raExp) > numHightError ||
-        std::abs(raDec->getDecDegrees() - decExp) > numHightError ||
+    if (std::abs(raDec->getRaHours() - raExp) > numHighError ||
+        std::abs(raDec->getDecDegrees() - decExp) > numHighError ||
         std::abs(raDec->getDistanceAU() - distExp) > numHighestError) {
         return false;
     }
