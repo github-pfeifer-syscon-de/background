@@ -1,6 +1,6 @@
-/* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: c++; c-basic-offset: 4; tab-width: 4; coding: utf-8; -*-  */
 /*
- * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2025 RPf <gpl3@pfeifer-syscon.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 
-#include <memory>
 
-#include "RaDec.hpp"
+#include "Messier.hpp"
 
-// "celestial object" may be more accurate
-
-class Star
+Messier::Messier()
 {
-public:
-    Star() = default;
-    explicit Star(const Star& orig) = delete;
-    virtual ~Star() = default;
+}
 
-    virtual double getVmagnitude() const = 0;
+std::shared_ptr<RaDec>
+Messier::getRaDec()
+{
+	return raDec;
+}
 
-    virtual std::shared_ptr<RaDec> getRaDec() = 0;
+void
+Messier::setRaDec(const std::shared_ptr<RaDec>& _raDec)
+{
+	raDec = _raDec;
+}
 
-private:
+double
+Messier::getVmagnitude() const
+{
+	return m_vmagnitude;
+}
 
-};
+void
+Messier::setVmagnitude(double _vmagnitude)
+{
+	m_vmagnitude = _vmagnitude;
+}
 
+void
+Messier::setName(const Glib::ustring& _ident)
+{
+	m_name = _ident;
+}
+
+Glib::ustring 
+Messier::getName()
+{
+    return m_name;
+}

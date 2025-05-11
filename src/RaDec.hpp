@@ -46,7 +46,7 @@ public:
     bool operator==(const RaDec& rhs);
 
 private:
-    double ra{0.0}; // values in radians
-    double dec{0.0};
+    double ra{}; // values in radians
+    double dec{};
 
 };

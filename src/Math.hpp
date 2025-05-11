@@ -58,6 +58,16 @@ public:
     {
         return rad / HOURS2RADIANS;
     }
+    template <typename T>
+    static inline T mix(T x, T y, T a, bool limit = true)
+    {
+        auto r = x*(1-a)+y*a;
+        if (limit) {
+            r = std::max(r, std::min(x, y));
+            r = std::min(r, std::max(x, y));
+        }
+        return r;
+    }
 private:
 
 };

@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <vector>
+#include <glibmm.h>
+
 class Point2D
 {
 public:
@@ -32,8 +35,38 @@ public:
     void setY(double y);
     void add(const Point2D& add);
     double getDist();
+    double dist(const Point2D& p);
 private:
     double x;
     double y;
 };
 
+class MagPoint
+: public Point2D
+{
+public:
+    MagPoint(const Point2D& p, double vMagnitude);
+    MagPoint(const MagPoint& p) = default;
+    virtual ~MagPoint() = default;
+
+    double getVmagnitude();
+private:
+    double m_vMagnitude;
+};
+
+class NamedPoint
+{
+public:
+    NamedPoint(const MagPoint& p, const Glib::ustring& name);
+    NamedPoint(const NamedPoint& p) = default;
+    virtual ~NamedPoint() = default;
+
+    Point2D getPoint() const;
+    MagPoint getMagPoint() const;
+    std::vector<MagPoint>& getMagPoints();
+    Glib::ustring getName() const;
+    void add(const NamedPoint& add);
+private:
+    std::vector<MagPoint> m_p;
+    Glib::ustring m_name;
+};

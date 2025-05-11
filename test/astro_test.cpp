@@ -26,6 +26,7 @@
 #include "RaDec.hpp"
 #include "Math.hpp"
 #include "Planets.hpp"
+#include "MessierLoader.hpp"
 
 static constexpr auto expAz = 155.96;
 static constexpr auto expAlt = 69.0103;
@@ -106,6 +107,50 @@ test_planet()
     return true;
 }
 
+static bool
+test_dms()
+{
+    double dec = MessierLoader::toDecimal("17:40:20.75");
+    std::cout << "toDecimal val " << dec << std::endl;
+    if (std::abs(dec - 17.672431) > 0.000001) {
+        return false;
+    }
+    dec = MessierLoader::toDecimal("-13:03:13.1");
+    std::cout << "toDecimal val " << dec << std::endl;
+    if (std::abs(dec - -13.053639) > 0.000001) {
+        return false;
+    }
+    return true;
+}
+
+static constexpr auto TEXT_GRAY_LOW{0.3};
+static constexpr auto TEXT_GRAY{0.6};
+static constexpr auto TEXT_GRAY_MID{0.75};
+static constexpr auto TEXT_GRAY_EMPHASIS{0.9};
+
+
+static bool
+test_mix()
+{
+    auto r = Math::mix(3.0, 7.0, 0.5);
+    std::cout << "mix " << r << std::endl;
+    if (std::abs(r - 5.0) > 0.000001) {
+        return false;
+    }
+    r = Math::mix(7.0, 3.0, 0.5);
+    std::cout << "mix " << r << std::endl;
+    if (std::abs(r - 5.0) > 0.000001) {
+        return false;
+    }
+
+    r = Math::mix(7.0, 3.0, 1.5);
+    std::cout << "mix " << r << std::endl;
+    if (std::abs(r - 3.0) > 0.000001) {
+        return false;
+    }
+
+    return true;
+}
 /*
  *
  */
@@ -122,6 +167,12 @@ int main(int argc, char** argv)
     }
     if (!test_planet()) {
         return 4;
+    }
+    if (!test_dms()) {
+        return 5;
+    }
+    if (!test_mix()) {
+        return 6;
     }
     return 0;
 }

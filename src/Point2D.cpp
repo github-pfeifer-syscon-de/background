@@ -67,3 +67,65 @@ Point2D::getDist()
 {
     return std::sqrt(x*x + y*y);
 }
+
+double
+Point2D::dist(const Point2D& p)
+{
+    auto dx = x - p.x;
+    auto dy = y - p.y;
+    return std::sqrt(dx*dx + dy*dy);
+}
+
+
+MagPoint::MagPoint(const Point2D& p, double vMagnitude)
+: Point2D{p.getX(), p.getY()}
+, m_vMagnitude{vMagnitude}
+{
+}
+
+double
+MagPoint::getVmagnitude()
+{
+    return m_vMagnitude;
+}
+
+
+NamedPoint::NamedPoint(const MagPoint& p, const Glib::ustring& name)
+: m_name{name}
+{
+    m_p.push_back(p);
+}
+
+Point2D
+NamedPoint::getPoint() const
+{
+    auto m = getMagPoint();
+    return Point2D(m.getX(), m.getY());
+}
+
+MagPoint
+NamedPoint::getMagPoint() const
+{
+    return m_p[0];
+}
+
+std::vector<MagPoint>&
+NamedPoint::getMagPoints()
+{
+    return m_p;
+}
+
+Glib::ustring
+NamedPoint::getName() const
+{
+    return m_name;
+}
+
+void NamedPoint::add(const NamedPoint& add)
+{
+    if (!m_name.empty()) {
+        m_name += ", ";
+    }
+    m_name += add.getName();
+    m_p.push_back(add.getMagPoint());
+}

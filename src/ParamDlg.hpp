@@ -49,4 +49,6 @@ private:
     Gtk::ColorButton* m_startColor;
     Gtk::ColorButton* m_stopColor;
     Gtk::FontButton* m_starFont;
+    Gtk::CheckButton* m_showMilkyway;
+    Gtk::Scale* m_messierVMag;
 };

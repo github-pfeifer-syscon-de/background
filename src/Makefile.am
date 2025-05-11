@@ -95,6 +95,10 @@ background_SOURCES = resources.c \
 	FileLoader.cpp \
 	Poly.hpp \
 	Poly.cpp \
+	Messier.hpp \
+	Messier.cpp \
+	MessierLoader.hpp \
+	MessierLoader.cpp \
 	ParamDlg.hpp \
 	ParamDlg.cpp
 

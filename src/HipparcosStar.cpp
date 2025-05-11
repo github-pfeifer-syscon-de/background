@@ -47,18 +47,6 @@ HipparcosStar::setRaDec(const std::shared_ptr<RaDec>& _raDec)
 }
 
 double
-HipparcosStar::getRaDegree() const
-{
-	return raDec->getRaDegrees();
-}
-
-double
-HipparcosStar::getDecDegree() const
-{
-	return raDec->getDecDegrees();
-}
-
-double
 HipparcosStar::getVmagnitude() const
 {
 	return vmagnitude;

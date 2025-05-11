@@ -33,11 +33,8 @@ class ConstellationFormat;
 class BackgroundApp;
 class StarWin;
 class StarMountOp;
+class MessierLoader;
 
-struct Pos {
-    double x;
-    double y;
-};
 
 class StarDraw
 : public Gtk::DrawingArea
@@ -55,12 +52,18 @@ public:
     static constexpr auto TEXT_GRAY_EMPHASIS{0.9};
     static constexpr auto SUN_MOON_RADIUS{7.0};
     static constexpr auto PLANET_RADIUS{3.0};
+    static constexpr auto MAX_STAR_RADIUS{3.0};
+    static constexpr auto MIN_STAR_RADIUS{1.0};
+    static constexpr auto MESSIER_RADIUS{4.0};
+    static constexpr auto MIN_MESSIER_RADIUS{2.0};
     static constexpr auto START_COLOR_KEY{"startColor"};
     static constexpr auto STOP_COLOR_KEY{"stopColor"};
     static constexpr auto STAR_FONT_KEY{"starFont"};
     static constexpr auto DEFAULT_STAR_FONT{"Sans 7"};
     static constexpr auto MAIN_GRP{"main"};
     static constexpr auto UPDATE_INTERVAL_KEY{"updateIntervalMinutes"};
+    static constexpr auto SHOW_MILKYWAY_KEY{"showMilkyway"};
+    static constexpr auto MESSIER_VMAGMIN_KEY{"messierVMagMin"};
     void compute();
     void update(Glib::DateTime dateTime, GeoPosition& pos);
     GeoPosition getGeoPosition();
@@ -75,6 +78,10 @@ public:
     void setStopColor(const Gdk::RGBA& stopColor);
     int getIntervalMinutes();
     void setIntervalMinutes(int intervalMinutes);
+    bool isShowMilkyway();
+    void setShowMilkyway(bool showMilkyway);
+    double getMessierVMagMin();
+    void setMessierVMagMin(double showMessier);
     StarWin* getWindow();
     void saveConfig();
     void scale(Pango::FontDescription& starFont, double scale);
@@ -103,6 +110,8 @@ protected:
     void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    std::vector<NamedPoint> cluster(const std::vector<NamedPoint>& points, double distance = 20.0);
 
     std::string getGlobeConfigName();
     void setupConfig();
@@ -126,6 +135,7 @@ private:
     static constexpr auto LONGITUDE_KEY{"lon"};
     Cairo::RefPtr<Cairo::ImageSurface> m_image;
     std::shared_ptr<Milkyway> m_milkyway;
+    std::shared_ptr<MessierLoader> m_messier;
     bool m_updateBlocked{false};
     Glib::DateTime m_displayTimeUtc;
     StarWin* m_starWin;

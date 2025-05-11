@@ -62,6 +62,12 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
     builder->get_widget("starFont", m_starFont);
     m_starFont->set_font_name(m_starDraw->getStarFont().to_string());
 
+    builder->get_widget("showMilkyway", m_showMilkyway);
+    m_showMilkyway->set_active(m_starDraw->isShowMilkyway());
+
+    builder->get_widget("messierVMag", m_messierVMag);
+    m_messierVMag->set_value(m_starDraw->getMessierVMagMin());
+
     m_starDraw->getInfoModule()->setupParam(builder);
     m_starDraw->getCalendarModule()->setupParam(builder);
     m_starDraw->getClockModule()->setupParam(builder);
@@ -96,6 +102,8 @@ ParamDlg::on_response(int response_id)
         m_starDraw->setStopColor(m_stopColor->get_rgba());
         Pango::FontDescription starFont{m_starFont->get_font_name()};
         m_starDraw->setStarFont(starFont);
+        m_starDraw->setShowMilkyway(m_showMilkyway->get_active());
+        m_starDraw->setMessierVMagMin(m_messierVMag->get_value());
 
         m_starDraw->getInfoModule()->saveParam();
         m_starDraw->getCalendarModule()->saveParam();

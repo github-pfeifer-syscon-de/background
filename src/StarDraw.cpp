@@ -31,7 +31,9 @@
 #include "StarWin.hpp"
 #include "config.h"
 #include "Planets.hpp"
+#include "MessierLoader.hpp"
 #include "Module.hpp"
+#include "config.h"
 
 
 #pragma GCC diagnostic push
@@ -48,6 +50,7 @@ StarDraw::StarDraw(BaseObjectType* cobject
     m_constlFormat = std::make_shared<ConstellationFormat>(fileLoader);
     //m_constlFormat->getConstellations();
     m_milkyway = std::make_shared<Milkyway>(fileLoader);
+    m_messier =  std::make_shared<MessierLoader>(fileLoader);
 	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
     setupConfig();
     m_infoModule = std::make_shared<InfoModule>(m_config);
@@ -97,6 +100,91 @@ StarDraw::getGlobeConfigName()
     //Glib:canonicalize_file_name()
     //std::cout << "using config " << fullPath << std::endl;
     return fullPath;
+}
+
+std::vector<NamedPoint>
+StarDraw::cluster(const std::vector<NamedPoint>& points, double distance)
+{
+    std::vector<NamedPoint> ret;
+    ret.reserve(points.size());
+    for (auto& p : points) {
+        bool found{false};
+        for (auto& r : ret) {
+            auto dist = p.getPoint().dist(r.getPoint());
+            if (dist < distance) {
+                r.add(p);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            ret.push_back(p);
+        }
+    }
+    return ret;
+}
+
+void
+StarDraw::draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+{
+    ctx->save();
+    auto starDesc = getStarFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(starDesc);
+    int width, height;
+    auto messiers = m_messier->getMessiers();
+    const auto messierVMagMin = getMessierVMagMin();
+    std::vector<NamedPoint> points;
+    points.reserve(128);
+	for (auto& messier : messiers) {
+#       ifdef DEBUG
+        std::cout << "StarDraw::draw_messier " << messier->getIdent() << std::endl;
+#       endif
+        if (messier->getVmagnitude() < messierVMagMin) {
+            auto raDec = messier->getRaDec();
+            auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
+            if (azAlt->isVisible()) {
+                auto p = azAlt->toScreen(layout);
+                MagPoint magP(p, messier->getVmagnitude());
+                points.emplace_back(std::move(NamedPoint(magP, messier->getName())));
+            }
+        }
+	}
+    auto clusterRadius{layout.getHeight() / 75.0};
+#   ifdef DEBUG
+    std::cout << "StarDraw::draw_messier"
+              << " height " <<  layout.getHeight()
+              << " dist " <<  clusterRadius << std::endl;
+#   endif
+    auto clusters = cluster(points, clusterRadius);
+#   ifdef DEBUG
+    std::cout << "StarDraw::draw_messier clusters " << clusters.size() << std::endl;
+#   endif
+    for (auto& cluster : clusters) {
+        double xMax(-layout.getWidth()),yMax(-layout.getHeight());
+        for (auto& point : cluster.getMagPoints()) {
+            ctx->save();
+            ctx->translate(point.getX() - MESSIER_RADIUS, point.getY() - MESSIER_RADIUS);
+            auto outerRadius = Math::mix(MESSIER_RADIUS, MIN_MESSIER_RADIUS, (point.getVmagnitude() - 4.0) / 3.0);
+            auto gradient = Cairo::RadialGradient::create(MESSIER_RADIUS, MESSIER_RADIUS, 0.0, MESSIER_RADIUS, MESSIER_RADIUS, outerRadius); // start center 0, stop is outer
+            gradient->add_color_stop_rgba(0.0, TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID, 1.0);   // this is stop, r, g, b, a
+            gradient->add_color_stop_rgba(1.0, TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID, 0.0);   // fade to difuse
+            ctx->rectangle(0.0, 0.0, MESSIER_RADIUS*2.0, MESSIER_RADIUS*2.0);
+            ctx->clip();
+            ctx->set_source(gradient);
+            ctx->paint();
+            ctx->restore();
+            xMax = std::max(xMax, point.getX() + MESSIER_RADIUS);
+            yMax = std::max(yMax, point.getY() + MESSIER_RADIUS);
+        }
+        ctx->set_source_rgb(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
+        pangoLayout->set_text(cluster.getName());
+        pangoLayout->get_pixel_size(width, height);
+        ctx->move_to( xMax + MESSIER_RADIUS + 1.0
+                    , yMax - static_cast<double>(height) / 2.0);   //
+        pangoLayout->show_in_cairo_context(ctx);
+    }
+    ctx->restore();
 }
 
 void
@@ -243,7 +331,7 @@ StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate&
         auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
         if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
-            auto rs = std::max(3.0 - (s->getVmagnitude() / 2.0), 1.0);
+            auto rs = Math::mix(MAX_STAR_RADIUS, MIN_STAR_RADIUS, ((s->getVmagnitude() - 3.0) / 2.0));
             //std::cout << "x " << p.getX() << " y " << p.getY() << " rs " << rs << "\n";
             ctx->arc(p.getX(), p.getY(), rs, 0.0, M_PI * 2.0);
             ctx->fill();
@@ -268,15 +356,9 @@ StarDraw::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate
         auto polylines = c->getPolylines();
         for (auto l : polylines) {
             int prio = l->getWidth();
-            double gray = TEXT_GRAY_EMPHASIS;
-            if (prio <= 1) {
-                ctx->set_line_width(1.5);
-            }
-            else {
-                ctx->set_line_width(1.0);
-                gray -= 0.2 * std::max(4 - prio, 1);
-            }
+            double gray = Math::mix(TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW, (prio - 1) / 3.0);
             ctx->set_source_rgb(gray, gray, gray);
+            ctx->set_line_width((prio <= 1) ? 1.5 : 1.0);
             bool visible = false;
             for (auto raDec : l->getPoints()) {
                 auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
@@ -327,12 +409,15 @@ StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd
     ctx->translate((layout.getWidth()/2), (layout.getHeight()/2));
     ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
     ctx->clip();    // as we draw some lines beyond the horizon
-    draw_milkyway(ctx, jd, geoPos, layout);
+    if (isShowMilkyway()) {
+        draw_milkyway(ctx, jd, geoPos, layout);
+    }
     draw_constl(ctx, jd, geoPos, layout);
     draw_stars(ctx, jd, geoPos, layout);
     draw_moon(ctx, jd, geoPos, layout);
     draw_sun(ctx, jd, geoPos, layout);
     draw_planets(ctx, jd, geoPos, layout);
+    draw_messier(ctx, jd, geoPos, layout);
 
     ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
     auto starFont = getStarFont();
@@ -424,13 +509,14 @@ StarDraw::findModules(const char* pos)
 void
 StarDraw::drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
 {
-    Pos pos{.x{20.0}, .y{20.0}};
+    Point2D pos(20.0, 20.0);
     for (auto& mod : modules) {
         ctx->save();
-        ctx->translate(pos.x, pos.y);
+        ctx->translate(pos.getX(), pos.getY());
         mod->display(ctx, this);
         ctx->restore();
-        pos.y += mod->getHeight(ctx, this);
+        Point2D p(0.0, mod->getHeight(ctx, this));
+        pos.add(p);
     }
 }
 
@@ -441,13 +527,14 @@ StarDraw::drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, c
     for (auto& mod : modules) {
         sumHeight += mod->getHeight(ctx, this);
     }
-    Pos pos{.x{20.0}, .y{(layout.getHeight() - sumHeight) / 2.0}};
+    Point2D pos(20.0, (layout.getHeight() - sumHeight) / 2.0);
     for (auto& mod : modules) {
         ctx->save();
-        ctx->translate(pos.x, pos.y);
+        ctx->translate(pos.getX(), pos.getY());
         mod->display(ctx, this);
         ctx->restore();
-        pos.y += mod->getHeight(ctx, this);
+        Point2D p(0.0, mod->getHeight(ctx, this));
+        pos.add(p);
     }
 }
 
@@ -458,13 +545,14 @@ StarDraw::drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, c
     for (auto& mod : modules) {
         sumHeight += mod->getHeight(ctx, this);
     }
-    Pos pos{.x{20.0}, .y{layout.getHeight() - sumHeight - 20.0}};
+    Point2D pos(20.0, layout.getHeight() - sumHeight - 20.0);
     for (auto& mod : modules) {
         ctx->save();
-        ctx->translate(pos.x, pos.y);
+        ctx->translate(pos.getX(), pos.getY());
         mod->display(ctx, this);
         ctx->restore();
-        pos.y += mod->getHeight(ctx, this);
+        Point2D p(0.0, mod->getHeight(ctx, this));
+        pos.add(p);
     }
 }
 
@@ -596,6 +684,30 @@ void
 StarDraw::setIntervalMinutes(int intervalMinutes)
 {
     return m_config->setInteger(MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
+}
+
+bool
+StarDraw::isShowMilkyway()
+{
+    return m_config->getBoolean(MAIN_GRP, SHOW_MILKYWAY_KEY, true);
+}
+
+void
+StarDraw::setShowMilkyway(bool showMilkyway)
+{
+    m_config->setBoolean(MAIN_GRP, SHOW_MILKYWAY_KEY, showMilkyway);
+}
+
+double
+StarDraw::getMessierVMagMin()
+{
+    return m_config->getDouble(MAIN_GRP, MESSIER_VMAGMIN_KEY, 5.0);
+}
+
+void
+StarDraw::setMessierVMagMin(double messierVmagMin)
+{
+    m_config->setDouble(MAIN_GRP, MESSIER_VMAGMIN_KEY, messierVmagMin);
 }
 
 Pango::FontDescription

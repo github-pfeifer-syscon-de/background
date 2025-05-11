@@ -35,13 +35,9 @@ public:
 
     void setNumber(long number);
 
-    std::shared_ptr<RaDec> getRaDec();
+    std::shared_ptr<RaDec> getRaDec() override;
 
     void setRaDec(const std::shared_ptr<RaDec>& raDec);
-
-    double getRaDegree() const override;
-
-    double getDecDegree() const override;
 
     double getVmagnitude() const override;
 

@@ -19,7 +19,7 @@
 #include <iostream>
 #include <exception>
 
-#include <config.h>
+#include "config.h"
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
 
@@ -27,7 +27,7 @@ BackgroundApp::BackgroundApp(int argc, char **argv)
 : Gtk::Application(argc, argv, "de.pfeifer_syscon.background", Gio::ApplicationFlags::APPLICATION_HANDLES_OPEN)
 , m_exec{argv[0]}
 {
-    #ifdef NOMAD_DEBUG
+    #ifdef DEBUG
     std::cout << "BackgroundApp::BackgroundApp" << std::endl;
     #endif
 }

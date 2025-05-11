@@ -20,14 +20,3 @@
 #include "Star.hpp"
 
 #include "Math.hpp"
-
-Star::Star()
-{
-
-}
-
-std::shared_ptr<RaDec>
-Star::getRaDec()
-{
-    return std::make_shared<RaDec>(Math::toRadians(getRaDegree()), Math::toRadians(getDecDegree()));
-}

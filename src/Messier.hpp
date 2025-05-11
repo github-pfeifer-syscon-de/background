@@ -1,6 +1,6 @@
-/* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: c++; c-basic-offset: 4; tab-width: 4;  coding: utf-8; -*-  */
 /*
- * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2025 RPf <gpl3@pfeifer-syscon.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,29 @@
 
 #pragma once
 
-#include <memory>
+#include <string>
+#include <glibmm.h>
 
-#include "RaDec.hpp"
+#include "Star.hpp"
 
-// "celestial object" may be more accurate
-
-class Star
+class Messier
+: public Star
 {
 public:
-    Star() = default;
-    explicit Star(const Star& orig) = delete;
-    virtual ~Star() = default;
+    Messier();
+    explicit Messier(const Messier& orig) = delete;
+    virtual ~Messier() = default;
 
-    virtual double getVmagnitude() const = 0;
+    std::shared_ptr<RaDec> getRaDec();
+    void setRaDec(const std::shared_ptr<RaDec>& raDec);
 
-    virtual std::shared_ptr<RaDec> getRaDec() = 0;
-
+    double getVmagnitude() const override;
+    void setVmagnitude(double vmagnitude);
+    void setName(const Glib::ustring& ident);
+    Glib::ustring getName();
 private:
-
+    Glib::ustring m_name;
+    double m_vmagnitude{};
+    std::shared_ptr<RaDec> raDec;
 };
 

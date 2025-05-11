@@ -19,6 +19,13 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="adjustMessierVMag">
+    <property name="lower">3</property>
+    <property name="upper">10</property>
+    <property name="value">3</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">3</property>
+  </object>
   <object class="GtkAdjustment" id="adjustMinutes">
     <property name="upper">59</property>
     <property name="step-increment">1</property>
@@ -88,7 +95,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <child>
-              <!-- n-columns=3 n-rows=5 -->
+              <!-- n-columns=3 n-rows=3 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -151,6 +158,60 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Update rate</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="updateInterval">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="adjustment">adjustUpdate</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Minutes</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Location</property>
+              </object>
+              <packing>
+                <property name="tab-fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <!-- n-columns=3 n-rows=3 -->
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
                     <property name="ypad">10</property>
                     <property name="label" translatable="yes">Calendar</property>
                     <property name="xalign">1</property>
@@ -158,7 +219,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
-                    <property name="top-attach">2</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
@@ -171,7 +232,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
-                    <property name="top-attach">2</property>
+                    <property name="top-attach">0</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -185,7 +246,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
-                    <property name="top-attach">3</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
@@ -197,7 +258,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
-                    <property name="top-attach">3</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
@@ -209,60 +270,36 @@
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
-                    <property name="top-attach">3</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Update rate</property>
-                    <property name="xalign">1</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">4</property>
-                  </packing>
+                  <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkSpinButton" id="updateInterval">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="adjustment">adjustUpdate</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">4</property>
-                  </packing>
+                  <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Minutes</property>
-                    <property name="xalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">2</property>
-                    <property name="top-attach">4</property>
-                  </packing>
+                  <placeholder/>
                 </child>
               </object>
+              <packing>
+                <property name="position">1</property>
+              </packing>
             </child>
             <child type="tab">
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Location/Time</property>
+                <property name="label" translatable="yes">Time</property>
               </object>
               <packing>
+                <property name="position">1</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
             <child>
-              <!-- n-columns=2 n-rows=3 -->
+              <!-- n-columns=2 n-rows=5 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -350,9 +387,60 @@
                     <property name="top-attach">2</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkCheckButton" id="showMilkyway">
+                    <property name="label" translatable="yes">Milkyway</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Show</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScale" id="messierVMag">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="adjustment">adjustMessierVMag</property>
+                    <property name="round-digits">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Messier VMagnitude &lt;=</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">4</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child type="tab">
@@ -362,7 +450,7 @@
                 <property name="label" translatable="yes">Stars</property>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
@@ -454,7 +542,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child type="tab">
@@ -464,7 +552,7 @@
                 <property name="label" translatable="yes">Info</property>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
@@ -553,7 +641,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child type="tab">
@@ -563,7 +651,7 @@
                 <property name="label" translatable="yes">Calendar</property>
               </object>
               <packing>
-                <property name="position">3</property>
+                <property name="position">4</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
@@ -746,7 +834,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
             <child type="tab">
@@ -756,7 +844,7 @@
                 <property name="label" translatable="yes">Clock</property>
               </object>
               <packing>
-                <property name="position">4</property>
+                <property name="position">5</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
