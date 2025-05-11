@@ -152,10 +152,10 @@ Planet::rectToPolar(const std::array<double,3>& xyz)
 
 	// Make sure ra is positive
 	if (ra < 0.0) {
-	    ra += 2.0 * M_PI;
+	    ra += Math::TWO_PI;
 	}
 	// Make dec is in range +/-90deg
-	dec = 0.5 * M_PI - dec;
+	dec = Math::HALF_PI - dec;
 	return std::make_shared<RaDecPlanet>(ra, dec, r);
 }
 

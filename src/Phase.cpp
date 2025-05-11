@@ -18,6 +18,7 @@
 
 #include <cmath>
 
+#include "Math.hpp"
 #include "Phase.hpp"
 
 
@@ -29,7 +30,7 @@ Phase::Phase(double _i)
 double
 Phase::getPhase() const
 {
-    return std::abs(M_PI - i) / M_PI;
+    return std::abs(Math::PI - i) / Math::PI;
 }
 
 // this is not linear as phase is projected onto a sphere 1 full .. 0 new
@@ -44,6 +45,6 @@ Phase::getIlluminated() const
 bool
 Phase::isWanning() const
 {
-    return i >= M_PI;
+    return i >= Math::PI;
 }
 

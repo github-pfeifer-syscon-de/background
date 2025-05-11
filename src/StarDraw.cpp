@@ -165,10 +165,10 @@ StarDraw::draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
         for (auto& point : cluster.getMagPoints()) {
             ctx->save();
             ctx->translate(point.getX() - MESSIER_RADIUS, point.getY() - MESSIER_RADIUS);
-            auto outerRadius = Math::mix(MESSIER_RADIUS, MIN_MESSIER_RADIUS, (point.getVmagnitude() - 4.0) / 3.0);
-            auto gradient = Cairo::RadialGradient::create(MESSIER_RADIUS, MESSIER_RADIUS, 0.0, MESSIER_RADIUS, MESSIER_RADIUS, outerRadius); // start center 0, stop is outer
-            gradient->add_color_stop_rgba(0.0, TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID, 1.0);   // this is stop, r, g, b, a
-            gradient->add_color_stop_rgba(1.0, TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID, 0.0);   // fade to difuse
+            auto gradient = Cairo::RadialGradient::create(MESSIER_RADIUS, MESSIER_RADIUS, 0.0, MESSIER_RADIUS, MESSIER_RADIUS, MESSIER_RADIUS); // the queue word here is concentric
+            auto brightness = Math::mix(TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW, (point.getVmagnitude() - 4.0) / 3.0);
+            gradient->add_color_stop_rgba(0.0, brightness, brightness, brightness, 1.0);   // this is stop, r, g, b, a
+            gradient->add_color_stop_rgba(1.0, brightness, brightness, brightness, 0.0);   // fade difuse
             ctx->rectangle(0.0, 0.0, MESSIER_RADIUS*2.0, MESSIER_RADIUS*2.0);
             ctx->clip();
             ctx->set_source(gradient);
@@ -204,7 +204,7 @@ StarDraw::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
 	    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
 	    if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
-            ctx->arc(p.getX() - PLANET_RADIUS, p.getY() - PLANET_RADIUS, PLANET_RADIUS, 0.0, 2.0*M_PI);
+            ctx->arc(p.getX() - PLANET_RADIUS, p.getY() - PLANET_RADIUS, PLANET_RADIUS, 0.0, Math::TWO_PI);
             ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
             ctx->fill();
             ctx->set_source_rgb(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
@@ -228,7 +228,7 @@ StarDraw::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& j
     if (azAlt->isVisible()) {
         auto p = azAlt->toScreen(layout);
         ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW);
-        ctx->arc(p.getX(), p.getY(), SUN_MOON_RADIUS, 0.0, M_PI * 2.0);
+        ctx->arc(p.getX(), p.getY(), SUN_MOON_RADIUS, 0.0, Math::TWO_PI);
         ctx->fill();
     }
 }
@@ -333,7 +333,7 @@ StarDraw::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate&
             auto p = azAlt->toScreen(layout);
             auto rs = Math::mix(MAX_STAR_RADIUS, MIN_STAR_RADIUS, ((s->getVmagnitude() - 3.0) / 2.0));
             //std::cout << "x " << p.getX() << " y " << p.getY() << " rs " << rs << "\n";
-            ctx->arc(p.getX(), p.getY(), rs, 0.0, M_PI * 2.0);
+            ctx->arc(p.getX(), p.getY(), rs, 0.0, Math::TWO_PI);
             ctx->fill();
         }
     }
@@ -407,7 +407,7 @@ StarDraw::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd
     ctx->set_source(grad);
     ctx->fill();
     ctx->translate((layout.getWidth()/2), (layout.getHeight()/2));
-    ctx->arc(0.0, 0.0, r, 0.0, M_PI * 2.0);
+    ctx->arc(0.0, 0.0, r, 0.0, Math::TWO_PI);
     ctx->clip();    // as we draw some lines beyond the horizon
     if (isShowMilkyway()) {
         draw_milkyway(ctx, jd, geoPos, layout);

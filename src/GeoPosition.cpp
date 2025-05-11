@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <cmath>
 
 #include "GeoPosition.hpp"
-
 #include "Math.hpp"
 
 GeoPosition::GeoPosition()
@@ -79,25 +78,25 @@ GeoPosition::toAzimutAltitude(const std::shared_ptr<RaDec>& raDec, const JulianD
     //System.out.format("jd %.3f\n", jd);
     const double gmst = greenwichMeanSiderealTime(jd);
     //System.out.format("gmst %.3f\n", gmst);
-    double localSiderealTime = std::fmod((gmst + lonRad), (M_PI2));
+    double localSiderealTime = std::fmod((gmst + lonRad), (Math::TWO_PI));
     //System.out.format("localSiderealTime %.3f\n", localSiderealTime);
 
     double H = (localSiderealTime - raRad);
     //System.out.format("H %.3f\n", H);
     if (H < 0.0) {
-        H += M_PI2;
+        H += Math::TWO_PI;
     }
-    if (H > M_PI) {
-        H = H - M_PI2;
+    if (H > Math::PI) {
+        H = H - Math::TWO_PI;
     }
 
     double az = (std::atan2(std::sin(H), std::cos(H) * std::sin(latRad) - std::tan(decRad) * std::cos(latRad)));
     //System.out.format("az %.3f\n", az);
     double a = (std::asin(std::sin(latRad) * std::sin(decRad) + std::cos(latRad) * std::cos(decRad) * std::cos(H)));
     //System.out.format("a %.3f\n", a);
-    az -= M_PI;
+    az -= Math::PI;
     if (az < 0.0) {
-        az += M_PI2;
+        az += Math::TWO_PI;
     }
     return std::make_shared<AzimutAltitude>(az, a);
 }
@@ -111,9 +110,9 @@ GeoPosition::greenwichMeanSiderealTime(const JulianDate& jd) const
 
     double gmst = earthRotationAngle(jd) + Math::toRadians((0.014506 + 4612.156534*t + 1.3915817*t*t - 0.00000044 *t*t*t - 0.000029956*t*t*t*t - 0.0000000368*t*t*t*t*t)/60.0/60.0);  //eq 42
     //System.out.format("gmst %.3f\n", gmst);
-    gmst = std::fmod(gmst, M_PI2);
+    gmst = std::fmod(gmst, Math::TWO_PI);
     if (gmst < 0.0) {
-        gmst += M_PI2;
+        gmst += Math::TWO_PI;
     }
 
     return gmst;
@@ -128,11 +127,11 @@ GeoPosition::earthRotationAngle(const JulianDate& jd) const
 	const double f = std::fmod(t, 1.0);
 	//System.out.format("f %.3f\n", f);
 
-	double theta = M_PI2 * (f + 0.7790572732640 + 0.00273781191135448 * t); //eq 14
+	double theta = Math::TWO_PI * (f + 0.7790572732640 + 0.00273781191135448 * t); //eq 14
 	//System.out.format("thet %.3f\n", theta);
-	theta = std::fmod(theta, M_PI2);
+	theta = std::fmod(theta, Math::TWO_PI);
 	if (theta < 0.0) {
-	    theta += M_PI2;
+	    theta += Math::TWO_PI;
 	}
 	return theta;
 }

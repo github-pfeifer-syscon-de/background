@@ -35,7 +35,7 @@ Sun::position(const JulianDate& jd)
 	    L += 360.0;
 	}
 	if (g < 0.0) {
-	    g += M_PI * 2.0;
+	    g += Math::TWO_PI;
 	}
 	double lambda = Math::toRadians(L+1.915*std::sin(g)+0.020*std::sin(2.0*g));
 	//double beta = 0.0;
@@ -43,7 +43,7 @@ Sun::position(const JulianDate& jd)
 	double ra = std::atan2(std::cos(eps) * std::sin(lambda), std::cos(lambda));
 	double dec= std::asin(std::sin(eps)*std::sin(lambda));
 	if (ra < 0.0) {
-	    ra += M_PI * 2.0;
+	    ra += Math::TWO_PI;
 	}
 	return std::make_shared<RaDec>(ra, dec);
 }

@@ -60,7 +60,7 @@ void
 Moon::showPhase(const JulianDate& jd, const Cairo::RefPtr<Cairo::Context>& cr, double radius)
 {
 	Phase phase = Moon::getPhase(jd);
-    cr->arc(radius, radius, radius, 0.0, M_PI * 2.0);
+    cr->arc(radius, radius, radius, 0.0, Math::TWO_PI);
 	if (phase.isWanning()) {
 	    cr->set_source_rgb(0.6, 0.6, 0.6);
 	    cr->fill();
@@ -104,7 +104,7 @@ Moon::position(const JulianDate& jd) {
 
 	double ra = std::atan2(m, l);
 	if (ra < 0.0){
-	    ra += M_PI * 2.0;
+	    ra += Math::TWO_PI;
 	}
 	double dec = std::asin(n);
 	return std::make_shared<RaDec>(ra, dec);

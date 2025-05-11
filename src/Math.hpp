@@ -40,8 +40,12 @@ public:
     Math();
     explicit Math(const Math& orig) = delete;
     virtual ~Math() = default;
-    static constexpr auto DEGREEE2RADIANS = M_PI / 180.0;
-    static constexpr auto HOURS2RADIANS = M_PI / 12.0;
+    // can be replaced by std::numers<pi> with c++20
+    static constexpr auto PI{3.141592653589793238462643383279502884};
+    static constexpr auto DEGREEE2RADIANS{PI / 180.0};
+    static constexpr auto HOURS2RADIANS{PI / 12.0};
+    static constexpr auto HALF_PI{PI / 2.0};
+    static constexpr auto TWO_PI{PI * 2.0};
     static inline double toRadians(double deg)
     {
         return deg * DEGREEE2RADIANS;

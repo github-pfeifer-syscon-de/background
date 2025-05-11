@@ -55,7 +55,6 @@ public:
     static constexpr auto MAX_STAR_RADIUS{3.0};
     static constexpr auto MIN_STAR_RADIUS{1.0};
     static constexpr auto MESSIER_RADIUS{4.0};
-    static constexpr auto MIN_MESSIER_RADIUS{2.0};
     static constexpr auto START_COLOR_KEY{"startColor"};
     static constexpr auto STOP_COLOR_KEY{"stopColor"};
     static constexpr auto STAR_FONT_KEY{"starFont"};

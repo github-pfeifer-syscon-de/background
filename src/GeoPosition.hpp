@@ -46,10 +46,9 @@ public:
     std::shared_ptr<AzimutAltitude> toAzimutAltitude(const std::shared_ptr<RaDec>& raDec, const JulianDate& jd) const;
 
 
-    static constexpr auto M_PI2 = M_PI * 2.0;
 private:
-    double lon{0.0};	    // values are in degrees
-    double lat{0.0};
+    double lon{};	    // values are in degrees
+    double lat{};
 
     double greenwichMeanSiderealTime(const JulianDate& jd) const;
     double earthRotationAngle(const JulianDate& jd) const;

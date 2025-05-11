@@ -267,7 +267,7 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
 void
 ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer)
 {
-	double angleRad = 2.0 * M_PI * static_cast<double>(value) / static_cast<double>(full);
+	double angleRad = Math::TWO_PI * static_cast<double>(value) / static_cast<double>(full);
 	double xv = std::sin(angleRad);
 	double yv = -std::cos(angleRad);
     ctx->move_to(inner * xv, inner * yv);
@@ -282,7 +282,7 @@ ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* s
     ctx->translate(m_radius, m_radius);
     ctx->begin_new_path();  // as we get a strange stoke otherwise
     ctx->set_line_width(2.0);
-    ctx->arc(0.0, 0.0, m_radius, 0, 2.0 * M_PI);
+    ctx->arc(0.0, 0.0, m_radius, 0, Math::TWO_PI);
     ctx->stroke();
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();
     int hourM = (dateTime.get_hour() % 12) * 60 + dateTime.get_minute();
