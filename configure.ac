@@ -29,7 +29,7 @@ dnl PKG_CHECK_MODULES([GTKMM], [gtkmm-3.0])
 dnl PKG_CHECK_MODULES([GLIBMM], [glibmm-2.4 giomm-2.4])
 dnl PKG_CHECK_MODULES(JSONGLIB1, [json-glib-1.0])
 
-AC_ARG_WITH([python], AS_HELP_STRING([--without-python], [If you don't like the python info scripting option (internal functions will will be used)]))
+AC_ARG_WITH([python], AS_HELP_STRING([--without-python], [If you don't like the python info scripting option (internal functions will will be used instead)]))
 
 AS_IF([test "x$with_python" != "xno"], [
     PKG_CHECK_MODULES([PYTHON], [python3-embed py3cairo], [AC_DEFINE([USE_PYTHON], [1], [Using python])])

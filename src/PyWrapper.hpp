@@ -30,10 +30,16 @@ public:
     explicit PyClass(const PyClass& orig) = delete;
     virtual ~PyClass();
 
-    bool load(std::FILE* fp, const std::string& basename, PyObject* pGlobal);
-    long displayClock(const std::string& method
+    bool isUpdated();
+    bool load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlobal);
+    long displayClockAnalog(const std::string& method
                     , const Cairo::RefPtr<Cairo::Context>& ctx
                     , double radius);
+    long displayClockDigital(const std::string& method
+                    , const Cairo::RefPtr<Cairo::Context>& ctx
+                    , const std::string& font
+                    , const std::string& format
+                    , double analogRadius);
     long displayInfo(const std::string& method
                     , const Cairo::RefPtr<Cairo::Context>& ctx
                     , const Glib::ustring& font
@@ -47,6 +53,8 @@ private:
     PyObject* m_pInstance{nullptr};
     PyObject* pModule{nullptr};
     PyObject* pLocal{nullptr};
+    Glib::RefPtr<Gio::File> m_file;
+    Glib::DateTime m_fileModified;
 };
 
 // this should be keep as singleton

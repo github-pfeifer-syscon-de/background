@@ -103,6 +103,26 @@ Module::fillPos(Gtk::ComboBoxText* pos)
     pos->append(POS_BOTTOM, "Bottom");
 }
 
+std::shared_ptr<PyClass>
+Module::checkPyClass(StarDraw* starDraw, const char* pyfile, const char* className)
+{
+#   ifdef USE_PYTHON
+    if (!m_pyClass || m_pyClass->isUpdated()) {
+        auto file = starDraw->getFileLoader()->findLocalFile(pyfile);
+        if (file) {
+            auto infoScript = m_pyWrapper->load(file, className);
+            if (infoScript) {
+                m_pyClass = infoScript;
+            }
+        }
+        else {
+            std::cout << "The file " << pyfile << " was not found!" << std::endl;
+        }
+    }
+#   endif
+    return m_pyClass;
+}
+
 int
 CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
@@ -124,21 +144,10 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     getPrimaryColor(ctx);
     auto calFont = getFont();
 #   ifdef USE_PYTHON
-    if (!m_pyClass) {
-        auto file = starDraw->getFileLoader()->findLocalFile("cal.py");
-        if (file) {
-            auto calScript = m_pyWrapper->load(file, "Cal");
-            if (calScript) {
-                m_pyClass = calScript;
-            }
-        }
-        else {
-            std::cout << "The cal.py was not found!" << std::endl;
-        }
-    }
-    if (m_pyClass) {
+    auto pyClass = checkPyClass(starDraw, "cal.py", "Cal");
+    if (pyClass) {
         auto font = calFont.to_string();
-        m_pyClass->displayCal("draw", ctx, font);
+        pyClass->displayCal("draw", ctx, font);
     }
     else {
         std::cout << "CalendarModule::display no Class!" << std::endl;
@@ -150,6 +159,10 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     starDraw->scale(calFont, 0.6);
     auto smallLayout = Pango::Layout::create(ctx);
     smallLayout->set_font_description(calFont);
+    auto boldLayout = Pango::Layout::create(ctx);
+    auto boldFont = getFont();
+    boldFont.set_weight(Pango::WEIGHT_BOLD);
+    boldLayout->set_font_description(boldFont);
     Grid grid{static_cast<int>(m_width * 2.5), m_height};
     Glib::DateTime dateToday = Glib::DateTime::create_now_local();
     pangoLayout->set_text(dateToday.format("%B"));  // month name
@@ -167,13 +180,12 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
         grid.put(smallLayout, ctx, 0, row, 1.0);
         int wd = dateTime.get_day_of_week();
         for (int w = wd; w <= 7; ++w) {
-            Gdk::RGBA calColor = getPrimaryColor();
+            auto dayLayout = pangoLayout;
             if (dateTime.get_day_of_month() == dateToday.get_day_of_month()) {
-                starDraw->brighten(calColor, 1.3);
+                dayLayout = boldLayout;
             }
-            ctx->set_source_rgb(calColor.get_red(), calColor.get_green(), calColor.get_blue());
-            pangoLayout->set_text(dateTime.format("%e"));
-            grid.put(pangoLayout, ctx, w, row, 1.0);
+            dayLayout->set_text(dateTime.format("%e"));
+            grid.put(dayLayout, ctx, w, row, 1.0);
             dateTime = dateTime.add_days(1);
             if (dateTime.get_month() != dateToday.get_month()) {
                 return;      // if month ended stop
@@ -226,21 +238,13 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
     SysInfo sysInfo;
     auto netInfo = sysInfo.netInfo();
 #   ifdef USE_PYTHON
-    if (!m_pyClass) {
-        auto file = starDraw->getFileLoader()->findLocalFile("info.py");
-        if (file) {
-            auto infoScript = m_pyWrapper->load(file, "Info");
-            if (infoScript) {
-                m_pyClass = infoScript;
-            }
-        }
-        else {
-            std::cout << "The info.py was not found!" << std::endl;
-        }
-    }
-    if (m_pyClass) {
+    auto pyClass = checkPyClass(starDraw, "info.py", "Info");
+    if (pyClass) {
         auto font = infoFont.to_string();
-        m_pyClass->displayInfo("draw", ctx, font, netInfo);
+        pyClass->displayInfo("draw", ctx, font, netInfo);
+    }
+    else {
+        std::cout << "InfoModule::display no Class!" << std::endl;
     }
 #   else
     auto pangoLayout = Pango::Layout::create(ctx);
@@ -445,7 +449,6 @@ ClockModule::getEffectiveFormat()
 void
 ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center)
 {
-    ctx->save();
     auto pangoLayout = createLayout(ctx);
     if (!center) {
         ctx->move_to(0.0, 0.0);
@@ -455,10 +458,7 @@ ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* 
         pangoLayout->get_pixel_size(width, height);
         ctx->move_to(getRadius() - width / 2.0, getRadius() - height / 2.0);
     }
-    auto color = getPrimaryColor();
-    ctx->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), 0.6);
     pangoLayout->show_in_cairo_context(ctx);
-    ctx->restore();
 }
 
 
@@ -466,31 +466,33 @@ void
 ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
     getPrimaryColor(ctx);
+#   ifdef USE_PYTHON
+    auto pyClass = checkPyClass(starDraw, "clock.py", "Clock");
+    if (!pyClass) {
+        std::cout << "ClockModule::display no Class!" << std::endl;
+        return;
+    }
+#   endif
     if (isDisplayAnalog()) {
         getPrimaryColor(ctx);   // set the here so we don't have to pass this
         ctx->begin_new_path();  // as we get a strange stoke otherwise
 #       ifdef USE_PYTHON
-        if (!m_pyClass) {
-            auto file = starDraw->getFileLoader()->findLocalFile("clock.py");
-            if (file) {
-                auto clockScript = m_pyWrapper->load(file, "Clock");
-                if (clockScript) {
-                    m_pyClass = clockScript;
-                }
-            }
-            else {
-                std::cout << "The clock.py was not found!" << std::endl;
-            }
-        }
-        if (m_pyClass) {
-            m_pyClass->displayClock("draw", ctx, getRadius());
-        }
+        pyClass->displayClockAnalog("drawAnalog", ctx, getRadius());
 #       else
         displayAnalog(ctx, starDraw);
 #       endif
     }
     if (isDisplayDigital()) {
+        auto color = getPrimaryColor();
+        ctx->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), isDisplayAnalog() ? 0.6 : 1.0);
+#       ifdef USE_PYTHON
+        auto fmt = getEffectiveFormat();
+        auto clockFont = getFont();
+        auto fontName= clockFont.to_string();
+        pyClass->displayClockDigital("drawDigital", ctx, fontName, fmt, isDisplayAnalog() ? getRadius() : 0.0);
+#       else
         displayDigital(ctx, starDraw, isDisplayAnalog());
+#       endif
     }
 }
 

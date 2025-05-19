@@ -35,12 +35,23 @@ PyClass::~PyClass()
 }
 
 bool
-PyClass::load(std::FILE* fp, const std::string& basename, PyObject* pGlobal)
+PyClass::isUpdated()
 {
+    auto info = m_file->query_info("*");
+    auto fileModified = info-> get_modification_date_time();
+    return fileModified.compare(m_fileModified) > 1;
+}
+
+bool
+PyClass::load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlobal)
+{
+    m_file = file;
+    auto info = m_file->query_info("*");
+    m_fileModified = info-> get_modification_date_time();
     //Create a new module object
+    std::string basename = file->get_basename();
     pModule = PyModule_New(m_obj.c_str());
     PyModule_AddStringConstant(pModule, "__file__", basename.c_str());
-
     //Get the dictionary object from my module so I can pass this to PyRun_String
     pLocal = PyModule_GetDict(pModule);
     PyObject* pValue = PyRun_File(fp, basename.c_str(), Py_file_input, pGlobal, pLocal);
@@ -71,12 +82,15 @@ PyClass::load(std::FILE* fp, const std::string& basename, PyObject* pGlobal)
     return true;
 }
 
+// have to keep this construct as referencing more python
+//   from module needs even more #ifdef ...
+//     (and py3cairo.h has it's own issues)
 long
-PyClass::displayClock(const std::string& method, const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
+PyClass::displayClockAnalog(const std::string& method, const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
 {
     long ret = -1;
     if (!m_pInstance) {
-        std::cout << "PyClass::displayClock no instance" << std::endl;
+        std::cout << "PyClass::displayClockAnalog no instance" << std::endl;
         return ret;
     }
     cairo_t* c_ctx = ctx->cobj();
@@ -91,20 +105,31 @@ PyClass::displayClock(const std::string& method, const Cairo::RefPtr<Cairo::Cont
     if (PyErr_Occurred()) {
         PyErr_Print();
     }
-    //Get a pointer to the function
-    //PyObject* pFunc = PyObject_GetAttrString(pModule, fun.c_str());
+    return ret;
+}
 
-    //Double check we have actually found it and it is callable
-    //if (!pFunc || !PyCallable_Check(pFunc)) {
-    //    if (PyErr_Occurred()) {
-    //        PyErr_Print();
-    //    }
-    //    fprintf(stderr, "Cannot find function \"%s\"\n", fun.c_str());
-    //    return 2;
-    //}
-
-    //pValue = PyObject_CallObject(pFunc, pArgs);
-
+long
+PyClass::displayClockDigital(const std::string& method
+            , const Cairo::RefPtr<Cairo::Context>& ctx
+            , const std::string& font
+            , const std::string& format
+            , double analogRadius)
+{
+    long ret = -1;
+    if (!m_pInstance) {
+        std::cout << "PyClass::displayClockDigital no instance" << std::endl;
+        return ret;
+    }
+    cairo_t* c_ctx = ctx->cobj();
+    PyObject* context = PycairoContext_FromContext(c_ctx, &PycairoContext_Type, NULL);
+    PyObject* pValue = PyObject_CallMethod(m_pInstance, method.c_str(), "(Ossd)", context, font.c_str(), format.c_str(), analogRadius);
+    if (pValue)  {
+        ret = PyLong_AsLong(pValue);
+        Py_DECREF(pValue);
+    }
+    if (PyErr_Occurred()) {
+        PyErr_Print();
+    }
     return ret;
 }
 
@@ -196,7 +221,7 @@ PyWrapper::load(const Glib::RefPtr<Gio::File>& file, const std::string& obj)
         return pyClass;
     }
     auto tempClass = std::make_shared<PyClass>(obj);
-    bool ret = tempClass->load(fp, file->get_basename(), m_pGlobal);
+    bool ret = tempClass->load(fp, file, m_pGlobal);
     fclose(fp);
     if (ret) {
         pyClass = tempClass;

@@ -49,7 +49,7 @@ class Cal:
         PangoCairo.show_layout(ctx, layout)
         return
 
-    def grid(self,ctx,font,year,month):
+    def grid(self,ctx,font,year,month,today):
         import cairo
         import calendar
         import locale
@@ -67,6 +67,10 @@ class Cal:
         #print(f"Using small {small_font.get_size()} ")
         smallLayout = PangoCairo.create_layout(ctx)
         smallLayout.set_font_description(small_font)
+        font_bold = Pango.font_description_from_string(font)
+        font_bold.set_weight(Pango.Weight.BOLD)
+        boldLayout = PangoCairo.create_layout(ctx)
+        boldLayout.set_font_description(font_bold)
         layout.set_text("M")
         size=layout.get_pixel_size()
         self.m_cellHeight = size.height
@@ -87,8 +91,11 @@ class Cal:
             for j, day in enumerate(row):
                 if (day > 0):
                     #print(f"writing day {day} {j} {i}")
-                    layout.set_text(f"{day}")
-                    self.putText(ctx, layout, j+1, i+2)
+                    dayLayout = layout
+                    if (day == today):
+                        dayLayout = boldLayout
+                    dayLayout.set_text(f"{day}")
+                    self.putText(ctx, dayLayout, j+1, i+2)
         return
 
     def draw(self,ctx,font):
@@ -98,7 +105,7 @@ class Cal:
         now = datetime.datetime.now()
         self.build(now.year, now.month)
         #print(f"draw got rows {len(self.rows)}")
-        self.grid(ctx, font, now.year, now.month);
+        self.grid(ctx, font, now.year, now.month, now.day);
         return 0
 
 

@@ -26,7 +26,7 @@ Depends on genericImg see there for build instructions.
 
 By default for rendering the info blocks python will be used
 (this requires the Development install of python3, python-gobject, py3cairo ).
-If you don't like this this option use
+If you don't like this option use
 ./configure --prefix=/usr --without-python
 the internal functions for rendering will be used.
 

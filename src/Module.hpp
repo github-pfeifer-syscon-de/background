@@ -88,12 +88,15 @@ public:
 
 protected:
     void fillPos(Gtk::ComboBoxText* pos);
+    std::shared_ptr<PyClass> checkPyClass(StarDraw* starDraw, const char* pyfile, const char* className);
 
     const std::string m_name;
     Glib::ustring m_position;
     Gdk::RGBA m_primaryColor;
     std::shared_ptr<KeyConfig> m_config;
     std::shared_ptr<PyWrapper> m_pyWrapper;
+private:
+    std::shared_ptr<PyClass> m_pyClass;
 };
 
 using PtrModule = std::shared_ptr<Module>;
@@ -121,7 +124,6 @@ private:
     Gtk::ColorButton* m_calendarColor;
     Gtk::FontButton* m_calendarFont;
     Gtk::ComboBoxText* m_calPos;
-    std::shared_ptr<PyClass> m_pyClass;
 };
 
 class InfoModule
@@ -143,7 +145,6 @@ private:
     Gtk::ColorButton* m_infoColor;
     Gtk::FontButton* m_infoFont;
     Gtk::ComboBoxText* m_infoPos;
-    std::shared_ptr<PyClass> m_pyClass;
 };
 
 
@@ -191,5 +192,4 @@ protected:
     Gtk::CheckButton* m_displayDigital;
     Gtk::FontButton* m_clockFont;
     Gtk::ComboBoxText* m_clockPos;
-    std::shared_ptr<PyClass> m_pyClass;
 };

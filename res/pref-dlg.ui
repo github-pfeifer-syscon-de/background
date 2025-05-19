@@ -730,7 +730,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Format (see &lt;a href='https://gnome.pages.gitlab.gnome.org/glibmm/classGlib_1_1DateTime.html#a7795905c8db173a973f965a7f27c7f51'&gt;Glib::DateTime&lt;/a&gt; or  &lt;a href='https://cplusplus.com/reference/ctime/strftime/'&gt;strftime&lt;/a&gt;)</property>
+                    <property name="label" translatable="yes">Format (see &lt;a href='https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior'&gt;Python strftime&lt;/a&gt; or  &lt;a href='https://cplusplus.com/reference/ctime/strftime/'&gt;strftime&lt;/a&gt;)</property>
                     <property name="use-markup">True</property>
                     <property name="track-visited-links">False</property>
                     <property name="xalign">1</property>
