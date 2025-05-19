@@ -31,13 +31,13 @@ public:
     virtual ~SysInfo() = default;
 
     std::list<std::string> allInfos();
-protected:
     std::string nodeName();
     std::string machine();
     std::string osVersion();
     std::string cpuInfo();
     std::string memInfo();
     std::string netInfo();
+protected:
     std::string netConn(const std::string& netintf);
 
 private:

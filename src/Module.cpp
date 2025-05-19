@@ -18,11 +18,13 @@
 
 #include <StringUtils.hpp>
 
-
 #include "StarDraw.hpp"
 #include "SysInfo.hpp"
 #include "Math.hpp"
-
+#ifdef USE_PYTHON
+#include "PyWrapper.hpp"
+#endif
+#include "FileLoader.hpp"
 
 void
 Grid::put(Glib::RefPtr<Pango::Layout>& layout
@@ -40,7 +42,7 @@ Grid::put(Glib::RefPtr<Pango::Layout>& layout
     int baseline = layout->get_baseline();
     int cellWidth = colSpan * m_cellWidth;
     int cellHeight = rowSpan * m_cellHeight;
-    // unsure what the exact conversion from pango base line to pixel is 1024 seems to fit here
+    // unsure what the exact conversion from pango base line to pixel is, 1024 seems to fit here
     ctx->move_to(static_cast<int>(x + (cellWidth - textWidth) * halign)
                , static_cast<int>(y + (cellHeight - baseline / 1024) * valign));
     layout->show_in_cairo_context(ctx);
@@ -118,9 +120,31 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     if (m_height == 0) {
         getHeight(ctx, starDraw);
     }
-    // as there seems no way to diffrentiate the locale start with monday (but it's the iso way)
+
     getPrimaryColor(ctx);
     auto calFont = getFont();
+#   ifdef USE_PYTHON
+    if (!m_pyClass) {
+        auto file = starDraw->getFileLoader()->findLocalFile("cal.py");
+        if (file) {
+            auto calScript = m_pyWrapper->load(file, "Cal");
+            if (calScript) {
+                m_pyClass = calScript;
+            }
+        }
+        else {
+            std::cout << "The cal.py was not found!" << std::endl;
+        }
+    }
+    if (m_pyClass) {
+        auto font = calFont.to_string();
+        m_pyClass->displayCal("draw", ctx, font);
+    }
+    else {
+        std::cout << "CalendarModule::display no Class!" << std::endl;
+    }
+#   else
+    // as there seems no way to diffrentiate the locale start with monday (but it's the iso way)
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(calFont);
     starDraw->scale(calFont, 0.6);
@@ -156,6 +180,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
             }
         }
     }
+#   endif
 }
 
 void
@@ -198,9 +223,28 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
 {
     getPrimaryColor(ctx);
     auto infoFont = getFont();
+    SysInfo sysInfo;
+    auto netInfo = sysInfo.netInfo();
+#   ifdef USE_PYTHON
+    if (!m_pyClass) {
+        auto file = starDraw->getFileLoader()->findLocalFile("info.py");
+        if (file) {
+            auto infoScript = m_pyWrapper->load(file, "Info");
+            if (infoScript) {
+                m_pyClass = infoScript;
+            }
+        }
+        else {
+            std::cout << "The info.py was not found!" << std::endl;
+        }
+    }
+    if (m_pyClass) {
+        auto font = infoFont.to_string();
+        m_pyClass->displayInfo("draw", ctx, font, netInfo);
+    }
+#   else
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(infoFont);
-    SysInfo sysInfo;
     std::string text;
     text.reserve(512);
     for (auto info : sysInfo.allInfos()) {
@@ -209,6 +253,7 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
     pangoLayout->set_text(text);
     ctx->move_to(0.0, 0.0);
     pangoLayout->show_in_cairo_context(ctx);
+#   endif
 }
 
 void
@@ -252,7 +297,7 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
 {
     int analogHeight{},digitalHeight{};
     if (isDisplayAnalog()) {
-        analogHeight = static_cast<int>(m_radius * 2.0);
+        analogHeight = static_cast<int>(getRadius() * 2.0);
     }
     if (isDisplayDigital()) {
         auto pangoLayout = createLayout(ctx);
@@ -262,48 +307,126 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
     return std::max(analogHeight, digitalHeight);
 }
 
+double
+ClockModule::getRadius()
+{
+    return m_config->getDouble(getName().c_str(), RADIUS_KEY, 160.0);
+}
+
+void
+ClockModule::setRadius(double radius)
+{
+    m_config->setDouble(getName().c_str(), RADIUS_KEY, radius);
+}
+
+Glib::ustring
+ClockModule::getFormat()
+{
+    return m_config->getString(getName().c_str(), FORMAT, "%X");
+}
+
+void
+ClockModule::setFormat(const Glib::ustring& format)
+{
+    return m_config->setString(getName().c_str(), FORMAT, format);
+}
+
+bool
+ClockModule::isDisplayAnalog()
+{
+    return m_config->getBoolean(getName().c_str(), DISPLAY_ANALOG, true);
+}
+
+void
+ClockModule::setDisplayAnalog(bool displayAnalog)
+{
+    return m_config->setBoolean(getName().c_str(), DISPLAY_ANALOG, displayAnalog);
+}
+
+bool
+ClockModule::isDisplayDigital()
+{
+    return m_config->getBoolean(getName().c_str(), DISPLAY_DIGITAL, false);
+}
+
+void
+ClockModule::setDisplayDigital(bool displayDigital)
+{
+    return m_config->setBoolean(getName().c_str(), DISPLAY_DIGITAL, displayDigital);
+}
+
 
 // draw line from center outwards
 void
-ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer)
+ClockModule::drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, bool emphasis, double outer)
 {
 	double angleRad = Math::TWO_PI * static_cast<double>(value) / static_cast<double>(full);
 	double xv = std::sin(angleRad);
 	double yv = -std::cos(angleRad);
+    // tick style
+	double inner;
+	if (emphasis) {
+        ctx->set_line_width(2.0);
+        inner = outer * 0.9;
+	}
+	else {
+        ctx->set_line_width(1.0);
+        inner = outer * 0.95;
+	}
     ctx->move_to(inner * xv, inner * yv);
     ctx->line_to(outer * xv, outer * yv);
     ctx->stroke();
+    // dot style
+    //ctx->arc(xv * outer * 0.9, yv * outer * 0.9, emphasis ? 3.0 : 2.0, 0.0, Math::TWO_PI);
+    //ctx->fill();
 }
 
+// draw line from center outwards
+void
+ClockModule::drawHand(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double outer, double width)
+{
+	double angleRad = Math::TWO_PI * static_cast<double>(value) / static_cast<double>(full);
+	double xv = std::sin(angleRad);
+	double yv = -std::cos(angleRad);
+    ctx->set_line_width(width);
+    ctx->set_line_cap(Cairo::LineCap::LINE_CAP_ROUND);
+    ctx->move_to(0.0, 0.0);
+    ctx->line_to(outer * xv, outer * yv);
+    ctx->stroke();
+
+    // if you like more pointy hands
+    //ctx->save();
+    //ctx->rotate(angleRad + Math::PI);
+    //ctx->move_to(-width, 0.0);
+    //ctx->line_to(width, 0.0);
+    //ctx->line_to(0.0, outer);
+    //ctx->close_path();
+    //ctx->fill();
+    //ctx->restore();
+}
+
+// this was kept for reference the drawing was migrated
+//    to python to allow more flexibility
 void
 ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
     ctx->save();
-    ctx->translate(m_radius, m_radius);
+    ctx->translate(getRadius(), getRadius());
+    ctx->set_line_cap(Cairo::LineCap::LINE_CAP_BUTT);
     ctx->begin_new_path();  // as we get a strange stoke otherwise
-    ctx->set_line_width(2.0);
-    ctx->arc(0.0, 0.0, m_radius, 0, Math::TWO_PI);
+    ctx->set_line_width(1.0);
+    ctx->arc(0.0, 0.0, getRadius(), 0.0, Math::TWO_PI);
     ctx->stroke();
+	//const double inner5 = m_radius * MINUTE_TICK_FACTOR;
+    //ctx->arc(0.0, 0.0, inner5, 0.0, Math::TWO_PI);
+    //ctx->stroke();
+
     Glib::DateTime dateTime = Glib::DateTime::create_now_local();
     int hourM = (dateTime.get_hour() % 12) * 60 + dateTime.get_minute();
-    drawRadialLine(ctx, hourM, 12 * 60, 0.0, m_radius * 0.6);
-    ctx->set_line_width(1.0);
-    drawRadialLine(ctx, dateTime.get_minute(), 60, 0.0, m_radius * 0.8);
-	const double inner10 = 0.9 * m_radius;
-	const double inner5 = 0.95 * m_radius;
-	const double inner2 = 0.98 * m_radius;
+    drawHand(ctx, hourM, 12 * 60, getRadius() * 0.6, 2.0);
+    drawHand(ctx, dateTime.get_minute(), 60, getRadius() * 0.8, 1.0);
 	for (int i = 0; i < 60; ++i) {
-	    double inner;
-	    if (i % 15 == 0) {
-            inner = inner10;
-	    }
-	    else if (i % 5 == 0) {
-            inner = inner5;
-	    }
-	    else {
-            inner = inner2;
-	    }
-	    drawRadialLine(ctx, i, 60, inner, m_radius);
+        drawRadialLine(ctx, i, 60, (i % 5) == 0, getRadius());
 	}
     ctx->restore();
 }
@@ -330,7 +453,7 @@ ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* 
     else {
         int width, height;
         pangoLayout->get_pixel_size(width, height);
-        ctx->move_to(m_radius - width / 2.0, m_radius - height / 2.0);
+        ctx->move_to(getRadius() - width / 2.0, getRadius() - height / 2.0);
     }
     auto color = getPrimaryColor();
     ctx->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), 0.6);
@@ -344,7 +467,27 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 {
     getPrimaryColor(ctx);
     if (isDisplayAnalog()) {
+        getPrimaryColor(ctx);   // set the here so we don't have to pass this
+        ctx->begin_new_path();  // as we get a strange stoke otherwise
+#       ifdef USE_PYTHON
+        if (!m_pyClass) {
+            auto file = starDraw->getFileLoader()->findLocalFile("clock.py");
+            if (file) {
+                auto clockScript = m_pyWrapper->load(file, "Clock");
+                if (clockScript) {
+                    m_pyClass = clockScript;
+                }
+            }
+            else {
+                std::cout << "The clock.py was not found!" << std::endl;
+            }
+        }
+        if (m_pyClass) {
+            m_pyClass->displayClock("draw", ctx, getRadius());
+        }
+#       else
         displayAnalog(ctx, starDraw);
+#       endif
     }
     if (isDisplayDigital()) {
         displayDigital(ctx, starDraw, isDisplayAnalog());

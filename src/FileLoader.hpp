@@ -30,6 +30,7 @@ public:
 
     Glib::ustring find(const Glib::ustring& name);
     Glib::RefPtr<Gio::File> findFile(const Glib::ustring& name);
+    Glib::RefPtr<Gio::File> findLocalFile(const Glib::ustring& name);
 
 private:
     Glib::ustring m_startPath;

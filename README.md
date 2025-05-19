@@ -1,5 +1,5 @@
 # background
-a live star desktop background
+a live star desktop background (some of the info functions are liunx specific)
 (if you expect to see pictures of neil degrasse tyson i'm sorry,
 this was not my intention).
 see AUTHORS for &copy; included data.
@@ -23,3 +23,18 @@ And as a side effect, some insight might be easier to gain
 at a somewhat smaller scale...
 
 Depends on genericImg see there for build instructions.
+
+By default for rendering the info blocks python will be used
+(this requires the Development install of python3, python-gobject, py3cairo ).
+If you don't like this this option use
+./configure --prefix=/usr --without-python
+the internal functions for rendering will be used.
+
+With python you have the option to easily
+modify this displayed infos e.g. use a weather or news service ....
+
+The .py files are localed by default in /usr/share/background-program
+a user version can be placed in $USER_HOME/.local/share/background.
+Which is not created during install so if you want a user version
+created the directory, and copy the default .py from
+the global directory.

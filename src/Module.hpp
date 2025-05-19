@@ -20,6 +20,15 @@
 
 #include <gtkmm.h>
 
+#include "config.h"
+
+#ifdef USE_PYTHON
+#include "PyWrapper.hpp"
+#else
+class PyWrapper;
+class PyClass;
+#endif
+
 class Grid
 {
 public:
@@ -44,9 +53,10 @@ class StarDraw;
 class Module
 {
 public:
-    Module(std::string name, const std::shared_ptr<KeyConfig>& config)
+    Module(std::string name, const std::shared_ptr<KeyConfig>& config, std::shared_ptr<PyWrapper> pyWrapper)
     : m_name{name}
     , m_config{config}
+    , m_pyWrapper{pyWrapper}
     {
     }
     explicit Module(const Module& orig) = delete;
@@ -83,6 +93,7 @@ protected:
     Glib::ustring m_position;
     Gdk::RGBA m_primaryColor;
     std::shared_ptr<KeyConfig> m_config;
+    std::shared_ptr<PyWrapper> m_pyWrapper;
 };
 
 using PtrModule = std::shared_ptr<Module>;
@@ -92,8 +103,8 @@ class CalendarModule
 : public Module
 {
 public:
-    CalendarModule(const std::shared_ptr<KeyConfig>& config)
-    : Module{"calendar", config}
+    CalendarModule(const std::shared_ptr<KeyConfig>& config, const std::shared_ptr<PyWrapper>& pyWrapper)
+    : Module{"calendar", config, pyWrapper}
     {
     }
     explicit CalendarModule(const CalendarModule& orig) = delete;
@@ -110,14 +121,15 @@ private:
     Gtk::ColorButton* m_calendarColor;
     Gtk::FontButton* m_calendarFont;
     Gtk::ComboBoxText* m_calPos;
+    std::shared_ptr<PyClass> m_pyClass;
 };
 
 class InfoModule
 : public Module
 {
 public:
-    InfoModule(const std::shared_ptr<KeyConfig>& config)
-    : Module{"info", config}
+    InfoModule(const std::shared_ptr<KeyConfig>& config, const std::shared_ptr<PyWrapper>& pyWrapper)
+    : Module{"info", config, pyWrapper}
     {
     }
     explicit InfoModule(const InfoModule& orig) = delete;
@@ -131,7 +143,7 @@ private:
     Gtk::ColorButton* m_infoColor;
     Gtk::FontButton* m_infoFont;
     Gtk::ComboBoxText* m_infoPos;
-
+    std::shared_ptr<PyClass> m_pyClass;
 };
 
 
@@ -139,9 +151,8 @@ class ClockModule
 : public Module
 {
 public:
-    ClockModule(const std::shared_ptr<KeyConfig>& config)
-    : Module{"clock", config}
-    , m_radius{getRadius()}
+    ClockModule(const std::shared_ptr<KeyConfig>& config, const std::shared_ptr<PyWrapper>& pyWrapper)
+    : Module{"clock", config, pyWrapper}
     {
     }
     explicit ClockModule(const ClockModule& orig) = delete;
@@ -151,53 +162,28 @@ public:
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
     void saveParam() override;
-    static constexpr auto RADIUS{"radius"};
+    static constexpr auto RADIUS_KEY{"radius"};
     static constexpr auto FORMAT{"format"};
     static constexpr auto DISPLAY_ANALOG{"analog"};
     static constexpr auto DISPLAY_DIGITAL{"digital"};
-    double getRadius()
-    {
-        return m_config->getDouble(getName().c_str(), RADIUS, 160.0);
-    }
-    void setRadius(double radius)
-    {
-        m_radius = radius;
-        m_config->setDouble(getName().c_str(), RADIUS, m_radius);
-    }
-    Glib::ustring getFormat()
-    {
-        return m_config->getString(getName().c_str(), FORMAT, "%X");
-    }
-    void setFormat(const Glib::ustring& format)
-    {
-        return m_config->setString(getName().c_str(), FORMAT, format);
-    }
-    bool isDisplayAnalog()
-    {
-        return m_config->getBoolean(getName().c_str(), DISPLAY_ANALOG, true);
-    }
-    void setDisplayAnalog(bool displayAnalog)
-    {
-        return m_config->setBoolean(getName().c_str(), DISPLAY_ANALOG, displayAnalog);
-    }
-    bool isDisplayDigital()
-    {
-        return m_config->getBoolean(getName().c_str(), DISPLAY_DIGITAL, false);
-    }
-    void setDisplayDigital(bool displayDigital)
-    {
-        return m_config->setBoolean(getName().c_str(), DISPLAY_DIGITAL, displayDigital);
-    }
+    double getRadius();
+    void setRadius(double radius);
+    Glib::ustring getFormat();
+    void setFormat(const Glib::ustring& format);
+    bool isDisplayAnalog();
+    void setDisplayAnalog(bool displayAnalog);
+    bool isDisplayDigital();
+    void setDisplayDigital(bool displayDigital);
 protected:
     void update();
-    void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double inner, double outer);
+    void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, bool emphasis, double outer);
+    void drawHand(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double outer, double width);
     void displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
     void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center);
     Glib::RefPtr<Pango::Layout> createLayout(const Cairo::RefPtr<Cairo::Context>& ctx);
 
     Glib::ustring getEffectiveFormat();
 
-    double m_radius;
     Gtk::ColorButton* m_clockColor;
     Gtk::Scale* m_clockRadius;
     Gtk::Entry* m_clockFormat;
@@ -205,4 +191,5 @@ protected:
     Gtk::CheckButton* m_displayDigital;
     Gtk::FontButton* m_clockFont;
     Gtk::ComboBoxText* m_clockPos;
+    std::shared_ptr<PyClass> m_pyClass;
 };

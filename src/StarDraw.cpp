@@ -44,18 +44,23 @@ StarDraw::StarDraw(BaseObjectType* cobject
 : Gtk::DrawingArea(cobject)
 , m_starWin{starWin}
 {
-    auto fileLoader = std::make_shared<FileLoader>(m_starWin->getBackgroundAppl()->get_exec_path());
-    m_starFormat = std::make_shared<HipparcosFormat>(fileLoader);
+    m_fileLoader = std::make_shared<FileLoader>(m_starWin->getBackgroundAppl()->get_exec_path());
+    m_starFormat = std::make_shared<HipparcosFormat>(m_fileLoader);
     //m_starFormat->getStars();       // preinit
-    m_constlFormat = std::make_shared<ConstellationFormat>(fileLoader);
+    m_constlFormat = std::make_shared<ConstellationFormat>(m_fileLoader);
     //m_constlFormat->getConstellations();
-    m_milkyway = std::make_shared<Milkyway>(fileLoader);
-    m_messier =  std::make_shared<MessierLoader>(fileLoader);
+    m_milkyway = std::make_shared<Milkyway>(m_fileLoader);
+    m_messier =  std::make_shared<MessierLoader>(m_fileLoader);
 	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
     setupConfig();
-    m_infoModule = std::make_shared<InfoModule>(m_config);
-    m_clockModule = std::make_shared<ClockModule>(m_config);
-    m_calendarModule = std::make_shared<CalendarModule>(m_config);
+#ifdef USE_PYTHON
+    auto pyWrapper = std::make_shared<PyWrapper>();
+#else
+    auto pyWrapper = std::shared_ptr<PyWrapper>();
+#endif
+    m_infoModule = std::make_shared<InfoModule>(m_config, pyWrapper);
+    m_clockModule = std::make_shared<ClockModule>(m_config, pyWrapper);
+    m_calendarModule = std::make_shared<CalendarModule>(m_config, pyWrapper);
 }
 #pragma GCC diagnostic pop
 

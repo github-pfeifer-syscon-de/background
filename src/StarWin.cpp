@@ -120,7 +120,7 @@ StarWin::on_mount(Glib::RefPtr<Gio::AsyncResult>& result)
                     arg0 = vapath_list->get_path();
                 }
                 else {
-                    arg0 = "xdg-open";      // go with desktop default
+                    arg0 = "/usr/bin/xdg-open";      // go with desktop default
                 }
                 std::vector<char *> args;
                 args.push_back(const_cast<char*>(arg0.c_str()));    // the api is definied this way...

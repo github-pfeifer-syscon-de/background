@@ -25,7 +25,7 @@ pixmap_DATA=$(icon_basename).png
 appicondir=$(datadir)/icons/hicolor/scalable/apps
 appicon_DATA=$(icon_basename).svg
 
-dist_pkgdata_DATA = hipparcos.json mw.json SnT_constellation.txt messier.json
+dist_pkgdata_DATA = hipparcos.json mw.json SnT_constellation.txt messier.json clock.py info.py cal.py
 
 # include source for build
 EXTRA_DIST = $(RESOURCE_XML) $(RESOURCES) $(desktop_DATA) $(appicon_DATA) $(pixmap_DATA) $(dist_pkgdata_DATA)

@@ -63,7 +63,7 @@ ConstellationFormat::parseLine(const std::string& line, std::map<std::string, st
 	    if (constlIter == constellations.end()) {
             //std::cout << "ConstellationFormat::parseLine adding constl. " << cons << std::endl;
             constl = std::make_shared<Constellation>(cons);
-            constellations.insert(std::pair<std::string, std::shared_ptr<Constellation>>(cons, constl));
+            constellations.insert(std::pair(cons, constl));
 	    }
         else {
             constl = (*constlIter).second;
@@ -98,7 +98,7 @@ ConstellationFormat::readConstellations()
 		    while (true) {  // dataStrm->get_available() > 0u
                 std::string line;
                 dataStrm->read_line_utf8(line);
-                if (line.empty()) {
+                if (line.empty()) { // this works as the format contains no empty lines!
                     break;
                 }
                 parseLine(line, constellations);

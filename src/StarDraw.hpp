@@ -98,6 +98,10 @@ public:
     {
         return m_calendarModule;
     }
+    std::shared_ptr<FileLoader> getFileLoader()
+    {
+        return m_fileLoader;
+    }
 
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
@@ -141,4 +145,5 @@ private:
     std::shared_ptr<InfoModule> m_infoModule;
     std::shared_ptr<ClockModule> m_clockModule;
     std::shared_ptr<CalendarModule> m_calendarModule;
+    std::shared_ptr<FileLoader> m_fileLoader;
 };

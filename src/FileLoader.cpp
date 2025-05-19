@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 
 
 #include "FileLoader.hpp"
@@ -43,6 +44,18 @@ FileLoader::findFile(const Glib::ustring& name)
         return file;
     }
     return Glib::RefPtr<Gio::File>();
+}
+
+Glib::RefPtr<Gio::File>
+FileLoader::findLocalFile(const Glib::ustring& name)
+{
+    std::string uname = "background/" + name;
+    auto fullPath = Glib::canonicalize_filename(uname, Glib::get_user_data_dir().c_str());
+    auto userConfig = Gio::File::create_for_path(fullPath);
+    if (userConfig->query_exists()) {
+        return userConfig;
+    }
+    return findFile(name);  // try remaining locations
 }
 
 Glib::ustring

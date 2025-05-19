@@ -6,6 +6,7 @@ AM_CPPFLAGS = \
         -DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
         -DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(GENERICIMG_CFLAGS) \
+	$(PYTHON_CFLAGS) \
 	$(HARU_CFLAGS)
 
 #	-Wpedantic -pedantic-errors -Wsign-conversion e.g. breaks resource.c, report many headers impractical to use
@@ -36,6 +37,7 @@ background_LDFLAGS = @EXTRA_LDFLAGS@
 background_LDADD =  \
 	$(GENERICIMG_LIBS) \
 	$(JSONGLIB1_LIBS) \
+	$(PYTHON_LIBS) \
 	$(HARU_LIBS)
 
 background_SOURCES = resources.c \
@@ -102,6 +104,10 @@ background_SOURCES = resources.c \
 	ParamDlg.hpp \
 	ParamDlg.cpp
 
+if PYTHON
+background_SOURCES += PyWrapper.hpp \
+	PyWrapper.cpp
+endif
 
 if HAVE_PDF
 background_SOURCES +=
