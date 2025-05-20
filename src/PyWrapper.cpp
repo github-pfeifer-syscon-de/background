@@ -82,118 +82,12 @@ PyClass::load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlo
     return true;
 }
 
-// have to keep this construct as referencing more python
-//   from module needs even more #ifdef ...
-//     (and py3cairo.h has it's own issues)
-long
-PyClass::displayClockAnalog(const std::string& method, const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
-{
-    long ret = -1;
-    if (!m_pInstance) {
-        std::cout << "PyClass::displayClockAnalog no instance" << std::endl;
-        return ret;
-    }
-    cairo_t* c_ctx = ctx->cobj();
-    PyObject* context = PycairoContext_FromContext(c_ctx, &PycairoContext_Type, NULL);
-    // see https://docs.python.org/3/c-api/arg.html#building-values
-    //   N -> background: ../cairo/src/cairo.c:523: cairo_destroy: Assertion `CAIRO_REFERENCE_COUNT_HAS_REFERENCE (&cr->ref_count)' failed.
-    PyObject* pValue = PyObject_CallMethod(m_pInstance, method.c_str(), "(Od)", context, radius);
-    if (pValue)  {
-        ret = PyLong_AsLong(pValue);
-        Py_DECREF(pValue);
-    }
-    if (PyErr_Occurred()) {
-        PyErr_Print();
-    }
-    return ret;
-}
-
-long
-PyClass::displayClockDigital(const std::string& method
-            , const Cairo::RefPtr<Cairo::Context>& ctx
-            , const std::string& font
-            , const std::string& format
-            , double analogRadius)
-{
-    long ret = -1;
-    if (!m_pInstance) {
-        std::cout << "PyClass::displayClockDigital no instance" << std::endl;
-        return ret;
-    }
-    cairo_t* c_ctx = ctx->cobj();
-    PyObject* context = PycairoContext_FromContext(c_ctx, &PycairoContext_Type, NULL);
-    PyObject* pValue = PyObject_CallMethod(m_pInstance, method.c_str(), "(Ossd)", context, font.c_str(), format.c_str(), analogRadius);
-    if (pValue)  {
-        ret = PyLong_AsLong(pValue);
-        Py_DECREF(pValue);
-    }
-    if (PyErr_Occurred()) {
-        PyErr_Print();
-    }
-    return ret;
-}
-
-long
-PyClass::displayInfo(const std::string& method
-                    , const Cairo::RefPtr<Cairo::Context>& ctx
-                    , const Glib::ustring& font
-                    , const Glib::ustring& netInfo)
-{
-    long ret = -1;
-    if (!m_pInstance) {
-        std::cout << "PyClass::displayInfo no instance" << std::endl;
-        return ret;
-    }
-    cairo_t* c_ctx = ctx->cobj();
-    PyObject* context = PycairoContext_FromContext(c_ctx, &PycairoContext_Type, NULL);
-    // see https://docs.python.org/3/c-api/arg.html#building-values
-    //   N -> background: ../cairo/src/cairo.c:523: cairo_destroy: Assertion `CAIRO_REFERENCE_COUNT_HAS_REFERENCE (&cr->ref_count)' failed.
-    PyObject* pValue = PyObject_CallMethod(m_pInstance, method.c_str(), "(Oss)", context, font.c_str(), netInfo.c_str());
-    if (pValue)  {
-        ret = PyLong_AsLong(pValue);
-        Py_DECREF(pValue);
-    }
-    if (PyErr_Occurred()) {
-        PyErr_Print();
-    }
-    return ret;
-}
-
-long
-PyClass::displayCal(const std::string& method
-                    , const Cairo::RefPtr<Cairo::Context>& ctx
-                    , const Glib::ustring& font)
-{
-    long ret = -1;
-    if (!m_pInstance) {
-        std::cout << "PyClass::displayCal no instance" << std::endl;
-        return ret;
-    }
-    cairo_t* c_ctx = ctx->cobj();
-    PyObject* context = PycairoContext_FromContext(c_ctx, &PycairoContext_Type, NULL);
-    PyObject* pValue = PyObject_CallMethod(m_pInstance, method.c_str(), "(Os)", context, font.c_str());
-    if (pValue)  {
-        ret = PyLong_AsLong(pValue);
-        Py_DECREF(pValue);
-    }
-    if (PyErr_Occurred()) {
-        PyErr_Print();
-    }
-    return ret;
-}
-
 PyObject*
-PyClass::build(const Cairo::RefPtr<Cairo::Context>& ctx, double radius)
+PyClass::ctx2py(const Cairo::RefPtr<Cairo::Context>& ctx)
 {
-    PyObject*  pArgs = PyTuple_New(2);
     cairo_t* c_ctx = ctx->cobj();
     PyObject* context = PycairoContext_FromContext(c_ctx, &PycairoContext_Type, NULL);
-    // see https://docs.python.org/3/c-api/arg.html#building-values
-    PyObject* pValue = Py_BuildValue("O", context);   // not sure this is the best method but it works ;)
-    PyTuple_SetItem(pArgs, 0, pValue);
-    pValue = PyLong_FromDouble(radius);
-    PyTuple_SetItem(pArgs, 1, pValue);
-    return pArgs;
+    return context;
 }
 
 PyWrapper::PyWrapper()

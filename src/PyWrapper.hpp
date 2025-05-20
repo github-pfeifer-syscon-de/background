@@ -22,6 +22,8 @@
 #include <Python.h>
 #include <cstdlib>
 #include <cstdio>
+#include <cstdarg>
+#include <algorithm>
 
 class PyClass
 {
@@ -32,22 +34,62 @@ public:
 
     bool isUpdated();
     bool load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlobal);
-    long displayClockAnalog(const std::string& method
-                    , const Cairo::RefPtr<Cairo::Context>& ctx
-                    , double radius);
-    long displayClockDigital(const std::string& method
-                    , const Cairo::RefPtr<Cairo::Context>& ctx
-                    , const std::string& font
-                    , const std::string& format
-                    , double analogRadius);
-    long displayInfo(const std::string& method
-                    , const Cairo::RefPtr<Cairo::Context>& ctx
-                    , const Glib::ustring& font
-                    , const Glib::ustring& netInfo);
-    long displayCal(const std::string& method
-                    , const Cairo::RefPtr<Cairo::Context>& ctx
-                    , const Glib::ustring& font);
-    PyObject* build(const Cairo::RefPtr<Cairo::Context>& ctx, double radius);
+
+
+    long
+    invokeMethod(const std::string& method, auto&&... ppargs)
+    {
+        long ret = -1;
+        if (!m_pInstance) {
+            std::cout << "PyClass::invokeMethod no instance" << std::endl;
+            return ret;
+        }
+        static const std::size_t values = sizeof...(ppargs);
+        PyObject* pyArgs = PyTuple_New(values);
+        buildArgsAsPyTuple(pyArgs, 0, ppargs...);
+        PyObject* pValue = PyObject_CallMethod(m_pInstance, method.c_str(), "O", pyArgs);
+        if (pValue)  {
+            ret = PyLong_AsLong(pValue);
+            Py_DECREF(pValue);
+        }
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+        }
+        return ret;
+    }
+
+protected:
+    PyObject* ctx2py(const Cairo::RefPtr<Cairo::Context>& ctx);
+
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos)
+    {
+    }
+
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, const Cairo::RefPtr<Cairo::Context>& ctx,  auto&&... ppargs)
+    {
+        PyObject* pValue = Py_BuildValue("O", ctx2py(ctx));
+        PyTuple_SetItem(pyArgs, pos, pValue);
+        buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
+    }
+
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, const std::string& s, auto&&... ppargs)
+    {
+        auto pValue = PyUnicode_FromString(s.c_str());
+        PyTuple_SetItem(pyArgs, pos, pValue);
+        buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
+    }
+
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, double d,  auto&&... ppargs)
+    {
+        auto pValue = PyFloat_FromDouble(d);
+        PyTuple_SetItem(pyArgs, pos, pValue);
+        buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
+    }
+
 private:
     std::string m_obj;
     PyObject* m_pInstance{nullptr};

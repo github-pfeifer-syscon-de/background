@@ -147,7 +147,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     auto pyClass = checkPyClass(starDraw, "cal.py", "Cal");
     if (pyClass) {
         auto font = calFont.to_string();
-        pyClass->displayCal("draw", ctx, font);
+        pyClass->invokeMethod("draw", ctx, font);
     }
     else {
         std::cout << "CalendarModule::display no Class!" << std::endl;
@@ -241,7 +241,7 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
     auto pyClass = checkPyClass(starDraw, "info.py", "Info");
     if (pyClass) {
         auto font = infoFont.to_string();
-        pyClass->displayInfo("draw", ctx, font, netInfo);
+        pyClass->invokeMethod("draw", ctx, font, netInfo);
     }
     else {
         std::cout << "InfoModule::display no Class!" << std::endl;
@@ -477,7 +477,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
         getPrimaryColor(ctx);   // set the here so we don't have to pass this
         ctx->begin_new_path();  // as we get a strange stoke otherwise
 #       ifdef USE_PYTHON
-        pyClass->displayClockAnalog("drawAnalog", ctx, getRadius());
+        pyClass->invokeMethod("drawAnalog", ctx, getRadius());
 #       else
         displayAnalog(ctx, starDraw);
 #       endif
@@ -489,7 +489,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
         auto fmt = getEffectiveFormat();
         auto clockFont = getFont();
         auto fontName= clockFont.to_string();
-        pyClass->displayClockDigital("drawDigital", ctx, fontName, fmt, isDisplayAnalog() ? getRadius() : 0.0);
+        pyClass->invokeMethod("drawDigital", ctx, fontName, fmt, isDisplayAnalog() ? getRadius() : 0.0);
 #       else
         displayDigital(ctx, starDraw, isDisplayAnalog());
 #       endif
