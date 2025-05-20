@@ -33,7 +33,7 @@ public:
     virtual ~PyClass();
 
     bool isUpdated();
-    bool load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlobal);
+    bool load(const Glib::RefPtr<Gio::File>& file);
 
 
     long
@@ -63,7 +63,7 @@ protected:
 
     void
     buildArgsAsPyTuple(PyObject* pyArgs, int pos)
-    {
+    { // finally the end of arguments ...
     }
 
     void
@@ -83,24 +83,47 @@ protected:
     }
 
     void
-    buildArgsAsPyTuple(PyObject* pyArgs, int pos, double d,  auto&&... ppargs)
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, double d, auto&&... ppargs)
     {
         auto pValue = PyFloat_FromDouble(d);
         PyTuple_SetItem(pyArgs, pos, pValue);
         buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
     }
 
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, long l, auto&&... ppargs)
+    {
+        auto pValue = PyLong_FromLong(l);
+        PyTuple_SetItem(pyArgs, pos, pValue);
+        buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
+    }
+
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, unsigned long ul, auto&&... ppargs)
+    {
+        auto pValue = PyLong_FromUnsignedLong(ul);
+        PyTuple_SetItem(pyArgs, pos, pValue);
+        buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
+    }
+
+    void
+    buildArgsAsPyTuple(PyObject* pyArgs, int pos, bool b, auto&&... ppargs)
+    {
+        auto pValue = b ? Py_True : Py_False;
+        PyTuple_SetItem(pyArgs, pos, pValue);
+        buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
+    }
+
 private:
-    std::string m_obj;
+    const std::string m_obj;
     PyObject* m_pInstance{nullptr};
-    PyObject* pModule{nullptr};
-    PyObject* pLocal{nullptr};
+    PyObject* m_pModule{nullptr};
     Glib::RefPtr<Gio::File> m_file;
     Glib::DateTime m_fileModified;
 };
 
 // this should be keep as singleton
-//   as the init is global
+//   as the use python init is global
 class PyWrapper
 {
 public:
@@ -110,6 +133,5 @@ public:
 
     std::shared_ptr<PyClass> load(const Glib::RefPtr<Gio::File>& file, const std::string& obj);
 private:
-    PyObject* m_pGlobal;
 };
 

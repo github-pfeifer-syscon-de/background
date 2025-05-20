@@ -1,14 +1,19 @@
 # created RPf 17.4.2025
 # allows tweaking by placing a copy in $home/.local/share/background/
+import cairo
+import math
+import datetime
+import locale
+import gi
+gi.require_version('Pango', '1.0')
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import Pango, PangoCairo
 
 class Clock:
     def __init__(self):
         return
 
     def drawRadial(self,ctx,value,full,emphasis,radius):
-        import cairo
-        import math
-
         angleRad = math.radians(360) * value / full
         xv = math.sin(angleRad)
         yv = -math.cos(angleRad)
@@ -23,9 +28,6 @@ class Clock:
         ctx.stroke()
 
     def drawHand(self,ctx,value,full,radius,width):
-        import cairo
-        import math
-
         angleRad = math.radians(360) * value / full
         xv = math.sin(angleRad)
         yv = -math.cos(angleRad)
@@ -35,10 +37,6 @@ class Clock:
         ctx.stroke()
 
     def drawAnalog(self,ctx,radius):
-        import cairo
-        import math
-        import datetime
-
         ctx.save()
         ctx.translate(radius,radius)
         ctx.set_line_width(1)
@@ -55,15 +53,6 @@ class Clock:
         return 0
 
     def drawDigital(self,ctx,font,fmt,radius):
-        import cairo
-        import math
-        import datetime
-        import locale
-        import gi
-        gi.require_version('Pango', '1.0')
-        gi.require_version('PangoCairo', '1.0')
-        from gi.repository import Pango, PangoCairo
-
         now = datetime.datetime.now()
         locale.setlocale(locale.LC_ALL, '')
         layout = PangoCairo.create_layout(ctx)

@@ -1,20 +1,24 @@
 # created RPf 17.4.2025
 # allows tweaking by placing a copy in $home/.local/share/background/
+import gi
+gi.require_version('Pango', '1.0')
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import Pango, PangoCairo
+import cairo
+import platform
+import os
 
 class Info:
     def __init__(self):
         return
 
     def nodeName(self):
-        import platform
         return platform.node()
 
     def machine(self):
-        import platform
         return platform.machine()
 
     def osVersion(self):
-        import os
         inf=os.uname()
         return inf.sysname + inf.release
 
@@ -91,11 +95,6 @@ class Info:
     def draw(self,ctx,font,netinfo):
         # suggested by https://aperiodic.net/pip/archives/Geekery/cairo-pango-python/
         # docs https://api.pygobject.gnome.org/PangoCairo-1.0/functions.htm
-        import gi
-        gi.require_version('Pango', '1.0')
-        gi.require_version('PangoCairo', '1.0')
-        from gi.repository import Pango, PangoCairo
-        import cairo
         layout = PangoCairo.create_layout(ctx)
         font_description = Pango.font_description_from_string(font)
         layout.set_font_description(font_description)

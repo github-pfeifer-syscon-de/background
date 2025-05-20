@@ -1,5 +1,13 @@
 # created RPf 17.4.2025
 # allows tweaking by placing a copy in $home/.local/share/background/
+import cairo
+import calendar
+import locale
+import datetime
+import gi
+gi.require_version('Pango', '1.0')
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import Pango, PangoCairo
 
 class Cal:
     def __init__(self):
@@ -8,9 +16,6 @@ class Cal:
     # build a array to show month page
     #   fills in 0 for not actual month
     def build(self,year,month):
-        import calendar
-        import datetime
-
         # maybe integrate print(f" firstweekday {cal.getfirstweekday()}")
         cal = calendar.Calendar()
         self.weeknums=[]
@@ -30,12 +35,6 @@ class Cal:
         return
 
     def putText(self,ctx,layout,col,row,halign = 1.0,colSpan = 1):
-        import cairo
-        import gi
-        gi.require_version('Pango', '1.0')
-        gi.require_version('PangoCairo', '1.0')
-        from gi.repository import Pango, PangoCairo
-
         #print(f"put text {layout.get_text()} col {col} row {row}")
         x = col * self.m_cellWidth
         y = row * self.m_cellHeight
@@ -50,15 +49,6 @@ class Cal:
         return
 
     def grid(self,ctx,font,year,month,today):
-        import cairo
-        import calendar
-        import locale
-        import datetime
-        import gi
-        gi.require_version('Pango', '1.0')
-        gi.require_version('PangoCairo', '1.0')
-        from gi.repository import Pango, PangoCairo
-
         layout = PangoCairo.create_layout(ctx)
         font_description = Pango.font_description_from_string(font)
         layout.set_font_description(font_description)
@@ -99,15 +89,9 @@ class Cal:
         return
 
     def draw(self,ctx,font):
-        import math
-        import datetime
-
         now = datetime.datetime.now()
         self.build(now.year, now.month)
         #print(f"draw got rows {len(self.rows)}")
         self.grid(ctx, font, now.year, now.month, now.day);
         return 0
 
-
-#cal=Cal()
-#cal.draw()

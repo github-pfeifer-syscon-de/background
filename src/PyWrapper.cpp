@@ -29,9 +29,12 @@ PyClass::PyClass(const std::string& obj)
 
 PyClass::~PyClass()
 {
-    Py_XDECREF(m_pInstance);  // cleanup instance
-    Py_DECREF(pLocal);
-    Py_DECREF(pModule);
+    if (m_pInstance) {
+        Py_XDECREF(m_pInstance);  // cleanup instance
+    }
+    if (m_pModule) {
+        Py_DECREF(m_pModule);
+    }
 }
 
 bool
@@ -43,33 +46,55 @@ PyClass::isUpdated()
 }
 
 bool
-PyClass::load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlobal)
+PyClass::load(const Glib::RefPtr<Gio::File>& file)
 {
-    m_file = file;
-    auto info = m_file->query_info("*");
-    m_fileModified = info-> get_modification_date_time();
-    //Create a new module object
-    std::string basename = file->get_basename();
-    pModule = PyModule_New(m_obj.c_str());
-    PyModule_AddStringConstant(pModule, "__file__", basename.c_str());
-    //Get the dictionary object from my module so I can pass this to PyRun_String
-    pLocal = PyModule_GetDict(pModule);
-    PyObject* pValue = PyRun_File(fp, basename.c_str(), Py_file_input, pGlobal, pLocal);
-    //pValue would be null if the Python syntax is wrong, for example
-    if (pValue == nullptr) {
+    auto path = file->get_path();
+    auto info = file->query_info("*");
+    auto size = info->get_size();
+    if (size <= 0) {
+        std::cout << "File " << path << " was not found? (size = 0)" << std::endl;
+        return false;
+    }
+    std::vector<char> bytes;
+    bytes.resize(size+1);
+    gssize read{0};
+    try {
+        auto fis = file->read();
+        read = fis->read(const_cast<char*>(bytes.data()), size);
+        fis->close();
+    }
+    catch (const Glib::Error& exc) {
+        std::cout << "Error " << exc.what() << " reading file " << path << "!" << std::endl;
+        return false;
+    }
+    bytes[read] = '\0';
+    // to use file level includes compile is required see https://stackoverflow.com/questions/3789881/create-and-call-python-function-from-string-via-c-api @fridgerator
+    PyObject *pCodeObj = Py_CompileString(bytes.data(), "", Py_file_input);
+    //pCodeObj would be null if the Python syntax is wrong, for example
+    if (pCodeObj == nullptr) {
+        std::cout << "No code obj! (error compiling)" << std::endl;
         if (PyErr_Occurred()) {
             PyErr_Print();
         }
         return false;
     }
-    //pValue is the result of the executing code, chuck it away because we've only declared a class
-    Py_DECREF(pValue);
-    PyObject* pClass = PyDict_GetItemString(pLocal, m_obj.c_str());
+    //    Create a module by executing the code:
+    m_pModule = PyImport_ExecCodeModule(m_obj.c_str(), pCodeObj);
+    if (m_pModule == nullptr) {
+        std::cout << "No module! (error running)" << std::endl;
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+        }
+        return false;
+    }
+    //pCodeObj is the result of the executing code, chuck it away because we've only declared a class
+    Py_DECREF(pCodeObj);
+    PyObject* pClass = PyObject_GetAttrString(m_pModule, m_obj.c_str());  // Item
     if (pClass && PyCallable_Check(pClass)) {
-        m_pInstance = PyObject_CallObject(pClass, NULL);
+        m_pInstance = PyObject_CallObject(pClass, nullptr);
     }
     else {
-        fprintf(stdout, "The class %s is not callable.\n", m_obj.c_str());
+        std::cout << "No class " << m_obj << " found!" << std::endl;
         if (PyErr_Occurred()) {
             PyErr_Print();
         }
@@ -78,7 +103,8 @@ PyClass::load(std::FILE* fp, const Glib::RefPtr<Gio::File>& file, PyObject* pGlo
     if (pClass) {
         Py_XDECREF(pClass);
     }
-
+    m_file = file;
+    m_fileModified = info->get_modification_date_time();
     return true;
 }
 
@@ -94,14 +120,12 @@ PyWrapper::PyWrapper()
 {
     Py_Initialize(); // Initialize the Python Interpreter
     if (import_cairo() < 0) {
-       fprintf(stderr, "Pycairo not initalized ...\n");
+       std::cout << "Pycairo not initalized!" << std::endl;
     }
-    m_pGlobal = PyDict_New();
 }
 
 PyWrapper::~PyWrapper()
 {
-    Py_DECREF(m_pGlobal);
     Py_Finalize(); // Clean up and close the Python Interpreter
 }
 
@@ -109,14 +133,8 @@ std::shared_ptr<PyClass>
 PyWrapper::load(const Glib::RefPtr<Gio::File>& file, const std::string& obj)
 {
     std::shared_ptr<PyClass> pyClass;
-    auto fp = std::fopen(file->get_path().c_str(), "r");
-    if (!fp) {
-        std::cout << "The  file " << file->get_path() << " was not opened!" << std::endl;
-        return pyClass;
-    }
     auto tempClass = std::make_shared<PyClass>(obj);
-    bool ret = tempClass->load(fp, file, m_pGlobal);
-    fclose(fp);
+    bool ret = tempClass->load(file);
     if (ret) {
         pyClass = tempClass;
     }
