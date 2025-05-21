@@ -20,6 +20,7 @@
 #include <string>
 #include <py3cairo.h>
 
+#include "FileLoader.hpp"
 #include "PyWrapper.hpp"
 
 PyClass::PyClass(const std::string& obj)
@@ -42,32 +43,23 @@ PyClass::isUpdated()
 {
     auto info = m_file->query_info("*");
     auto fileModified = info-> get_modification_date_time();
-    return fileModified.compare(m_fileModified) > 1;
+    if (fileModified.compare(m_fileModified) > 0) {
+        return true;
+    }
+    if (m_localFile && m_localFile->query_exists() && !m_file->equal(m_localFile)) {
+        return true;    // switch from global to local file
+    }
+    return false;   // no change detected
 }
 
 bool
 PyClass::load(const Glib::RefPtr<Gio::File>& file)
 {
-    auto path = file->get_path();
-    auto info = file->query_info("*");
-    auto size = info->get_size();
-    if (size <= 0) {
-        std::cout << "File " << path << " was not found? (size = 0)" << std::endl;
-        return false;
-    }
     std::vector<char> bytes;
-    bytes.resize(size+1);
-    gssize read{0};
-    try {
-        auto fis = file->read();
-        read = fis->read(const_cast<char*>(bytes.data()), size);
-        fis->close();
-    }
-    catch (const Glib::Error& exc) {
-        std::cout << "Error " << exc.what() << " reading file " << path << "!" << std::endl;
+    if (!FileLoader::readFile(file, bytes)) {
+        std::cout << "PyClass::load error loading " << file->get_path() << std::endl;
         return false;
     }
-    bytes[read] = '\0';
     // to use file level includes compile is required see https://stackoverflow.com/questions/3789881/create-and-call-python-function-from-string-via-c-api @fridgerator
     PyObject *pCodeObj = Py_CompileString(bytes.data(), "", Py_file_input);
     //pCodeObj would be null if the Python syntax is wrong, for example
@@ -104,8 +96,21 @@ PyClass::load(const Glib::RefPtr<Gio::File>& file)
         Py_XDECREF(pClass);
     }
     m_file = file;
+    auto info = file->query_info("*");
     m_fileModified = info->get_modification_date_time();
     return true;
+}
+
+Glib::RefPtr<Gio::File>
+PyClass::getFile()
+{
+    return m_file;
+}
+
+void
+PyClass::setLocalFile(const Glib::RefPtr<Gio::File>& localFile)
+{
+    m_localFile = localFile;
 }
 
 PyObject*

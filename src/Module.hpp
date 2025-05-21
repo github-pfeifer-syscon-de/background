@@ -77,6 +77,9 @@ public:
     void setPosition(const Glib::ustring& position);
     Pango::FontDescription getFont();
     void setFont(Pango::FontDescription& descr);
+    void edit();
+    virtual Glib::ustring getPyScriptName() = 0;
+    Glib::ustring getEditInfo();
 
     static constexpr auto COLOR_KEY{"Color"};
     static constexpr auto POS_KEY{"Pos"};
@@ -88,14 +91,14 @@ public:
 
 protected:
     void fillPos(Gtk::ComboBoxText* pos);
-    std::shared_ptr<PyClass> checkPyClass(StarDraw* starDraw, const char* pyfile, const char* className);
+    std::shared_ptr<PyClass> checkPyClass(StarDraw* starDraw, const char* className);
 
     const std::string m_name;
     Glib::ustring m_position;
     Gdk::RGBA m_primaryColor;
     std::shared_ptr<KeyConfig> m_config;
     std::shared_ptr<PyWrapper> m_pyWrapper;
-private:
+    std::shared_ptr<FileLoader> m_fileLoader;
     std::shared_ptr<PyClass> m_pyClass;
 };
 
@@ -118,6 +121,7 @@ public:
     void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
     void saveParam() override;
 
+    Glib::ustring getPyScriptName() override;
 private:
     int m_width;
     int m_height{0};
@@ -141,6 +145,7 @@ public:
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
     void saveParam() override;
+    Glib::ustring getPyScriptName() override;
 private:
     Gtk::ColorButton* m_infoColor;
     Gtk::FontButton* m_infoFont;
@@ -175,6 +180,7 @@ public:
     void setDisplayAnalog(bool displayAnalog);
     bool isDisplayDigital();
     void setDisplayDigital(bool displayDigital);
+    Glib::ustring getPyScriptName() override;
 protected:
     void update();
     void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, bool emphasis, double outer);

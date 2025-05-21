@@ -28,6 +28,7 @@
 #include "BackgroundApp.hpp"
 #include "FileLoader.hpp"
 #include "ParamDlg.hpp"
+#include "TimeDlg.hpp"
 #include "StarWin.hpp"
 #include "config.h"
 #include "Planets.hpp"
@@ -77,7 +78,7 @@ StarDraw::setupConfig()
             Glib::ustring msg("No config found, please enter your position.");
             Gtk::MessageDialog dlg(msg);
             dlg.run();
-            on_menu_param();
+            on_menu_time();
         }
         else {
             auto config = std::make_shared<Glib::KeyFile>();
@@ -107,6 +108,7 @@ StarDraw::getGlobeConfigName()
     return fullPath;
 }
 
+// as messier objects appear in close together show them concatenated
 std::vector<NamedPoint>
 StarDraw::cluster(const std::vector<NamedPoint>& points, double distance)
 {
@@ -600,11 +602,15 @@ StarDraw::build_popup()
 	mparam->signal_activate().connect(sigc::mem_fun(*this, &StarDraw::on_menu_param));
 	pMenuPopup->append(*mparam);
 
+	auto mtime = Gtk::make_managed<Gtk::MenuItem>("_Timeshift&Position", true);
+	mtime->signal_activate().connect(sigc::mem_fun(*this, &StarDraw::on_menu_time));
+	pMenuPopup->append(*mtime);
+
+    m_starWin->addMenuItems(pMenuPopup);
+
 	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
 	mabout->signal_activate().connect(sigc::mem_fun(m_starWin->getBackgroundAppl(), &BackgroundApp::on_action_about));
 	pMenuPopup->append(*mabout);
-
-    m_starWin->addMenuItems(pMenuPopup);
 
 	pMenuPopup->show_all();
 	return pMenuPopup;
@@ -613,8 +619,15 @@ StarDraw::build_popup()
 void
 StarDraw::on_menu_param()
 {
-    m_updateBlocked = true;
 	ParamDlg::show(this);
+    compute();      // refresh to show changes (we avoided continious updates as this isn't cheap (lots triginometry involved))
+}
+
+void
+StarDraw::on_menu_time()
+{
+    m_updateBlocked = true; // as we want to shift time block default updates
+	TimeDlg::show(this);
     m_updateBlocked = false;
     compute();      // reset to default view
 }
@@ -648,10 +661,21 @@ StarDraw::setGeoPosition(const GeoPosition& geoPos)
 void
 StarDraw::saveConfig()
 {
+    try {
+        m_config->saveConfig();
+    }
+    catch (const Glib::Error &ex) {
+        auto msg = Glib::ustring::sprintf("Error %s saving config", ex.what());
+        m_starWin->showMessage(msg);
+    }
+}
+
+void
+StarDraw::savePosition()
+{
     // handle glglobe&background config
     std::string cfg = getGlobeConfigName();
     try {
-        m_config->saveConfig();
         auto config = std::make_shared<Glib::KeyFile>();
         auto cfgFile = Gio::File::create_for_path(cfg);
         if (cfgFile->query_exists()) {     // do load as file may contains other stuff
@@ -663,8 +687,7 @@ StarDraw::saveConfig()
     }
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s saving %s", ex.what(), cfg);
-        Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
-        dlg.run();
+        m_starWin->showMessage(msg);
     }
 }
 

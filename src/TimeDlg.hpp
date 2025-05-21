@@ -1,5 +1,6 @@
+/* -*- Mode: c++; c-basic-offset: 4; tab-width: 4;  coding: utf-8; -*-  */
 /*
- * Copyright (C) 2018 rpf
+ * Copyright (C) 2025 RPf <gpl3@pfeifer-syscon.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,28 +21,30 @@
 #include <gtkmm.h>
 
 class StarDraw;
-class GeoPosition;
 
-class ParamDlg
+class TimeDlg
 : public Gtk::Dialog
 {
 public:
-    ParamDlg(BaseObjectType* cobject
+    TimeDlg(BaseObjectType* cobject
             , const Glib::RefPtr<Gtk::Builder>& builder
             , StarDraw* starDraw);
-    virtual ~ParamDlg() = default;
+    virtual ~TimeDlg() = default;
 
     static void show(StarDraw* starDraw);
+    GeoPosition getGeoPosition() const;
 
 protected:
+    void on_time_changed();
     void on_response(int response_id) override;
 
 private:
+    Gtk::SpinButton* m_latitude;
+    Gtk::SpinButton* m_longitude;
+    Gtk::Calendar* m_calendar;
+    Gtk::SpinButton* m_spinH;
+    Gtk::SpinButton* m_spinM;
     StarDraw* m_starDraw;
-    Gtk::SpinButton* m_updateInterval;
-    Gtk::ColorButton* m_startColor;
-    Gtk::ColorButton* m_stopColor;
-    Gtk::FontButton* m_starFont;
-    Gtk::CheckButton* m_showMilkyway;
-    Gtk::Scale* m_messierVMag;
+
 };
+

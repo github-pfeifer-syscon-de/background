@@ -31,10 +31,11 @@ If you don't like this option use
 the internal functions for rendering will be used.
 
 With python you have the option to easily
-modify this displayed infos e.g. use a weather or news service ....
+modify this displayed infos e.g. use a weather or news service ...
 
 The .py files are localed by default in /usr/share/background-program
-a user version can be placed in $USER_HOME/.local/share/background.
-Which is not created during install so if you want a user version
-created the directory, and copy the default .py from
-the global directory.
+a user version can be created
+by using the -> Script -> Edit option from preferences
+(expects your desktop-enviroment has some editor for python files registered).
+The modified version will be placed in $USER_HOME/.local/share/background
+if you want to know where your files are.

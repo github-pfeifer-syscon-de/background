@@ -34,10 +34,9 @@ public:
 
     bool isUpdated();
     bool load(const Glib::RefPtr<Gio::File>& file);
+    void setLocalFile(const Glib::RefPtr<Gio::File>& localFile);
 
-
-    long
-    invokeMethod(const std::string& method, auto&&... ppargs)
+    long invokeMethod(const std::string& method, auto&&... ppargs)
     {
         long ret = -1;
         if (!m_pInstance) {
@@ -114,11 +113,13 @@ protected:
         buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
     }
 
+    Glib::RefPtr<Gio::File> getFile();
 private:
     const std::string m_obj;
     PyObject* m_pInstance{nullptr};
     PyObject* m_pModule{nullptr};
     Glib::RefPtr<Gio::File> m_file;
+    Glib::RefPtr<Gio::File> m_localFile;
     Glib::DateTime m_fileModified;
 };
 

@@ -17,10 +17,8 @@
 
 #include <iostream>
 
-#include "GeoPosition.hpp"
 #include "StarDraw.hpp"
 #include "ParamDlg.hpp"
-#include "StarDraw.hpp"
 #include "StarWin.hpp"
 #include "BackgroundApp.hpp"
 
@@ -30,26 +28,6 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
 : Gtk::Dialog(cobject)
 , m_starDraw{starDraw}
 {
-    auto geoPos = m_starDraw->getGeoPosition();
-    builder->get_widget("longitude", m_longitude);
-    m_longitude->set_value(geoPos.getLonDegrees());
-    m_longitude->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
-    builder->get_widget("latitude", m_latitude);
-    m_latitude->set_value(geoPos.getLatDegrees());
-    m_latitude->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
-
-    builder->get_widget("calendar", m_calendar);
-    m_calendar->signal_day_selected().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
-    // m_calendar requires set date ?
-
-    Glib::DateTime localNow = Glib::DateTime::create_now_local();
-    builder->get_widget("hour", m_spinH);
-    m_spinH->set_value(localNow.get_hour());
-    m_spinH->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
-    builder->get_widget("minute", m_spinM);
-    m_spinM->set_value(localNow.get_minute());
-    m_spinM->signal_value_changed().connect(sigc::mem_fun(*this, &ParamDlg::on_time_changed));
-
     builder->get_widget("updateInterval", m_updateInterval);
     m_updateInterval->set_value(m_starDraw->getIntervalMinutes());
 
@@ -77,26 +55,9 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
 
 
 void
-ParamDlg::on_time_changed()
-{
-    Glib::Date calDay;
-    m_calendar->get_date(calDay);
-    Glib::DateTime localNow = Glib::DateTime::create_local(
-            calDay.get_year(), calDay.get_month(), calDay.get_day()
-            , m_spinH->get_value_as_int()
-            , m_spinM->get_value_as_int(), 0);
-    //std::cout << "ValueH " << m_spinH->get_value()
-    //          << " M " << m_spinM->get_value()
-    //          << " date " << localNow.format_iso8601() << std::endl;
-    auto geoPos = getGeoPosition();
-    m_starDraw->update(localNow.to_utc(), geoPos);
-}
-
-void
 ParamDlg::on_response(int response_id)
 {
     if (response_id == Gtk::RESPONSE_OK) {
-        m_starDraw->setGeoPosition(getGeoPosition());
         m_starDraw->setIntervalMinutes(m_updateInterval->get_value_as_int());
         m_starDraw->setStartColor(m_startColor->get_rgba());
         m_starDraw->setStopColor(m_stopColor->get_rgba());
@@ -109,14 +70,6 @@ ParamDlg::on_response(int response_id)
         m_starDraw->getCalendarModule()->saveParam();
         m_starDraw->getClockModule()->saveParam();
     }
-     Gtk::Dialog::on_response(response_id);
-}
-
-GeoPosition
-ParamDlg::getGeoPosition() const
-{
-    GeoPosition geoPos{m_longitude->get_value(), m_latitude->get_value()};
-    return geoPos;
 }
 
 void

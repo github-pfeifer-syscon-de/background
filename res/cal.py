@@ -1,5 +1,5 @@
 # created RPf 17.4.2025
-# allows tweaking by placing a copy in $home/.local/share/background/
+# 
 import cairo
 import calendar
 import locale

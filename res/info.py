@@ -1,5 +1,7 @@
 # created RPf 17.4.2025
-# allows tweaking by placing a copy in $home/.local/share/background/
+#
+# suggested by https://aperiodic.net/pip/archives/Geekery/cairo-pango-python/
+# docs https://api.pygobject.gnome.org/PangoCairo-1.0/functions.htm
 import gi
 gi.require_version('Pango', '1.0')
 gi.require_version('PangoCairo', '1.0')
@@ -7,6 +9,7 @@ from gi.repository import Pango, PangoCairo
 import cairo
 import platform
 import os
+import subprocess
 
 class Info:
     def __init__(self):
@@ -92,9 +95,14 @@ class Info:
         #print(f"ip {ips[0]}")
         return ""
 
+    # if you like fortune you may include this (need install fortune_mod)
+    def fortune(self):
+        result = subprocess.run(['fortune'],
+                   capture_output = True, # Python >= 3.7 only
+                   text = True)
+        return result.stdout
+
     def draw(self,ctx,font,netinfo):
-        # suggested by https://aperiodic.net/pip/archives/Geekery/cairo-pango-python/
-        # docs https://api.pygobject.gnome.org/PangoCairo-1.0/functions.htm
         layout = PangoCairo.create_layout(ctx)
         font_description = Pango.font_description_from_string(font)
         layout.set_font_description(font_description)

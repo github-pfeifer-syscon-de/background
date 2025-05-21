@@ -2,23 +2,6 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkAdjustment" id="adjustHour">
-    <property name="upper">23</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
-  <object class="GtkAdjustment" id="adjustLat">
-    <property name="lower">-180</property>
-    <property name="upper">180</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
-  <object class="GtkAdjustment" id="adjustLog">
-    <property name="lower">-90</property>
-    <property name="upper">90</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
   <object class="GtkAdjustment" id="adjustMessierVMag">
     <property name="lower">3</property>
     <property name="upper">10</property>
@@ -95,211 +78,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <child>
-              <!-- n-columns=3 n-rows=3 -->
-              <object class="GtkGrid">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="row-spacing">3</property>
-                <property name="column-spacing">3</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Longitude</property>
-                    <property name="xalign">1</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="longitude">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="text" translatable="yes">0</property>
-                    <property name="adjustment">adjustLat</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">0</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Latitude</property>
-                    <property name="xalign">1</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="latitude">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="text" translatable="yes">0</property>
-                    <property name="adjustment">adjustLog</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">1</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Update rate</property>
-                    <property name="xalign">1</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="updateInterval">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="adjustment">adjustUpdate</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Minutes</property>
-                    <property name="xalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">2</property>
-                    <property name="top-attach">2</property>
-                  </packing>
-                </child>
-              </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Location</property>
-              </object>
-              <packing>
-                <property name="tab-fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <!-- n-columns=3 n-rows=3 -->
-              <object class="GtkGrid">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="ypad">10</property>
-                    <property name="label" translatable="yes">Calendar</property>
-                    <property name="xalign">1</property>
-                    <property name="yalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCalendar" id="calendar">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="year">2025</property>
-                    <property name="month">4</property>
-                    <property name="day">4</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">0</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Time</property>
-                    <property name="xalign">1</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="hour">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="text" translatable="yes">0</property>
-                    <property name="adjustment">adjustHour</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="minute">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="text" translatable="yes">0</property>
-                    <property name="adjustment">adjustMinutes</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">2</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Time</property>
-              </object>
-              <packing>
-                <property name="position">1</property>
-                <property name="tab-fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <!-- n-columns=2 n-rows=5 -->
+              <!-- n-columns=3 n-rows=6 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -329,6 +108,7 @@
                   <packing>
                     <property name="left-attach">1</property>
                     <property name="top-attach">0</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
                 <child>
@@ -355,6 +135,7 @@
                   <packing>
                     <property name="left-attach">1</property>
                     <property name="top-attach">1</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
                 <child>
@@ -385,6 +166,7 @@
                   <packing>
                     <property name="left-attach">1</property>
                     <property name="top-attach">2</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
                 <child>
@@ -398,6 +180,7 @@
                   <packing>
                     <property name="left-attach">1</property>
                     <property name="top-attach">3</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
                 <child>
@@ -423,6 +206,7 @@
                   <packing>
                     <property name="left-attach">1</property>
                     <property name="top-attach">4</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
                 <child>
@@ -438,10 +222,46 @@
                     <property name="top-attach">4</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Update rate</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="updateInterval">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="text" translatable="yes">1</property>
+                    <property name="adjustment">adjustUpdate</property>
+                    <property name="value">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Minutes</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">5</property>
+                  </packing>
+                </child>
               </object>
-              <packing>
-                <property name="position">2</property>
-              </packing>
             </child>
             <child type="tab">
               <object class="GtkLabel">
@@ -450,12 +270,11 @@
                 <property name="label" translatable="yes">Stars</property>
               </object>
               <packing>
-                <property name="position">2</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
             <child>
-              <!-- n-columns=2 n-rows=3 -->
+              <!-- n-columns=2 n-rows=4 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -540,9 +359,34 @@
                     <property name="top-attach">0</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkLabel" id="infoLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">label</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="editInfo">
+                    <property name="label" translatable="yes">Edit</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="position">3</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child type="tab">
@@ -552,12 +396,12 @@
                 <property name="label" translatable="yes">Info</property>
               </object>
               <packing>
-                <property name="position">3</property>
+                <property name="position">1</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
             <child>
-              <!-- n-columns=2 n-rows=3 -->
+              <!-- n-columns=2 n-rows=4 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -639,9 +483,34 @@
                     <property name="top-attach">0</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkLabel" id="calLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">label</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="editCal">
+                    <property name="label" translatable="yes">Edit</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="position">4</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child type="tab">
@@ -651,12 +520,12 @@
                 <property name="label" translatable="yes">Calendar</property>
               </object>
               <packing>
-                <property name="position">4</property>
+                <property name="position">2</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>
             <child>
-              <!-- n-columns=2 n-rows=7 -->
+              <!-- n-columns=2 n-rows=8 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -830,11 +699,36 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkLabel" id="clockLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">label</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">7</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="editClock">
+                    <property name="label" translatable="yes">Edit</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">7</property>
+                  </packing>
+                </child>
+                <child>
                   <placeholder/>
                 </child>
               </object>
               <packing>
-                <property name="position">5</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child type="tab">
@@ -844,7 +738,7 @@
                 <property name="label" translatable="yes">Clock</property>
               </object>
               <packing>
-                <property name="position">5</property>
+                <property name="position">3</property>
                 <property name="tab-fill">False</property>
               </packing>
             </child>

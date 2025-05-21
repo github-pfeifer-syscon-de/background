@@ -49,13 +49,20 @@ FileLoader::findFile(const Glib::ustring& name)
 Glib::RefPtr<Gio::File>
 FileLoader::findLocalFile(const Glib::ustring& name)
 {
-    std::string uname = "background/" + name;
-    auto fullPath = Glib::canonicalize_filename(uname, Glib::get_user_data_dir().c_str());
-    auto userConfig = Gio::File::create_for_path(fullPath);
+    auto userConfig = findLocalFileOnly(name);
     if (userConfig->query_exists()) {
         return userConfig;
     }
     return findFile(name);  // try remaining locations
+}
+
+Glib::RefPtr<Gio::File>
+FileLoader::findLocalFileOnly(const Glib::ustring& name)
+{
+    std::string uname = "background/" + name;
+    auto fullPath = Glib::canonicalize_filename(uname, Glib::get_user_data_dir());
+    auto userConfig = Gio::File::create_for_path(fullPath);
+    return userConfig;
 }
 
 Glib::ustring
@@ -64,6 +71,104 @@ FileLoader::find(const Glib::ustring& name)
     auto file = findFile(name);
     if (file) {
         return file->get_path();
+    }
+    return "";
+}
+
+
+std::vector<Glib::ustring>
+FileLoader::readLines(const Glib::RefPtr<Gio::File>& file)
+{
+    std::vector<Glib::ustring> ret;
+    ret.reserve(64);
+    auto fileStrm = file->read();
+    auto dataStrm = Gio::DataInputStream::create(fileStrm);
+    while (true) {
+        std::string line;
+        dataStrm->read_line_utf8(line);
+        ret.push_back(line);
+        if (dataStrm->get_available() <= 0u) { // this works after reading, but fails if used in the head of loop!
+            break;
+        }
+    }
+    dataStrm->close();
+    fileStrm->close();
+    return ret;
+}
+
+// Glib::file_read_content may be an alternative ...
+bool
+FileLoader::readFile(const Glib::RefPtr<Gio::File>& file, std::vector<char>& bytes)
+{
+    auto info = file->query_info("*");
+    auto size = info->get_size();
+    if (size <= 0) {
+        std::cout << "FileLoader::readFile file " << file->get_path() << " was not found? (size = 0)" << std::endl;
+        return false;
+    }
+    bytes.resize(size+1);
+    gssize read{};
+    try {
+        auto fis = file->read();
+        read = fis->read(const_cast<char*>(bytes.data()), size);
+        fis->close();
+    }
+    catch (const Glib::Error& exc) {
+        std::cout << "FileLoader::readFile error " << exc.what() << " reading file " << file->get_path() << "!" << std::endl;
+        return false;
+    }
+    bytes[read] = '\0';
+    return true;
+}
+
+static void
+child_watch_cb( GPid     pid
+              , gint     status
+              , gpointer user_data)
+{
+    g_message("Child %" G_PID_FORMAT, pid);
+    g_autoptr(GError) error = nullptr;
+    if (g_spawn_check_wait_status(status, &error)) {
+        // went fine ...
+    }
+    else {
+        //StarWin* starWin = static_cast<StarWin*>(user_data);
+        auto msg = Glib::ustring::sprintf("Open failed with %s", error->message);
+        //if (starWin) {
+        //    starWin->showMessage(msg, Gtk::MessageType::MESSAGE_ERROR);
+        //}
+        //else {
+        std::cout << msg << std::endl;
+        //}
+    }
+    // Free any resources associated with the child here, such as I/O channels
+    g_spawn_close_pid(pid);
+}
+
+Glib::ustring
+FileLoader::run(const std::vector<std::string>& strArgs, GPid* pid)
+{
+    std::vector<char *> args;
+    args.reserve(strArgs.size() + 1);
+    for (auto& str : strArgs) {
+        args.push_back(const_cast<char*>(str.c_str()));    // the api is definied this way...
+    }
+    args.push_back(nullptr);
+    g_autoptr(GError) error = nullptr;
+    // Spawn child process.
+    g_spawn_async(nullptr   // working dir
+                 , &args[0] // arguments
+                 , nullptr  // envptr
+                 , G_SPAWN_DO_NOT_REAP_CHILD
+                 , nullptr  // childsetup
+                 , this     // user data
+                 , pid
+                 , &error);
+    if (error) {
+        return error->message;
+    }
+    else {
+        g_child_watch_add(*pid, child_watch_cb, this);
     }
     return "";
 }

@@ -102,7 +102,9 @@ background_SOURCES = resources.c \
 	MessierLoader.hpp \
 	MessierLoader.cpp \
 	ParamDlg.hpp \
-	ParamDlg.cpp
+	ParamDlg.cpp \
+	TimeDlg.hpp \
+	TimeDlg.cpp
 
 if PYTHON
 background_SOURCES += PyWrapper.hpp \

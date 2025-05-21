@@ -93,18 +93,10 @@ ConstellationFormat::readConstellations()
 	try {
         auto file = m_fileLoader->findFile(constlDataFile);
         if (file) {
-            auto fileStrm = file->read();
-            auto dataStrm = Gio::DataInputStream::create(fileStrm);
-		    while (true) {  // dataStrm->get_available() > 0u
-                std::string line;
-                dataStrm->read_line_utf8(line);
-                if (line.empty()) { // this works as the format contains no empty lines!
-                    break;
-                }
+            auto lines = FileLoader::readLines(file);
+            for (auto& line : lines) {
                 parseLine(line, constellations);
-		    }
-            dataStrm->close();
-            fileStrm->close();
+            }
 	    }
 	    else {
             std::cout << "The constellation data " << constlDataFile << " was not found!" << std::endl;

@@ -83,6 +83,7 @@ public:
     void setMessierVMagMin(double showMessier);
     StarWin* getWindow();
     void saveConfig();
+    void savePosition();
     void scale(Pango::FontDescription& starFont, double scale);
     void brighten(Gdk::RGBA& calColor, double factor);
 
@@ -122,7 +123,7 @@ protected:
     bool on_button_press_event(GdkEventButton* event) override;
     Gtk::Menu *build_popup();
     void on_menu_param();
-
+    void on_menu_time();
     std::vector<PtrModule> findModules(const char* pos);
     void drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
     void drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);

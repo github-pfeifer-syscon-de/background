@@ -25,6 +25,7 @@
 #include "PyWrapper.hpp"
 #endif
 #include "FileLoader.hpp"
+#include "config.h"
 
 void
 Grid::put(Glib::RefPtr<Pango::Layout>& layout
@@ -104,24 +105,61 @@ Module::fillPos(Gtk::ComboBoxText* pos)
 }
 
 std::shared_ptr<PyClass>
-Module::checkPyClass(StarDraw* starDraw, const char* pyfile, const char* className)
+Module::checkPyClass(StarDraw* starDraw, const char* className)
 {
 #   ifdef USE_PYTHON
+    m_fileLoader = starDraw->getFileLoader();
     if (!m_pyClass || m_pyClass->isUpdated()) {
-        auto file = starDraw->getFileLoader()->findLocalFile(pyfile);
+        auto file = m_fileLoader->findLocalFile(getPyScriptName());
         if (file) {
             auto infoScript = m_pyWrapper->load(file, className);
             if (infoScript) {
                 m_pyClass = infoScript;
+                auto localFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
+                m_pyClass->setLocalFile(localFile);
             }
         }
         else {
-            std::cout << "The file " << pyfile << " was not found!" << std::endl;
+            std::cout << "The file " << getPyScriptName() << " was not found!" << std::endl;
         }
     }
 #   endif
     return m_pyClass;
 }
+
+void
+Module::edit()
+{
+#   ifdef USE_PYTHON
+    auto localScriptFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
+    if (!localScriptFile->query_exists()) {
+        auto scriptDir = localScriptFile->get_parent();
+        if (!scriptDir->query_exists()) {
+            scriptDir->make_directory_with_parents();
+        }
+        auto globalScriptFile = m_fileLoader->findFile(getPyScriptName());
+        globalScriptFile->copy(localScriptFile);    // for editing create a local copy
+    }
+    std::vector<std::string> args;
+    args.push_back("/usr/bin/xdg-open");
+    args.push_back(localScriptFile->get_path());
+    GPid pid;
+    auto msg = m_fileLoader->run(args, &pid);
+    if (!msg.empty()) {
+        std::cout << "Error running xdg-open" << std::endl;
+    }
+#   endif
+}
+
+Glib::ustring Module::getEditInfo()
+{
+#   ifdef USE_PYTHON
+    auto localScriptFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
+    return Glib::ustring::sprintf("Script (%s)", localScriptFile->query_exists() ? "local" : "global");
+#endif
+    return "";
+}
+
 
 int
 CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
@@ -134,6 +172,12 @@ CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* st
     return 9 * m_height;
 }
 
+Glib::ustring
+CalendarModule::getPyScriptName()
+{
+    return "cal.py";
+}
+
 void
 CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
@@ -144,7 +188,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     getPrimaryColor(ctx);
     auto calFont = getFont();
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, "cal.py", "Cal");
+    auto pyClass = checkPyClass(starDraw, "Cal");
     if (pyClass) {
         auto font = calFont.to_string();
         pyClass->invokeMethod("draw", ctx, font);
@@ -207,6 +251,19 @@ CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("calPos", m_calPos);
     fillPos(m_calPos);
     m_calPos->set_active_id(getPosition());
+
+    Gtk::Button* editCal;
+    builder->get_widget("editCal", editCal);
+    Gtk::Label* calLabel;
+    builder->get_widget("calLabel", calLabel);
+#   ifdef USE_PYTHON
+    editCal->signal_clicked().connect(
+        sigc::mem_fun(*this, &CalendarModule::edit));
+    calLabel->set_text(getEditInfo());
+#   else
+    editCal->set_sensitive(false);
+    calLabel->set_sensitive(false);
+#   endif
 }
 
 void
@@ -230,6 +287,12 @@ InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDr
     return 6 * height;
 }
 
+Glib::ustring
+InfoModule::getPyScriptName()
+{
+    return "info.py";
+}
+
 void
 InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
@@ -238,7 +301,7 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
     SysInfo sysInfo;
     auto netInfo = sysInfo.netInfo();
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, "info.py", "Info");
+    auto pyClass = checkPyClass(starDraw, "Info");
     if (pyClass) {
         auto font = infoFont.to_string();
         pyClass->invokeMethod("draw", ctx, font, netInfo);
@@ -272,6 +335,19 @@ InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("infoPos", m_infoPos);
     fillPos(m_infoPos);
     m_infoPos->set_active_id(getPosition());
+
+    Gtk::Button* editInfo;
+    builder->get_widget("editInfo", editInfo);
+    Gtk::Label* infoLabel;
+    builder->get_widget("infoLabel", infoLabel);
+#   ifdef USE_PYTHON
+    editInfo->signal_clicked().connect(
+        sigc::mem_fun(*this, &InfoModule::edit));
+    infoLabel->set_text(getEditInfo());
+#   else
+    editInfo->set_sensitive(false);
+    infoLabel->set_sensitive(false);
+#   endif
 }
 
 void
@@ -461,13 +537,18 @@ ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* 
     pangoLayout->show_in_cairo_context(ctx);
 }
 
+Glib::ustring
+ClockModule::getPyScriptName()
+{
+    return "clock.py";
+}
 
 void
 ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
 {
     getPrimaryColor(ctx);
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, "clock.py", "Clock");
+    auto pyClass = checkPyClass(starDraw, "Clock");
     if (!pyClass) {
         std::cout << "ClockModule::display no Class!" << std::endl;
         return;
@@ -524,6 +605,19 @@ ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("clockPos", m_clockPos);
     fillPos(m_clockPos);
     m_clockPos->set_active_id(getPosition());
+
+    Gtk::Button* editClock;
+    builder->get_widget("editClock", editClock);
+    Gtk::Label* clockLabel;
+    builder->get_widget("clockLabel", clockLabel);
+#   ifdef USE_PYTHON
+    editClock->signal_clicked().connect(
+        sigc::mem_fun(*this, &ClockModule::edit));
+    clockLabel->set_text(getEditInfo());
+#   else
+    editClock->set_sensitive(false);
+    infoLabel->set_sensitive(false);
+#   endif
 }
 
 void
