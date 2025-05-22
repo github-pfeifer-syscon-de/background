@@ -37,5 +37,7 @@ The .py files are localed by default in /usr/share/background-program
 a user version can be created
 by using the -> Script -> Edit option from preferences
 (expects your desktop-enviroment has some editor for python files registered).
+As long as the dialog is shown changes will be made visible when the file
+is saved.
 The modified version will be placed in $USER_HOME/.local/share/background
 if you want to know where your files are.

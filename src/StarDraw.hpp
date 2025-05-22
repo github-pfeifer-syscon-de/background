@@ -87,18 +87,8 @@ public:
     void scale(Pango::FontDescription& starFont, double scale);
     void brighten(Gdk::RGBA& calColor, double factor);
 
-    std::shared_ptr<InfoModule> getInfoModule()
-    {
-        return m_infoModule;
-    }
-    std::shared_ptr<ClockModule> getClockModule()
-    {
-        return m_clockModule;
-    }
-    std::shared_ptr<CalendarModule> getCalendarModule()
-    {
-        return m_calendarModule;
-    }
+    std::vector<PtrModule> createModules();
+    std::vector<PtrModule> getModules();
     std::shared_ptr<FileLoader> getFileLoader()
     {
         return m_fileLoader;
@@ -143,8 +133,6 @@ private:
     bool m_updateBlocked{false};
     Glib::DateTime m_displayTimeUtc;
     StarWin* m_starWin;
-    std::shared_ptr<InfoModule> m_infoModule;
-    std::shared_ptr<ClockModule> m_clockModule;
-    std::shared_ptr<CalendarModule> m_calendarModule;
+    std::vector<PtrModule> m_modules;
     std::shared_ptr<FileLoader> m_fileLoader;
 };

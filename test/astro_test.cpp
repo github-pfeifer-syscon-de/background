@@ -20,7 +20,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <StringUtils.hpp>
-#include <glibmm.h>
 
 #include "JulianDate.hpp"
 #include "GeoPosition.hpp"

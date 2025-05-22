@@ -64,8 +64,8 @@ public:
 
     virtual int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
     virtual void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
-    virtual void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) = 0;
-    virtual void saveParam() = 0;
+    virtual void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) = 0;
+    virtual void saveParam(bool save) = 0;
     std::string getName()
     {
         return m_name;
@@ -77,10 +77,11 @@ public:
     void setPosition(const Glib::ustring& position);
     Pango::FontDescription getFont();
     void setFont(Pango::FontDescription& descr);
-    void edit();
+    void edit(StarDraw* starDraw);
+    void fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarDraw* starDraw);
     virtual Glib::ustring getPyScriptName() = 0;
     Glib::ustring getEditInfo();
-
+    void stopMonitor();
     static constexpr auto COLOR_KEY{"Color"};
     static constexpr auto POS_KEY{"Pos"};
     static constexpr auto FONT_KEY{"Font"};
@@ -100,6 +101,7 @@ protected:
     std::shared_ptr<PyWrapper> m_pyWrapper;
     std::shared_ptr<FileLoader> m_fileLoader;
     std::shared_ptr<PyClass> m_pyClass;
+    Glib::RefPtr<Gio::FileMonitor> m_fileMonitor;
 };
 
 using PtrModule = std::shared_ptr<Module>;
@@ -118,8 +120,8 @@ public:
 
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
-    void saveParam() override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) override;
+    void saveParam(bool save) override;
 
     Glib::ustring getPyScriptName() override;
 private:
@@ -143,8 +145,8 @@ public:
 
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
-    void saveParam() override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) override;
+    void saveParam(bool save) override;
     Glib::ustring getPyScriptName() override;
 private:
     Gtk::ColorButton* m_infoColor;
@@ -166,8 +168,8 @@ public:
 
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder) override;
-    void saveParam() override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) override;
+    void saveParam(bool save) override;
     static constexpr auto RADIUS_KEY{"radius"};
     static constexpr auto FORMAT{"format"};
     static constexpr auto DISPLAY_ANALOG{"analog"};

@@ -46,10 +46,9 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
     builder->get_widget("messierVMag", m_messierVMag);
     m_messierVMag->set_value(m_starDraw->getMessierVMagMin());
 
-    m_starDraw->getInfoModule()->setupParam(builder);
-    m_starDraw->getCalendarModule()->setupParam(builder);
-    m_starDraw->getClockModule()->setupParam(builder);
-
+    for (auto& mod : m_starDraw->getModules()) {
+        mod->setupParam(builder, starDraw);
+    }
 	show_all_children();
 }
 
@@ -57,6 +56,7 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
 void
 ParamDlg::on_response(int response_id)
 {
+    bool save = false;
     if (response_id == Gtk::RESPONSE_OK) {
         m_starDraw->setIntervalMinutes(m_updateInterval->get_value_as_int());
         m_starDraw->setStartColor(m_startColor->get_rgba());
@@ -65,10 +65,10 @@ ParamDlg::on_response(int response_id)
         m_starDraw->setStarFont(starFont);
         m_starDraw->setShowMilkyway(m_showMilkyway->get_active());
         m_starDraw->setMessierVMagMin(m_messierVMag->get_value());
-
-        m_starDraw->getInfoModule()->saveParam();
-        m_starDraw->getCalendarModule()->saveParam();
-        m_starDraw->getClockModule()->saveParam();
+        save = true;
+    }
+    for (auto& mod : m_starDraw->getModules()) {
+        mod->saveParam(save);
     }
 }
 

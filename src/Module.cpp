@@ -128,7 +128,58 @@ Module::checkPyClass(StarDraw* starDraw, const char* className)
 }
 
 void
-Module::edit()
+Module::fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarDraw* starDraw)
+{
+    //Glib::ustring info;
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED) {
+    //    info += " attr";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
+    //    info += " done";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGED) {
+    //    info += " changed";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_DELETED) {
+    //    info += " deleted";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_MOVED) {
+    //    info += " moved";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_MOVED_IN) {
+    //    info += " in";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_MOVED_OUT) {
+    //    info += " out";
+    //}
+    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_RENAMED) {
+    //    info += " renamed";
+    //}
+    // events emacs no backup
+    //file path /home/rpf/.local/share/background/info.py changed  event  deleted
+    //file path /home/rpf/.local/share/background/info.py~ changed  event
+    //file path /home/rpf/.local/share/background/info.py~ changed  event  done
+    //file path /home/rpf/.local/share/background/info.py changed  event
+    //file path /home/rpf/.local/share/background/info.py changed  event  changed
+    //file path /home/rpf/.local/share/background/info.py changed  event  done
+    //file path /home/rpf/.local/share/background/info.py changed  event  attr
+    //file path /home/rpf/.local/share/background/info.py changed  event  changed
+    // netbeans
+    // file path /home/rpf/.local/share/background/info.py changed  event  changed
+    // file path /home/rpf/.local/share/background/info.py changed  event  done
+    //std::cout << "file path " << file->get_path()
+    //          << " changed " << (changed ? changed->get_path() : "")
+    //          << " event " << info
+    //          << std::endl;
+    auto basename = file->get_basename();
+    if (basename == getPyScriptName()
+     && event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
+        starDraw->compute();
+    }
+}
+
+void
+Module::edit(StarDraw* starDraw)
 {
 #   ifdef USE_PYTHON
     auto localScriptFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
@@ -139,6 +190,12 @@ Module::edit()
         }
         auto globalScriptFile = m_fileLoader->findFile(getPyScriptName());
         globalScriptFile->copy(localScriptFile);    // for editing create a local copy
+    }
+    if (!m_fileMonitor) {
+        m_fileMonitor = localScriptFile->monitor_file(Gio::FileMonitorFlags::FILE_MONITOR_NONE);
+        m_fileMonitor->signal_changed().connect(
+            sigc::bind(
+                sigc::mem_fun(*this, &Module::fileChanged), starDraw));
     }
     std::vector<std::string> args;
     args.push_back("/usr/bin/xdg-open");
@@ -151,7 +208,17 @@ Module::edit()
 #   endif
 }
 
-Glib::ustring Module::getEditInfo()
+void
+Module::stopMonitor()
+{
+    if (m_fileMonitor) {
+        m_fileMonitor->cancel();
+        m_fileMonitor.reset();
+    }
+}
+
+Glib::ustring
+Module::getEditInfo()
 {
 #   ifdef USE_PYTHON
     auto localScriptFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
@@ -240,7 +307,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
 }
 
 void
-CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
+CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
     builder->get_widget("calendarColor", m_calendarColor);
     m_calendarColor->set_rgba(getPrimaryColor());
@@ -258,7 +325,8 @@ CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("calLabel", calLabel);
 #   ifdef USE_PYTHON
     editCal->signal_clicked().connect(
-        sigc::mem_fun(*this, &CalendarModule::edit));
+        sigc::bind(
+            sigc::mem_fun(*this, &CalendarModule::edit), starDraw));
     calLabel->set_text(getEditInfo());
 #   else
     editCal->set_sensitive(false);
@@ -267,12 +335,15 @@ CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
 }
 
 void
-CalendarModule::saveParam()
+CalendarModule::saveParam(bool save)
 {
-    setPrimaryColor(m_calendarColor->get_rgba());
-    Pango::FontDescription calFont{m_calendarFont->get_font_name()};
-    setFont(calFont);
-    setPosition(m_calPos->get_active_id());
+    if (save) {
+        setPrimaryColor(m_calendarColor->get_rgba());
+        Pango::FontDescription calFont{m_calendarFont->get_font_name()};
+        setFont(calFont);
+        setPosition(m_calPos->get_active_id());
+    }
+    stopMonitor();
 }
 
 int
@@ -324,7 +395,7 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
 }
 
 void
-InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
+InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
     builder->get_widget("infoColor", m_infoColor);
     m_infoColor->set_rgba(getPrimaryColor());
@@ -342,7 +413,8 @@ InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("infoLabel", infoLabel);
 #   ifdef USE_PYTHON
     editInfo->signal_clicked().connect(
-        sigc::mem_fun(*this, &InfoModule::edit));
+        sigc::bind(
+            sigc::mem_fun(*this, &InfoModule::edit), starDraw));
     infoLabel->set_text(getEditInfo());
 #   else
     editInfo->set_sensitive(false);
@@ -351,12 +423,15 @@ InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
 }
 
 void
-InfoModule::saveParam()
+InfoModule::saveParam(bool save)
 {
-    setPrimaryColor(m_infoColor->get_rgba());
-    Pango::FontDescription infoFont{m_infoFont->get_font_name()};
-    setFont(infoFont);
-    setPosition(m_infoPos->get_active_id());
+    if (save) {
+        setPrimaryColor(m_infoColor->get_rgba());
+        Pango::FontDescription infoFont{m_infoFont->get_font_name()};
+        setFont(infoFont);
+        setPosition(m_infoPos->get_active_id());
+    }
+    stopMonitor();
 }
 
 Glib::RefPtr<Pango::Layout>
@@ -578,7 +653,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 }
 
 void
-ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
+ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
     builder->get_widget("clockColor", m_clockColor);
     m_clockColor->set_rgba(getPrimaryColor());
@@ -612,7 +687,8 @@ ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder)
     builder->get_widget("clockLabel", clockLabel);
 #   ifdef USE_PYTHON
     editClock->signal_clicked().connect(
-        sigc::mem_fun(*this, &ClockModule::edit));
+        sigc::bind(
+            sigc::mem_fun(*this, &ClockModule::edit), starDraw));
     clockLabel->set_text(getEditInfo());
 #   else
     editClock->set_sensitive(false);
@@ -629,14 +705,17 @@ ClockModule::update()
 }
 
 void
-ClockModule::saveParam()
+ClockModule::saveParam(bool save)
 {
-    setPrimaryColor(m_clockColor->get_rgba());
-    setPosition(m_clockPos->get_active_id());
-    setRadius(m_clockRadius->get_value());
-    Pango::FontDescription clockFont{m_clockFont->get_font_name()};
-    setFont(clockFont);
-    setDisplayAnalog(m_displayAnalog->get_active());
-    setDisplayDigital(m_displayDigital->get_active());
-    setFormat(m_clockFormat->get_text());
+    if (save) {
+        setPrimaryColor(m_clockColor->get_rgba());
+        setPosition(m_clockPos->get_active_id());
+        setRadius(m_clockRadius->get_value());
+        Pango::FontDescription clockFont{m_clockFont->get_font_name()};
+        setFont(clockFont);
+        setDisplayAnalog(m_displayAnalog->get_active());
+        setDisplayDigital(m_displayDigital->get_active());
+        setFormat(m_clockFormat->get_text());
+    }
+    stopMonitor();
 }

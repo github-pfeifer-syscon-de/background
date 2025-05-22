@@ -54,14 +54,7 @@ StarDraw::StarDraw(BaseObjectType* cobject
     m_messier =  std::make_shared<MessierLoader>(m_fileLoader);
 	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
     setupConfig();
-#ifdef USE_PYTHON
-    auto pyWrapper = std::make_shared<PyWrapper>();
-#else
-    auto pyWrapper = std::shared_ptr<PyWrapper>();
-#endif
-    m_infoModule = std::make_shared<InfoModule>(m_config, pyWrapper);
-    m_clockModule = std::make_shared<ClockModule>(m_config, pyWrapper);
-    m_calendarModule = std::make_shared<CalendarModule>(m_config, pyWrapper);
+    m_modules = createModules();
 }
 #pragma GCC diagnostic pop
 
@@ -76,8 +69,7 @@ StarDraw::setupConfig()
         auto cfgFile = Gio::File::create_for_path(cfg);
         if (!cfgFile->query_exists()) {
             Glib::ustring msg("No config found, please enter your position.");
-            Gtk::MessageDialog dlg(msg);
-            dlg.run();
+            m_starWin->showMessage(msg);
             on_menu_time();
         }
         else {
@@ -93,8 +85,7 @@ StarDraw::setupConfig()
     }
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s loading %s", ex.what(), cfg);
-        Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::MESSAGE_ERROR);
-        dlg.run();
+        m_starWin->showMessage(msg);
     }
 }
 
@@ -108,7 +99,7 @@ StarDraw::getGlobeConfigName()
     return fullPath;
 }
 
-// as messier objects appear in close together show them concatenated
+// as messier objects appear in some places close together, show names concatenated
 std::vector<NamedPoint>
 StarDraw::cluster(const std::vector<NamedPoint>& points, double distance)
 {
@@ -500,15 +491,11 @@ std::vector<PtrModule>
 StarDraw::findModules(const char* pos)
 {
     std::vector<PtrModule> mods;
-    mods.reserve(4);
-    if (m_infoModule->getPosition() == pos) {
-        mods.push_back(m_infoModule);
-    }
-    if (m_clockModule->getPosition() == pos) {
-        mods.push_back(m_clockModule);
-    }
-    if (m_calendarModule->getPosition() == pos) {
-        mods.push_back(m_calendarModule);
+    mods.reserve(m_modules.size());
+    for (auto& mod : m_modules) {
+        if (mod->getPosition() == pos) {
+            mods.push_back(mod);
+        }
     }
     return mods;
 }
@@ -777,3 +764,30 @@ StarDraw::setStopColor(const Gdk::RGBA& stopColor)
     m_config->setColor(MAIN_GRP, STOP_COLOR_KEY, stopColor);
 }
 
+std::vector<PtrModule>
+StarDraw::createModules()
+{
+#   ifdef USE_PYTHON
+    auto pyWrapper = std::make_shared<PyWrapper>();
+#   else
+    auto pyWrapper = std::shared_ptr<PyWrapper>();
+#   endif
+    std::vector<PtrModule> mods;
+    mods.reserve(4);
+    mods.emplace_back(
+        std::move(
+            std::make_shared<InfoModule>(m_config, pyWrapper)));
+    mods.emplace_back(
+        std::move(
+            std::make_shared<ClockModule>(m_config, pyWrapper)));
+    mods.emplace_back(
+        std::move(
+            std::make_shared<CalendarModule>(m_config, pyWrapper)));
+    return mods;
+}
+
+std::vector<PtrModule>
+StarDraw::getModules()
+{
+    return m_modules;
+}

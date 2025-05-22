@@ -81,7 +81,7 @@ PyClass::load(const Glib::RefPtr<Gio::File>& file)
     }
     //pCodeObj is the result of the executing code, chuck it away because we've only declared a class
     Py_DECREF(pCodeObj);
-    PyObject* pClass = PyObject_GetAttrString(m_pModule, m_obj.c_str());  // Item
+    PyObject* pClass = PyObject_GetAttrString(m_pModule, m_obj.c_str());
     if (pClass && PyCallable_Check(pClass)) {
         m_pInstance = PyObject_CallObject(pClass, nullptr);
     }
