@@ -33,8 +33,8 @@ public:
     virtual ~PyClass();
 
     bool isUpdated();
-    bool load(const Glib::RefPtr<Gio::File>& file);
-    void setLocalFile(const Glib::RefPtr<Gio::File>& localFile);
+    bool load(const std::shared_ptr<FileLoader>& loader);
+    PyObject* compile(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& pycFile);
 
     long invokeMethod(const std::string& method, auto&&... ppargs)
     {
@@ -56,6 +56,8 @@ public:
         }
         return ret;
     }
+    Glib::RefPtr<Gio::File> getLocalPyFile();
+    Glib::RefPtr<Gio::File> getPyFile();
 
 protected:
     PyObject* ctx2py(const Cairo::RefPtr<Cairo::Context>& ctx);
@@ -113,14 +115,13 @@ protected:
         buildArgsAsPyTuple(pyArgs, pos + 1, ppargs...);
     }
 
-    Glib::RefPtr<Gio::File> getFile();
 private:
     const std::string m_obj;
     PyObject* m_pInstance{nullptr};
     PyObject* m_pModule{nullptr};
-    Glib::RefPtr<Gio::File> m_file;
-    Glib::RefPtr<Gio::File> m_localFile;
-    Glib::DateTime m_fileModified;
+    Glib::RefPtr<Gio::File> m_pyFile;
+    Glib::RefPtr<Gio::File> m_localPyFile;
+    Glib::DateTime m_pySoureModified;
 };
 
 // this should be keep as singleton
@@ -132,7 +133,7 @@ public:
     explicit PyWrapper(const PyWrapper& orig) = delete;
     virtual ~PyWrapper();
 
-    std::shared_ptr<PyClass> load(const Glib::RefPtr<Gio::File>& file, const std::string& obj);
+    std::shared_ptr<PyClass> load(const std::shared_ptr<FileLoader>& loader, const std::string& obj);
 private:
 };
 

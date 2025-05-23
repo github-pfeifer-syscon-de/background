@@ -32,8 +32,7 @@ public:
     static std::vector<Glib::ustring> readLines(const Glib::RefPtr<Gio::File>& file);
     static bool readFile(const Glib::RefPtr<Gio::File>& file, std::vector<char>& bytes);
     Glib::RefPtr<Gio::File> findFile(const Glib::ustring& name);
-    Glib::RefPtr<Gio::File> findLocalFile(const Glib::ustring& name);
-    Glib::RefPtr<Gio::File> findLocalFileOnly(const Glib::ustring& name);
+    Glib::RefPtr<Gio::File> getLocalDir();
     Glib::ustring run(const std::vector<std::string>& strArgs, GPid* pid);
 
 private:

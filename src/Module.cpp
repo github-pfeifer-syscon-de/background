@@ -108,19 +108,11 @@ std::shared_ptr<PyClass>
 Module::checkPyClass(StarDraw* starDraw, const char* className)
 {
 #   ifdef USE_PYTHON
-    m_fileLoader = starDraw->getFileLoader();
     if (!m_pyClass || m_pyClass->isUpdated()) {
-        auto file = m_fileLoader->findLocalFile(getPyScriptName());
-        if (file) {
-            auto infoScript = m_pyWrapper->load(file, className);
-            if (infoScript) {
-                m_pyClass = infoScript;
-                auto localFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
-                m_pyClass->setLocalFile(localFile);
-            }
-        }
-        else {
-            std::cout << "The file " << getPyScriptName() << " was not found!" << std::endl;
+        m_fileLoader = starDraw->getFileLoader();
+        auto infoScript = m_pyWrapper->load(m_fileLoader, className);
+        if (infoScript) {
+            m_pyClass = infoScript;
         }
     }
 #   endif
@@ -182,13 +174,13 @@ void
 Module::edit(StarDraw* starDraw)
 {
 #   ifdef USE_PYTHON
-    auto localScriptFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
+    auto localScriptFile = m_pyClass->getLocalPyFile();
     if (!localScriptFile->query_exists()) {
         auto scriptDir = localScriptFile->get_parent();
         if (!scriptDir->query_exists()) {
             scriptDir->make_directory_with_parents();
         }
-        auto globalScriptFile = m_fileLoader->findFile(getPyScriptName());
+        auto globalScriptFile = m_pyClass->getPyFile();
         globalScriptFile->copy(localScriptFile);    // for editing create a local copy
     }
     if (!m_fileMonitor) {
@@ -221,7 +213,7 @@ Glib::ustring
 Module::getEditInfo()
 {
 #   ifdef USE_PYTHON
-    auto localScriptFile = m_fileLoader->findLocalFileOnly(getPyScriptName());
+    auto localScriptFile = m_pyClass->getLocalPyFile();
     return Glib::ustring::sprintf("Script (%s)", localScriptFile->query_exists() ? "local" : "global");
 #endif
     return "";

@@ -18,7 +18,10 @@
 
 #include <iostream>
 #include <string>
+#include <StringUtils.hpp>
 #include <py3cairo.h>
+#include <cstdio>
+#include <marshal.h>
 
 #include "FileLoader.hpp"
 #include "PyWrapper.hpp"
@@ -41,36 +44,92 @@ PyClass::~PyClass()
 bool
 PyClass::isUpdated()
 {
-    auto info = m_file->query_info("*");
+    auto info = m_pyFile->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
     auto fileModified = info-> get_modification_date_time();
-    if (fileModified.compare(m_fileModified) > 0) {
+    if (fileModified.compare(m_pySoureModified) > 0) {
         return true;
     }
-    if (m_localFile && m_localFile->query_exists() && !m_file->equal(m_localFile)) {
+    if (m_localPyFile && m_localPyFile->query_exists() && !m_pyFile->equal(m_localPyFile)) {
         return true;    // switch from global to local file
     }
     return false;   // no change detected
 }
 
-bool
-PyClass::load(const Glib::RefPtr<Gio::File>& file)
+PyObject*
+PyClass::compile(const Glib::RefPtr<Gio::File>& pyFile, const Glib::RefPtr<Gio::File>& pycFile)
 {
+    // failed to background this
+    //    the hints from https://awasu.com/weblog/embedding-python/threads/ didn't help...
     std::vector<char> bytes;
-    if (!FileLoader::readFile(file, bytes)) {
-        std::cout << "PyClass::load error loading " << file->get_path() << std::endl;
-        return false;
+    if (!FileLoader::readFile(pyFile, bytes)) {
+        std::cout << "PyClass::load error loading " << pyFile->get_path() << std::endl;
+        return nullptr;
     }
     // to use file level includes compile is required see https://stackoverflow.com/questions/3789881/create-and-call-python-function-from-string-via-c-api @fridgerator
-    PyObject *pCodeObj = Py_CompileString(bytes.data(), "", Py_file_input);
+    PyObject* pCodeObj = Py_CompileString(bytes.data(), "", Py_file_input);
     //pCodeObj would be null if the Python syntax is wrong, for example
     if (pCodeObj == nullptr) {
         std::cout << "No code obj! (error compiling)" << std::endl;
         if (PyErr_Occurred()) {
             PyErr_Print();
         }
-        return false;
+        return nullptr;
     }
-    //    Create a module by executing the code:
+    // this seems to be right stage to save .pyc
+    //   the command "python -m py_compile info.py" produces the same output
+    auto pcyPath = pycFile->get_path();
+    FILE* cfile = std::fopen(pcyPath.c_str(), "wb");
+    if (cfile) {
+        // Version 0 - Historical format
+        // Version 1 - Shares interned strings
+        // Version 2 - Uses a binary format for floating point numbers
+        // Version 3 - Support for object instancing and recursion
+        // Version 4 - Current Version (as we use the files locally)
+        PyMarshal_WriteObjectToFile(pCodeObj, cfile, Py_MARSHAL_VERSION);      // unsure use 2 ?
+        fclose(cfile);
+    }
+    return pCodeObj;
+}
+
+bool
+PyClass::load(const std::shared_ptr<FileLoader>& loader)
+{
+    // first stop check source
+    const auto sourceBasename = StringUtils::lower(m_obj, 0ul);
+    const Glib::RefPtr<Gio::File> localDir = loader->getLocalDir();
+    const auto sourceName = sourceBasename + ".py";
+    m_localPyFile = localDir->get_child(sourceName);
+    Glib::RefPtr<Gio::File> sourcePy = m_localPyFile;
+    if (!sourcePy->query_exists()) {
+        sourcePy = loader->findFile(sourceName);
+    }
+    m_pyFile = sourcePy;
+    auto sourceInfo = m_pyFile->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
+    m_pySoureModified = sourceInfo->get_modification_date_time();
+    // second stop check compiled
+    const Glib::RefPtr<Gio::File> compiledPyc = localDir->get_child(sourceBasename + ".pyc");
+    PyObject* pCodeObj{};
+    if (compiledPyc->query_exists()) {
+        auto compiledInfo = compiledPyc->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
+        auto compiledModified = compiledInfo->get_modification_date_time();
+        if (compiledModified.compare(m_pySoureModified ) > 0) { // compiled is newer
+            auto pcyPath = compiledPyc->get_path();
+            FILE* cfile = std::fopen(pcyPath.c_str(), "rb");
+            if (cfile) {
+                pCodeObj = PyMarshal_ReadLastObjectFromFile(cfile);
+                fclose(cfile);
+            }
+        }
+    }
+    if (!pCodeObj) {
+        pCodeObj = compile(sourcePy, compiledPyc);
+        if (!pCodeObj) {
+            std::cout << "Failed to compile" << std::endl;
+            return false;
+        }
+    }
+    // Create a module by executing the code:
+    //   This is the step where the time goes for the first instance
     m_pModule = PyImport_ExecCodeModule(m_obj.c_str(), pCodeObj);
     if (m_pModule == nullptr) {
         std::cout << "No module! (error running)" << std::endl;
@@ -79,6 +138,11 @@ PyClass::load(const Glib::RefPtr<Gio::File>& file)
         }
         return false;
     }
+    //auto start = std::chrono::steady_clock::now();
+    //auto end = std::chrono::steady_clock::now();
+    //auto elapsed_seconds = std::chrono::duration_cast<
+    //      std::chrono::duration<double>>(end - start).count();
+    //std::cout<< "Exec took " << elapsed.count() << "ms" << std::endl;
     //pCodeObj is the result of the executing code, chuck it away because we've only declared a class
     Py_DECREF(pCodeObj);
     PyObject* pClass = PyObject_GetAttrString(m_pModule, m_obj.c_str());
@@ -95,22 +159,19 @@ PyClass::load(const Glib::RefPtr<Gio::File>& file)
     if (pClass) {
         Py_XDECREF(pClass);
     }
-    m_file = file;
-    auto info = file->query_info("*");
-    m_fileModified = info->get_modification_date_time();
     return true;
 }
 
 Glib::RefPtr<Gio::File>
-PyClass::getFile()
+PyClass::getPyFile()
 {
-    return m_file;
+    return m_pyFile;
 }
 
-void
-PyClass::setLocalFile(const Glib::RefPtr<Gio::File>& localFile)
+Glib::RefPtr<Gio::File>
+PyClass::getLocalPyFile()
 {
-    m_localFile = localFile;
+    return m_localPyFile;
 }
 
 PyObject*
@@ -135,11 +196,11 @@ PyWrapper::~PyWrapper()
 }
 
 std::shared_ptr<PyClass>
-PyWrapper::load(const Glib::RefPtr<Gio::File>& file, const std::string& obj)
+PyWrapper::load(const std::shared_ptr<FileLoader>& loader, const std::string& obj)
 {
     std::shared_ptr<PyClass> pyClass;
     auto tempClass = std::make_shared<PyClass>(obj);
-    bool ret = tempClass->load(file);
+    bool ret = tempClass->load(loader);
     if (ret) {
         pyClass = tempClass;
     }

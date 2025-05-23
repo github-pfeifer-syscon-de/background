@@ -117,3 +117,5 @@
 /test/basic_ios.tcc.cpp
 /test/.deps/astro_test.Tpo
 /test.py
+/test/PyWrapper.cpp
+/test/PyWrapper.hpp

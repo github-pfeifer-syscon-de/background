@@ -46,22 +46,16 @@ FileLoader::findFile(const Glib::ustring& name)
     return Glib::RefPtr<Gio::File>();
 }
 
-Glib::RefPtr<Gio::File>
-FileLoader::findLocalFile(const Glib::ustring& name)
-{
-    auto userConfig = findLocalFileOnly(name);
-    if (userConfig->query_exists()) {
-        return userConfig;
-    }
-    return findFile(name);  // try remaining locations
-}
 
 Glib::RefPtr<Gio::File>
-FileLoader::findLocalFileOnly(const Glib::ustring& name)
+FileLoader::getLocalDir()
 {
-    std::string uname = "background/" + name;
+    std::string uname = "background/";
     auto fullPath = Glib::canonicalize_filename(uname, Glib::get_user_data_dir());
     auto userConfig = Gio::File::create_for_path(fullPath);
+    if (!userConfig->query_exists()) {
+        userConfig->make_directory_with_parents();
+    }
     return userConfig;
 }
 
