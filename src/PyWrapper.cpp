@@ -67,9 +67,9 @@ PyClass::compile(const Glib::RefPtr<Gio::File>& pyFile, const Glib::RefPtr<Gio::
         return nullptr;
     }
     // to use file level includes compile is required see https://stackoverflow.com/questions/3789881/create-and-call-python-function-from-string-via-c-api @fridgerator
-    PyObject* pCodeObj = Py_CompileString(bytes.data(), "", Py_file_input);
+    PyObject* pCodeObj = Py_CompileString(bytes.data(), m_src.c_str(), Py_file_input);
     if (pCodeObj == nullptr) {  // if the Python syntax is wrong, for example
-        setPyError(psc::fmt::format("Error compiling {}", pyFile->get_path()));
+        setPyError("Error compiling");
         return nullptr;
     }
     // this seems to be right stage to save .pyc

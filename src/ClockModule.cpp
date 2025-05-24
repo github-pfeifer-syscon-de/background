@@ -51,11 +51,19 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
     }
     if (isDisplayAnalog()) {
         analogHeight = static_cast<int>(pyClass->invokeMethod("getAnalogHeight", ctx, getRadius()));
+        if (pyClass->hasFailed()) {
+            starDraw->showError(pyClass->getError());
+            analogHeight = 0;
+        }
     }
     if (isDisplayDigital()) {
         auto fontDesc = getFont();
         auto fontName = fontDesc.to_string();
         digitalHeight = static_cast<int>(pyClass->invokeMethod("getDigitalHeight", ctx, fontName, getFormat()));
+        if (pyClass->hasFailed()) {
+            starDraw->showError(pyClass->getError());
+            digitalHeight = 0;
+        }
     }
 #   else
     if (isDisplayAnalog()) {
@@ -242,6 +250,9 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
         ctx->begin_new_path();  // as we get a strange stoke otherwise
 #       ifdef USE_PYTHON
         pyClass->invokeMethod("drawAnalog", ctx, getRadius());
+        if (pyClass->hasFailed()) {
+            starDraw->showError(pyClass->getError());
+        }
 #       else
         displayAnalog(ctx, starDraw);
 #       endif
@@ -254,6 +265,9 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
         auto clockFont = getFont();
         auto fontName= clockFont.to_string();
         pyClass->invokeMethod("drawDigital", ctx, fontName, fmt, isDisplayAnalog() ? getRadius() : 0.0);
+        if (pyClass->hasFailed()) {
+            starDraw->showError(pyClass->getError());
+        }
 #       else
         displayDigital(ctx, starDraw, isDisplayAnalog());
 #       endif

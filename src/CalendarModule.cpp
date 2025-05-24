@@ -30,7 +30,7 @@ Grid::put(Glib::RefPtr<Pango::Layout>& layout
            , double halign, int colSpan
            , double valign, int rowSpan)
 {
-    // the pango layout alignment did not work as expected with with
+    // the pango layout alignment did not work as expected
     // to make text look nicely put it on exact pixel location
     int x = col * m_cellWidth;
     int y = row * m_cellHeight;
@@ -57,7 +57,12 @@ CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* st
         return 0;
     }
     auto fontName = calFont.to_string();
-    return static_cast<int>(pyClass->invokeMethod("getHeight", ctx, fontName));
+    int height = static_cast<int>(pyClass->invokeMethod("getHeight", ctx, fontName));
+    if (pyClass->hasFailed()) {
+        starDraw->showError(pyClass->getError());
+        height = 0;
+    }
+    return height;
 #   else
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(calFont);
@@ -87,6 +92,9 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
     if (pyClass) {
         auto font = calFont.to_string();
         pyClass->invokeMethod("draw", ctx, font);
+        if (pyClass->hasFailed()) {
+            starDraw->showError(pyClass->getError());
+        }
     }
     else {
         std::cout << "CalendarModule::display no Class!" << std::endl;

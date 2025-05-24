@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <algorithm>
+#include <psc_format.hpp>
 
 #include "FileLoader.hpp"
 
@@ -47,6 +48,8 @@ public:
             std::cout << "PyClass::invokeMethod no instance" << std::endl;
             return ret;
         }
+        m_failed = false;
+        PyErr_Clear();
         static const std::size_t values = sizeof...(ppargs);
         PyObject* pyArgs = PyTuple_New(values);
         buildArgsAsPyTuple(pyArgs, 0, ppargs...);
@@ -56,7 +59,7 @@ public:
             Py_DECREF(pValue);
         }
         if (PyErr_Occurred()) {
-            PyErr_Print();
+            setPyError(psc::fmt::format("invoke {} on {}", method, m_obj));
         }
         return ret;
     }

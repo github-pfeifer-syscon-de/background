@@ -88,7 +88,7 @@ StarDraw::setupConfig()
     }
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s loading %s", ex.what(), cfg);
-        m_starWin->showMessage(msg);
+        showError(msg);
     }
 }
 
@@ -656,7 +656,7 @@ StarDraw::saveConfig()
     }
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s saving config", ex.what());
-        m_starWin->showMessage(msg);
+        showError(msg);
     }
 }
 
@@ -677,7 +677,7 @@ StarDraw::savePosition()
     }
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s saving %s", ex.what(), cfg);
-        m_starWin->showMessage(msg);
+        showError(msg);
     }
 }
 
@@ -793,4 +793,15 @@ std::vector<PtrModule>
 StarDraw::getModules()
 {
     return m_modules;
+}
+
+void
+StarDraw::showError(const Glib::ustring& msg, Gtk::MessageType msgType)
+{
+    if (m_starWin) {
+        m_starWin->showMessage(msg, msgType);
+    }
+    else {
+        std::cout << "StarDraw::showError no win " << msg << std::endl;
+    }
 }

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <psc_format.hpp>
 #include <StringUtils.hpp>
 
 #include "StarDraw.hpp"
@@ -189,7 +190,7 @@ Module::edit(StarDraw* starDraw)
     GPid pid;
     auto msg = m_fileLoader->run(args, &pid);
     if (!msg.empty()) {
-        std::cout << "Error running xdg-open" << std::endl;
+        starDraw->showError(psc::fmt::format("Error {} opening editor", msg));
     }
 #   endif
 }

@@ -104,8 +104,7 @@ StarWin::on_mount(Glib::RefPtr<Gio::AsyncResult>& result)
                 auto msg = m_drawingArea->getFileLoader()->run(args, &m_pid);
                 if (!msg.empty()) {
                     showMessage(
-                        Glib::ustring::sprintf("Open %s failed with %s"
-                                                , arg0, msg)
+                          Glib::ustring::sprintf("Open %s failed with %s", arg0, msg)
                         , Gtk::MessageType::MESSAGE_ERROR);
                 }
             }

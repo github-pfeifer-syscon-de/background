@@ -120,7 +120,7 @@ child_watch_cb( GPid     pid
               , gint     status
               , gpointer user_data)
 {
-    g_message("Child %" G_PID_FORMAT, pid);
+    //g_message("Child %" G_PID_FORMAT, pid);
     g_autoptr(GError) error = nullptr;
     if (g_spawn_check_wait_status(status, &error)) {
         // went fine ...

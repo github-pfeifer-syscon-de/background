@@ -18,7 +18,6 @@
 
 #include "StarDraw.hpp"
 #include "Math.hpp"
-#include "FileLoader.hpp"
 #include "config.h"
 
 #include "InfoModule.hpp"
@@ -42,7 +41,12 @@ InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDr
         return 0;
     }
     auto fontName = infoFont.to_string();
-    return static_cast<int>(pyClass->invokeMethod("getHeight", ctx, fontName));
+    auto height = static_cast<int>(pyClass->invokeMethod("getHeight", ctx, fontName));
+    if (pyClass->hasFailed()) {
+        starDraw->showError(pyClass->getError());
+        height = 0;
+    }
+    return height;
 #   else
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(infoFont);
@@ -76,6 +80,9 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
     if (pyClass) {
         auto font = infoFont.to_string();
         pyClass->invokeMethod("draw", ctx, font, netInfo);
+        if (pyClass->hasFailed()) {
+            starDraw->showError(pyClass->getError());
+        }
     }
     else {
         std::cout << "InfoModule::display no Class!" << std::endl;

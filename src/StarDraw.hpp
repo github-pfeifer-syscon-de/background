@@ -93,6 +93,7 @@ public:
     {
         return m_fileLoader;
     }
+    void showError(const Glib::ustring& msg, Gtk::MessageType msgType = Gtk::MessageType::MESSAGE_INFO);
 
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
