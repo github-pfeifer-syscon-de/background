@@ -34,6 +34,9 @@
 #include "Planets.hpp"
 #include "MessierLoader.hpp"
 #include "Module.hpp"
+#include "ClockModule.hpp"
+#include "InfoModule.hpp"
+#include "CalendarModule.hpp"
 #include "config.h"
 
 
@@ -517,7 +520,7 @@ StarDraw::drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, cons
 void
 StarDraw::drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
 {
-    int sumHeight{0};
+    int sumHeight{};
     for (auto& mod : modules) {
         sumHeight += mod->getHeight(ctx, this);
     }

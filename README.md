@@ -24,14 +24,18 @@ at a somewhat smaller scale...
 
 Depends on genericImg see there for build instructions.
 
+## Python
+
 By default for rendering the info blocks python will be used
 (this requires the Development install of python3, python-gobject, py3cairo ).
 If you don't like this option use
+```
 ./configure --prefix=/usr --without-python
-the internal functions for rendering will be used.
+```
+the C++ functions for rendering will be used in this case.
 
 With python you have the option to easily
-modify this displayed infos e.g. use a weather or news service ...
+modify the displayed infos e.g. use a weather or news service ...
 
 The .py files are localed by default in /usr/share/background-program
 a user version can be created
@@ -41,3 +45,9 @@ As long as the dialog is shown changes will be made visible when the file
 is saved.
 The modified version will be placed in $USER_HOME/.local/share/background
 if you want to know where your files are.
+If you modify the display function of modules remember to also
+adapt the getHeight function, this allows
+the correct layout when multiple modules will share
+one position for example.
+The python function will be precompiled
+and place alongside the user version of the sources.

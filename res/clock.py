@@ -1,5 +1,5 @@
 # created RPf 17.4.2025
-# 
+#
 import cairo
 import math
 import datetime
@@ -27,6 +27,15 @@ class Clock:
         ctx.line_to(radius * xv, radius * yv)
         ctx.stroke()
 
+    # alternative style for marks
+    def drawDot(self,ctx,value,full,emphasis,radius):
+        angleRad = math.radians(360) * value / full
+        xv = math.sin(angleRad)
+        yv = -math.cos(angleRad)
+        ctx.arc(xv * radius * 0.9, yv * radius * 0.9, 3.0 if emphasis else 1.5, 0.0, math.radians(360))
+        ctx.fill();
+
+
     def drawHand(self,ctx,value,full,radius,width):
         angleRad = math.radians(360) * value / full
         xv = math.sin(angleRad)
@@ -51,6 +60,17 @@ class Clock:
            self.drawRadial(ctx, i, 60, (i % 5) == 0, radius)
         ctx.restore()
         return 0
+
+    def getAnalogHeight(self,ctx,radius):
+        return int(2 * radius)
+
+    def getDigitalHeight(self,ctx,font,fmt):
+        layout = PangoCairo.create_layout(ctx)
+        font_description = Pango.font_description_from_string(font)
+        layout.set_font_description(font_description)
+        layout.set_text(fmt)
+        size = layout.get_pixel_size()
+        return int(size.height)
 
     def drawDigital(self,ctx,font,fmt,radius):
         now = datetime.datetime.now()

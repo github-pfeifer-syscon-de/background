@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <gtkmm.h>
 #include <Python.h>
 #include <cstdlib>
@@ -25,10 +27,12 @@
 #include <cstdarg>
 #include <algorithm>
 
+#include "FileLoader.hpp"
+
 class PyClass
 {
 public:
-    PyClass(const std::string& obj);
+    PyClass(const std::string& obj, const std::string& src);
     explicit PyClass(const PyClass& orig) = delete;
     virtual ~PyClass();
 
@@ -58,9 +62,12 @@ public:
     }
     Glib::RefPtr<Gio::File> getLocalPyFile();
     Glib::RefPtr<Gio::File> getPyFile();
-
+    bool hasFailed();
+    Glib::ustring getError();
+    void setSourceModified();
 protected:
     PyObject* ctx2py(const Cairo::RefPtr<Cairo::Context>& ctx);
+    void setPyError(const Glib::ustring& location);
 
     void
     buildArgsAsPyTuple(PyObject* pyArgs, int pos)
@@ -117,15 +124,18 @@ protected:
 
 private:
     const std::string m_obj;
+    const std::string m_src;
     PyObject* m_pInstance{nullptr};
     PyObject* m_pModule{nullptr};
     Glib::RefPtr<Gio::File> m_pyFile;
     Glib::RefPtr<Gio::File> m_localPyFile;
     Glib::DateTime m_pySoureModified;
+    bool m_failed{false};
+    Glib::ustring  m_error;
 };
 
 // this should be keep as singleton
-//   as the use python init is global
+//   as the required python init is global
 class PyWrapper
 {
 public:
@@ -133,7 +143,7 @@ public:
     explicit PyWrapper(const PyWrapper& orig) = delete;
     virtual ~PyWrapper();
 
-    std::shared_ptr<PyClass> load(const std::shared_ptr<FileLoader>& loader, const std::string& obj);
+    std::shared_ptr<PyClass> load(const std::shared_ptr<FileLoader>& loader, const std::string& obj, const std::string& src);
 private:
 };
 

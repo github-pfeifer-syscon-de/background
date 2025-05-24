@@ -51,6 +51,12 @@ background_SOURCES = resources.c \
 	StarDraw.cpp \
 	Module.hpp \
 	Module.cpp \
+	InfoModule.hpp \
+	InfoModule.cpp \
+	CalendarModule.hpp \
+	CalendarModule.cpp \
+	ClockModule.hpp \
+	ClockModule.cpp \
 	Math.hpp \
 	Math.cpp \
 	RaDec.hpp \

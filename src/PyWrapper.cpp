@@ -18,16 +18,17 @@
 
 #include <iostream>
 #include <string>
-#include <StringUtils.hpp>
 #include <py3cairo.h>
 #include <cstdio>
 #include <marshal.h>
+#include <psc_format.hpp>
 
 #include "FileLoader.hpp"
 #include "PyWrapper.hpp"
 
-PyClass::PyClass(const std::string& obj)
+PyClass::PyClass(const std::string& obj, const std::string& src)
 : m_obj{obj}
+, m_src{src}
 {
 }
 
@@ -45,7 +46,7 @@ bool
 PyClass::isUpdated()
 {
     auto info = m_pyFile->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
-    auto fileModified = info-> get_modification_date_time();
+    auto fileModified = info->get_modification_date_time();
     if (fileModified.compare(m_pySoureModified) > 0) {
         return true;
     }
@@ -59,24 +60,20 @@ PyObject*
 PyClass::compile(const Glib::RefPtr<Gio::File>& pyFile, const Glib::RefPtr<Gio::File>& pycFile)
 {
     // failed to background this
-    //    the hints from https://awasu.com/weblog/embedding-python/threads/ didn't help...
+    //    the hints from https://awasu.com/weblog/embedding-python/threads/ seem a bit heavy to implement
     std::vector<char> bytes;
     if (!FileLoader::readFile(pyFile, bytes)) {
-        std::cout << "PyClass::load error loading " << pyFile->get_path() << std::endl;
+        setPyError(psc::fmt::format("Error loading source {}", pyFile->get_path()));
         return nullptr;
     }
     // to use file level includes compile is required see https://stackoverflow.com/questions/3789881/create-and-call-python-function-from-string-via-c-api @fridgerator
     PyObject* pCodeObj = Py_CompileString(bytes.data(), "", Py_file_input);
-    //pCodeObj would be null if the Python syntax is wrong, for example
-    if (pCodeObj == nullptr) {
-        std::cout << "No code obj! (error compiling)" << std::endl;
-        if (PyErr_Occurred()) {
-            PyErr_Print();
-        }
+    if (pCodeObj == nullptr) {  // if the Python syntax is wrong, for example
+        setPyError(psc::fmt::format("Error compiling {}", pyFile->get_path()));
         return nullptr;
     }
     // this seems to be right stage to save .pyc
-    //   the command "python -m py_compile info.py" produces the same output
+    //   the command "python -m py_compile info.py" produces the same output (used with version 1)
     auto pcyPath = pycFile->get_path();
     FILE* cfile = std::fopen(pcyPath.c_str(), "wb");
     if (cfile) {
@@ -85,27 +82,61 @@ PyClass::compile(const Glib::RefPtr<Gio::File>& pyFile, const Glib::RefPtr<Gio::
         // Version 2 - Uses a binary format for floating point numbers
         // Version 3 - Support for object instancing and recursion
         // Version 4 - Current Version (as we use the files locally)
-        PyMarshal_WriteObjectToFile(pCodeObj, cfile, Py_MARSHAL_VERSION);      // unsure use 2 ?
+        PyMarshal_WriteObjectToFile(pCodeObj, cfile, Py_MARSHAL_VERSION);
         fclose(cfile);
     }
     return pCodeObj;
 }
 
+void
+PyClass::setPyError(const Glib::ustring& location)
+{
+    m_failed = true;
+    m_error = location;
+    if (PyErr_Occurred()) {
+        // see https://stackoverflow.com/questions/1418015/how-to-get-python-exception-text
+        PyObject *ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        //pvalue contains error message
+        //ptraceback contains stack snapshot and many other information
+        //(see python traceback structure)
+        //Get error message
+        auto pyStr = PyObject_Str(pvalue);
+        if (pyStr) {
+            auto pyUtf8 = PyUnicode_AsUTF8(pyStr);;
+            if (pyUtf8) {
+                m_error += "\n";
+                m_error += pyUtf8;
+                Py_DECREF(pyUtf8);
+            }
+            Py_DECREF(pyStr);
+        }
+        PyErr_Print();        // this removes the error!!!
+    }
+}
+
+void
+PyClass::setSourceModified()
+{
+    auto sourceInfo = m_pyFile->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
+    m_pySoureModified = sourceInfo->get_modification_date_time();
+}
+
 bool
 PyClass::load(const std::shared_ptr<FileLoader>& loader)
 {
+    m_failed = false;
+    PyErr_Clear();
     // first stop check source
-    const auto sourceBasename = StringUtils::lower(m_obj, 0ul);
     const Glib::RefPtr<Gio::File> localDir = loader->getLocalDir();
-    const auto sourceName = sourceBasename + ".py";
-    m_localPyFile = localDir->get_child(sourceName);
+    m_localPyFile = localDir->get_child(m_src);
+    auto sourceBasename = m_src.substr(0, m_src.find('.'));
     Glib::RefPtr<Gio::File> sourcePy = m_localPyFile;
     if (!sourcePy->query_exists()) {
-        sourcePy = loader->findFile(sourceName);
+        sourcePy = loader->findFile(m_src);
     }
     m_pyFile = sourcePy;
-    auto sourceInfo = m_pyFile->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
-    m_pySoureModified = sourceInfo->get_modification_date_time();
+    setSourceModified();
     // second stop check compiled
     const Glib::RefPtr<Gio::File> compiledPyc = localDir->get_child(sourceBasename + ".pyc");
     PyObject* pCodeObj{};
@@ -124,7 +155,6 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
     if (!pCodeObj) {
         pCodeObj = compile(sourcePy, compiledPyc);
         if (!pCodeObj) {
-            std::cout << "Failed to compile" << std::endl;
             return false;
         }
     }
@@ -132,10 +162,7 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
     //   This is the step where the time goes for the first instance
     m_pModule = PyImport_ExecCodeModule(m_obj.c_str(), pCodeObj);
     if (m_pModule == nullptr) {
-        std::cout << "No module! (error running)" << std::endl;
-        if (PyErr_Occurred()) {
-            PyErr_Print();
-        }
+        setPyError("Error running");
         return false;
     }
     //auto start = std::chrono::steady_clock::now();
@@ -150,10 +177,7 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
         m_pInstance = PyObject_CallObject(pClass, nullptr);
     }
     else {
-        std::cout << "No class " << m_obj << " found!" << std::endl;
-        if (PyErr_Occurred()) {
-            PyErr_Print();
-        }
+        setPyError(psc::fmt::format("No class {} found!", m_obj));
         return false;
     }
     if (pClass) {
@@ -173,6 +197,19 @@ PyClass::getLocalPyFile()
 {
     return m_localPyFile;
 }
+
+bool
+PyClass::hasFailed()
+{
+    return m_failed;
+}
+
+Glib::ustring
+PyClass::getError()
+{
+    return m_error;
+}
+
 
 PyObject*
 PyClass::ctx2py(const Cairo::RefPtr<Cairo::Context>& ctx)
@@ -196,14 +233,10 @@ PyWrapper::~PyWrapper()
 }
 
 std::shared_ptr<PyClass>
-PyWrapper::load(const std::shared_ptr<FileLoader>& loader, const std::string& obj)
+PyWrapper::load(const std::shared_ptr<FileLoader>& loader, const std::string& obj, const std::string& src)
 {
-    std::shared_ptr<PyClass> pyClass;
-    auto tempClass = std::make_shared<PyClass>(obj);
-    bool ret = tempClass->load(loader);
-    if (ret) {
-        pyClass = tempClass;
-    }
-    return pyClass;
+    auto tempClass = std::make_shared<PyClass>(obj, src);
+    tempClass->load(loader);
+    return tempClass;
 }
 

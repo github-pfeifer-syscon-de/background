@@ -1,5 +1,5 @@
 # created RPf 17.4.2025
-# 
+#
 import cairo
 import calendar
 import locale
@@ -87,6 +87,14 @@ class Cal:
                     dayLayout.set_text(f"{day}")
                     self.putText(ctx, dayLayout, j+1, i+2)
         return
+
+    def getHeight(self,ctx,font):
+        layout = PangoCairo.create_layout(ctx)
+        font_description = Pango.font_description_from_string(font)
+        layout.set_font_description(font_description)
+        layout.set_text("M")
+        size = layout.get_pixel_size()
+        return int(9 * size.height)
 
     def draw(self,ctx,font):
         now = datetime.datetime.now()

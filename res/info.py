@@ -102,6 +102,14 @@ class Info:
                    text = True)
         return result.stdout
 
+    def getHeight(self,ctx,font):
+        layout = PangoCairo.create_layout(ctx)
+        font_description = Pango.font_description_from_string(font)
+        layout.set_font_description(font_description)
+        layout.set_text("M")
+        size = layout.get_pixel_size()
+        return int(6 * size.height)
+
     def draw(self,ctx,font,netinfo):
         layout = PangoCairo.create_layout(ctx)
         font_description = Pango.font_description_from_string(font)
