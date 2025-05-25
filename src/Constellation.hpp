@@ -34,10 +34,10 @@ public:
 
     std::string getName();
     void addPosition(const std::shared_ptr<RaDec>& raDec, int width);
-    const std::list<std::shared_ptr<Polyline>> getPolylines();
+    const std::list<std::shared_ptr<psc::geom::Polyline>> getPolylines();
 
 private:
     std::string m_name;
-    std::list<std::shared_ptr<Polyline>> m_lines;
+    std::list<std::shared_ptr<psc::geom::Polyline>> m_lines;
 };
 

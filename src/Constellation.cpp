@@ -34,10 +34,10 @@ Constellation::getName()
 void
 Constellation::addPosition(const std::shared_ptr<RaDec>& raDec, int width)
 {
-	std::shared_ptr<Polyline> polyline;
+	std::shared_ptr<psc::geom::Polyline> polyline;
 	if (m_lines.empty()
 	 || m_lines.back()->getWidth() != width) {
-	    polyline = std::make_shared<Polyline>(width);
+	    polyline = std::make_shared<psc::geom::Polyline>(width);
 	    m_lines.push_back(polyline);
 	}
 	else {
@@ -46,7 +46,7 @@ Constellation::addPosition(const std::shared_ptr<RaDec>& raDec, int width)
 	polyline->add(raDec);
 }
 
-const std::list<std::shared_ptr<Polyline>>
+const std::list<std::shared_ptr<psc::geom::Polyline>>
 Constellation::getPolylines()
 {
 	return m_lines;     // c++ equivalent to Collections.unmodifiable ?

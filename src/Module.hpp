@@ -21,6 +21,7 @@
 #include <gtkmm.h>
 #include <KeyConfig.hpp>
 
+#include "FileLoader.hpp"
 #include "config.h"
 
 #ifdef USE_PYTHON

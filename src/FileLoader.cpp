@@ -30,16 +30,22 @@ Glib::RefPtr<Gio::File>
 FileLoader::findFile(const Glib::ustring& name)
 {
     auto execDir = Gio::File::create_for_path(m_startPath);
+    //std::cout << "FileLoader::findFile exc " << execDir->get_path() << std::endl;
     auto distDir = execDir->get_parent()->get_parent();
+#   ifdef __WIN32__
+    distDir = distDir->get_parent();    // windows places the file in .libs
+#   endif
     auto resDir = Glib::canonicalize_filename("res", distDir->get_path());
     std::string uname = name;
     auto fullPath = Glib::canonicalize_filename(uname, resDir);
     auto file = Gio::File::create_for_path(fullPath);
+    //std::cout << "FileLoader::findFile check local " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
     if (file->query_exists()) {
         return file;
     }
     fullPath = Glib::canonicalize_filename(uname, PACKAGE_DATA_DIR);
     file = Gio::File::create_for_path(fullPath);
+    //std::cout << "FileLoader::findFile check global " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
     if (file->query_exists()) {
         return file;
     }
@@ -56,6 +62,7 @@ FileLoader::getLocalDir()
     if (!userConfig->query_exists()) {
         userConfig->make_directory_with_parents();
     }
+    //std::cout << "FileLoader::getLocalDir  " << userConfig->get_path() << std::endl;
     return userConfig;
 }
 
@@ -87,6 +94,7 @@ FileLoader::readLines(const Glib::RefPtr<Gio::File>& file)
     }
     dataStrm->close();
     fileStrm->close();
+    //std::cout << "FileLoader::readLines  " << file->get_path() << " lines " << ret.size() << std::endl;
     return ret;
 }
 
@@ -112,6 +120,7 @@ FileLoader::readFile(const Glib::RefPtr<Gio::File>& file, std::vector<char>& byt
         return false;
     }
     bytes[read] = '\0';
+    //std::cout << "FileLoader::readFile  " << file->get_path() << " bytes " << bytes.size() << std::endl;
     return true;
 }
 

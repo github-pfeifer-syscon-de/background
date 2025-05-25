@@ -20,6 +20,8 @@
 #include "Polyline.hpp"
 #include "RaDec.hpp"
 
+namespace psc::geom {
+
 Polyline::Polyline(int width)
 : m_width{width}
 {
@@ -42,3 +44,5 @@ Polyline::getWidth()
 {
     return m_width;
 }
+
+} // namespace psc::geom 

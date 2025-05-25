@@ -23,6 +23,8 @@
 
 class RaDec;
 
+namespace psc::geom {
+    
 class Polyline
 {
 public:
@@ -39,3 +41,4 @@ private:
     int m_width;
 };
 
+} // namespace psc::geom 

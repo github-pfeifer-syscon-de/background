@@ -5,51 +5,38 @@
       <df name="src">
         <in>AzimutAltitude.cpp</in>
         <in>BackgroundApp.cpp</in>
+        <in>CalendarModule.cpp</in>
+        <in>ClockModule.cpp</in>
         <in>Constellation.cpp</in>
         <in>ConstellationFormat.cpp</in>
-        <in>Earth.cpp</in>
-        <in>Earth.hpp</in>
         <in>FileLoader.cpp</in>
-        <in>FileLoader.hpp</in>
         <in>GeoPosition.cpp</in>
         <in>HipparcosFormat.cpp</in>
         <in>HipparcosStar.cpp</in>
+        <in>InfoModule.cpp</in>
         <in>JulianDate.cpp</in>
-        <in>Jupiter.cpp</in>
-        <in>Jupiter.hpp</in>
         <in>Layout.cpp</in>
-        <in>Mars.cpp</in>
-        <in>Mars.hpp</in>
         <in>Math.cpp</in>
-        <in>Mercury.cpp</in>
-        <in>Mercury.hpp</in>
+        <in>Messier.cpp</in>
+        <in>MessierLoader.cpp</in>
         <in>Milkyway.cpp</in>
-        <in>Milkyway.hpp</in>
+        <in>Module.cpp</in>
         <in>Moon.cpp</in>
-        <in>Neptune.cpp</in>
-        <in>Neptune.hpp</in>
+        <in>ParamDlg.cpp</in>
         <in>Phase.cpp</in>
         <in>Planet.cpp</in>
-        <in>Planet.hpp</in>
+        <in>Planets.cpp</in>
         <in>Point2D.cpp</in>
         <in>Poly.cpp</in>
-        <in>Poly.hpp</in>
         <in>Polyline.cpp</in>
         <in>RaDec.cpp</in>
         <in>RaDecPlanet.cpp</in>
-        <in>RaDecPlanet.hpp</in>
-        <in>Saturn.cpp</in>
-        <in>Saturn.hpp</in>
         <in>Star.cpp</in>
         <in>StarDraw.cpp</in>
         <in>StarWin.cpp</in>
         <in>Sun.cpp</in>
         <in>SysInfo.cpp</in>
-        <in>SysInfo.hpp</in>
-        <in>Uranus.cpp</in>
-        <in>Uranus.hpp</in>
-        <in>Venus.cpp</in>
-        <in>Venus.hpp</in>
+        <in>TimeDlg.cpp</in>
         <in>resources.c</in>
       </df>
     </df>
@@ -70,7 +57,7 @@
   <confs>
     <conf name="Default" type="0">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>Cygwin|Cygwin</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -89,47 +76,47 @@
           <cTool>
             <incDir>
               <pElem>src</pElem>
-              <pElem>.</pElem>
-              <pElem>/usr/include/glibmm-2.4</pElem>
-              <pElem>/usr/lib/glibmm-2.4/include</pElem>
-              <pElem>/usr/include/glib-2.0</pElem>
-              <pElem>/usr/lib/glib-2.0/include</pElem>
-              <pElem>/usr/include/sysprof-6</pElem>
-              <pElem>/usr/include/sigc++-2.0</pElem>
-              <pElem>/usr/lib/sigc++-2.0/include</pElem>
-              <pElem>/usr/include/giomm-2.4</pElem>
-              <pElem>/usr/lib/giomm-2.4/include</pElem>
-              <pElem>/usr/include/libmount</pElem>
-              <pElem>/usr/include/blkid</pElem>
-              <pElem>/usr/include/gtkmm-3.0</pElem>
-              <pElem>/usr/lib/gtkmm-3.0/include</pElem>
-              <pElem>/usr/include/gtk-3.0</pElem>
-              <pElem>/usr/include/pango-1.0</pElem>
-              <pElem>/usr/include/harfbuzz</pElem>
-              <pElem>/usr/include/freetype2</pElem>
-              <pElem>/usr/include/libpng16</pElem>
-              <pElem>/usr/include/fribidi</pElem>
-              <pElem>/usr/include/cairo</pElem>
-              <pElem>/usr/include/pixman-1</pElem>
-              <pElem>/usr/include/gdk-pixbuf-2.0</pElem>
-              <pElem>/usr/include/gio-unix-2.0</pElem>
-              <pElem>/usr/include/cloudproviders</pElem>
-              <pElem>/usr/include/atk-1.0</pElem>
-              <pElem>/usr/include/at-spi2-atk/2.0</pElem>
-              <pElem>/usr/include/at-spi-2.0</pElem>
-              <pElem>/usr/include/dbus-1.0</pElem>
-              <pElem>/usr/lib/dbus-1.0/include</pElem>
-              <pElem>/usr/include/cairomm-1.0</pElem>
-              <pElem>/usr/lib/cairomm-1.0/include</pElem>
-              <pElem>/usr/include/pangomm-1.4</pElem>
-              <pElem>/usr/lib/pangomm-1.4/include</pElem>
-              <pElem>/usr/include/atkmm-1.6</pElem>
-              <pElem>/usr/lib/atkmm-1.6/include</pElem>
-              <pElem>/usr/include/gtk-3.0/unix-print</pElem>
-              <pElem>/usr/include/gdkmm-3.0</pElem>
-              <pElem>/usr/lib/gdkmm-3.0/include</pElem>
-              <pElem>/usr/include/genericimg</pElem>
-              <pElem>/usr/include/json-glib-1.0</pElem>
+              <pElem></pElem>
+              <pElem>usr/include/glibmm-2.4</pElem>
+              <pElem>usr/lib/glibmm-2.4/include</pElem>
+              <pElem>usr/include/glib-2.0</pElem>
+              <pElem>usr/lib/glib-2.0/include</pElem>
+              <pElem>usr/include/sysprof-6</pElem>
+              <pElem>usr/include/sigc++-2.0</pElem>
+              <pElem>usr/lib/sigc++-2.0/include</pElem>
+              <pElem>usr/include/giomm-2.4</pElem>
+              <pElem>usr/lib/giomm-2.4/include</pElem>
+              <pElem>usr/include/libmount</pElem>
+              <pElem>usr/include/blkid</pElem>
+              <pElem>usr/include/gtkmm-3.0</pElem>
+              <pElem>usr/lib/gtkmm-3.0/include</pElem>
+              <pElem>usr/include/gtk-3.0</pElem>
+              <pElem>usr/include/pango-1.0</pElem>
+              <pElem>usr/include/harfbuzz</pElem>
+              <pElem>usr/include/freetype2</pElem>
+              <pElem>usr/include/libpng16</pElem>
+              <pElem>usr/include/fribidi</pElem>
+              <pElem>usr/include/cairo</pElem>
+              <pElem>usr/include/pixman-1</pElem>
+              <pElem>usr/include/gdk-pixbuf-2.0</pElem>
+              <pElem>usr/include/gio-unix-2.0</pElem>
+              <pElem>usr/include/cloudproviders</pElem>
+              <pElem>usr/include/atk-1.0</pElem>
+              <pElem>usr/include/at-spi2-atk/2.0</pElem>
+              <pElem>usr/include/at-spi-2.0</pElem>
+              <pElem>usr/include/dbus-1.0</pElem>
+              <pElem>usr/lib/dbus-1.0/include</pElem>
+              <pElem>usr/include/cairomm-1.0</pElem>
+              <pElem>usr/lib/cairomm-1.0/include</pElem>
+              <pElem>usr/include/pangomm-1.4</pElem>
+              <pElem>usr/lib/pangomm-1.4/include</pElem>
+              <pElem>usr/include/atkmm-1.6</pElem>
+              <pElem>usr/lib/atkmm-1.6/include</pElem>
+              <pElem>usr/include/gtk-3.0/unix-print</pElem>
+              <pElem>usr/include/gdkmm-3.0</pElem>
+              <pElem>usr/lib/gdkmm-3.0/include</pElem>
+              <pElem>usr/include/genericimg</pElem>
+              <pElem>usr/include/json-glib-1.0</pElem>
             </incDir>
             <preprocessorList>
               <Elem>HAVE_CONFIG_H</Elem>
@@ -141,52 +128,12 @@
           <ccTool>
             <incDir>
               <pElem>src</pElem>
-              <pElem>.</pElem>
-              <pElem>/usr/include/glibmm-2.4</pElem>
-              <pElem>/usr/lib/glibmm-2.4/include</pElem>
-              <pElem>/usr/include/glib-2.0</pElem>
-              <pElem>/usr/lib/glib-2.0/include</pElem>
-              <pElem>/usr/include/sysprof-6</pElem>
-              <pElem>/usr/include/sigc++-2.0</pElem>
-              <pElem>/usr/lib/sigc++-2.0/include</pElem>
-              <pElem>/usr/include/giomm-2.4</pElem>
-              <pElem>/usr/lib/giomm-2.4/include</pElem>
-              <pElem>/usr/include/libmount</pElem>
-              <pElem>/usr/include/blkid</pElem>
-              <pElem>/usr/include/gtkmm-3.0</pElem>
-              <pElem>/usr/lib/gtkmm-3.0/include</pElem>
-              <pElem>/usr/include/gtk-3.0</pElem>
-              <pElem>/usr/include/pango-1.0</pElem>
-              <pElem>/usr/include/harfbuzz</pElem>
-              <pElem>/usr/include/freetype2</pElem>
-              <pElem>/usr/include/libpng16</pElem>
-              <pElem>/usr/include/fribidi</pElem>
-              <pElem>/usr/include/cairo</pElem>
-              <pElem>/usr/include/pixman-1</pElem>
-              <pElem>/usr/include/gdk-pixbuf-2.0</pElem>
-              <pElem>/usr/include/gio-unix-2.0</pElem>
-              <pElem>/usr/include/cloudproviders</pElem>
-              <pElem>/usr/include/atk-1.0</pElem>
-              <pElem>/usr/include/at-spi2-atk/2.0</pElem>
-              <pElem>/usr/include/at-spi-2.0</pElem>
-              <pElem>/usr/include/dbus-1.0</pElem>
-              <pElem>/usr/lib/dbus-1.0/include</pElem>
-              <pElem>/usr/include/cairomm-1.0</pElem>
-              <pElem>/usr/lib/cairomm-1.0/include</pElem>
-              <pElem>/usr/include/pangomm-1.4</pElem>
-              <pElem>/usr/lib/pangomm-1.4/include</pElem>
-              <pElem>/usr/include/atkmm-1.6</pElem>
-              <pElem>/usr/lib/atkmm-1.6/include</pElem>
-              <pElem>/usr/include/gtk-3.0/unix-print</pElem>
-              <pElem>/usr/include/gdkmm-3.0</pElem>
-              <pElem>/usr/lib/gdkmm-3.0/include</pElem>
-              <pElem>/usr/include/genericimg</pElem>
-              <pElem>/usr/include/json-glib-1.0</pElem>
+              <pElem></pElem>
             </incDir>
             <preprocessorList>
               <Elem>HAVE_CONFIG_H</Elem>
-              <Elem>PACKAGE_DATA_DIR="/usr/share/background-program"</Elem>
-              <Elem>PACKAGE_LOCALE_DIR="/usr/share/locale"</Elem>
+              <Elem>PACKAGE_DATA_DIR="C:/msys64/mingw64/share/background-program"</Elem>
+              <Elem>PACKAGE_LOCALE_DIR="C:/msys64/mingw64/share/locale"</Elem>
               <Elem>PACKAGE_SRC_DIR="."</Elem>
             </preprocessorList>
           </ccTool>
@@ -198,135 +145,1373 @@
       </makefileType>
       <item path="src/AzimutAltitude.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/BackgroundApp.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>usr/include/glibmm-2.4</pElem>
+            <pElem>usr/lib/glibmm-2.4/include</pElem>
+            <pElem>usr/include/glib-2.0</pElem>
+            <pElem>usr/lib/glib-2.0/include</pElem>
+            <pElem>usr/include/sysprof-6</pElem>
+            <pElem>usr/include/sigc++-2.0</pElem>
+            <pElem>usr/lib/sigc++-2.0/include</pElem>
+            <pElem>usr/include/giomm-2.4</pElem>
+            <pElem>usr/lib/giomm-2.4/include</pElem>
+            <pElem>usr/include/libmount</pElem>
+            <pElem>usr/include/blkid</pElem>
+            <pElem>usr/include/gtkmm-3.0</pElem>
+            <pElem>usr/lib/gtkmm-3.0/include</pElem>
+            <pElem>usr/include/gtk-3.0</pElem>
+            <pElem>usr/include/pango-1.0</pElem>
+            <pElem>usr/include/harfbuzz</pElem>
+            <pElem>usr/include/freetype2</pElem>
+            <pElem>usr/include/libpng16</pElem>
+            <pElem>usr/include/fribidi</pElem>
+            <pElem>usr/include/cairo</pElem>
+            <pElem>usr/include/pixman-1</pElem>
+            <pElem>usr/include/gdk-pixbuf-2.0</pElem>
+            <pElem>usr/include/gio-unix-2.0</pElem>
+            <pElem>usr/include/cloudproviders</pElem>
+            <pElem>usr/include/atk-1.0</pElem>
+            <pElem>usr/include/at-spi2-atk/2.0</pElem>
+            <pElem>usr/include/at-spi-2.0</pElem>
+            <pElem>usr/include/dbus-1.0</pElem>
+            <pElem>usr/lib/dbus-1.0/include</pElem>
+            <pElem>usr/include/cairomm-1.0</pElem>
+            <pElem>usr/lib/cairomm-1.0/include</pElem>
+            <pElem>usr/include/pangomm-1.4</pElem>
+            <pElem>usr/lib/pangomm-1.4/include</pElem>
+            <pElem>usr/include/atkmm-1.6</pElem>
+            <pElem>usr/lib/atkmm-1.6/include</pElem>
+            <pElem>usr/include/gtk-3.0/unix-print</pElem>
+            <pElem>usr/include/gdkmm-3.0</pElem>
+            <pElem>usr/lib/gdkmm-3.0/include</pElem>
+            <pElem>usr/include/genericimg</pElem>
+            <pElem>usr/include/json-glib-1.0</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>PACKAGE_DATA_DIR="/usr/share/background-program"</Elem>
+            <Elem>PACKAGE_LOCALE_DIR="/usr/share/locale"</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/CalendarModule.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/ClockModule.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/Constellation.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/ConstellationFormat.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/Earth.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Earth.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/FileLoader.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/FileLoader.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/FileLoader.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/GeoPosition.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/HipparcosFormat.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/HipparcosStar.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/InfoModule.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/JulianDate.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
-      </item>
-      <item path="src/Jupiter.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Jupiter.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/Layout.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
-      </item>
-      <item path="src/Mars.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Mars.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/Math.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/Mercury.cpp" ex="false" tool="1" flavor2="0">
+      <item path="src/Messier.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
-      <item path="src/Mercury.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/MessierLoader.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
-      <item path="src/Milkyway.cpp" ex="false" tool="1" flavor2="0">
+      <item path="src/Milkyway.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
-      <item path="src/Milkyway.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/Module.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/Moon.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/Neptune.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Neptune.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/ParamDlg.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/Phase.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/Planet.cpp" ex="false" tool="1" flavor2="0">
+      <item path="src/Planet.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
-      <item path="src/Planet.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/Planets.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/Point2D.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/Poly.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Poly.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/Poly.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/Polyline.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/RaDec.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/RaDecPlanet.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/RaDecPlanet.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/Saturn.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Saturn.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/RaDecPlanet.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/Star.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/StarDraw.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/StarWin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/Sun.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="src/SysInfo.cpp" ex="false" tool="1" flavor2="0">
+      <item path="src/SysInfo.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
-      <item path="src/SysInfo.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/Uranus.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Uranus.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/Venus.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/Venus.hpp" ex="false" tool="3" flavor2="0">
+      <item path="src/TimeDlg.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>../../../../msys64/mingw64/include/genericimg</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gtkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/atkmm-1.6</pElem>
+            <pElem>../../../../msys64/mingw64/lib/atkmm-1.6/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdkmm-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/gdkmm-3.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/gtk-3.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairo</pElem>
+            <pElem>../../../../msys64/mingw64/include/atk-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pangomm-1.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/pangomm-1.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/cairomm-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/cairomm-1.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/pango-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/pixman-1</pElem>
+            <pElem>../../../../msys64/mingw64/include/fribidi</pElem>
+            <pElem>../../../../msys64/mingw64/include/harfbuzz</pElem>
+            <pElem>../../../../msys64/mingw64/include/freetype2</pElem>
+            <pElem>../../../../msys64/mingw64/include/gdk-pixbuf-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/webp</pElem>
+            <pElem>../../../../msys64/mingw64/include/libpng16</pElem>
+            <pElem>../../../../msys64/mingw64/include/giomm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/giomm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/glibmm-2.4</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glibmm-2.4/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/sigc++-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/sigc++-2.0/include</pElem>
+            <pElem>../../../../msys64/mingw64/include/json-glib-1.0</pElem>
+            <pElem>../../../../msys64/mingw64/include/glib-2.0</pElem>
+            <pElem>../../../../msys64/mingw64/lib/glib-2.0/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>LIBDEFLATE_DLL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="src/resources.c" ex="false" tool="0" flavor2="2">
         <cTool flags="0">

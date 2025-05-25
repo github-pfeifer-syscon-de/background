@@ -46,9 +46,9 @@ if test "x$USE_LIBHARU" = xtrue; then
 fi
 
 if test "$host_os" = "mingw32" ; then
-    AC_SUBST(EXTRA_LDFLAGS, "-mwindows")
+    AC_SUBST(EXTRA_LDFLAGS, "")
 fi
-
+dnl -mwindows
 
 AC_CONFIG_FILES([
 Makefile

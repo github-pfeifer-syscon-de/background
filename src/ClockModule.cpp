@@ -314,7 +314,7 @@ ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* sta
     clockLabel->set_text(getEditInfo());
 #   else
     editClock->set_sensitive(false);
-    infoLabel->set_sensitive(false);
+    clockLabel->set_sensitive(false);
 #   endif
 }
 

@@ -18,21 +18,29 @@
 
 #include <iostream>
 #include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#ifdef __linux
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ifaddrs.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <linux/if_link.h>
-#include <fstream>              // ifstream
 #include <sys/utsname.h>        // uname
+#endif
+#ifdef  __WIN32__
+#include <Windows.h>
+#include <tchar.h>
+#include <cpuid.h>
+#endif
+#include <fstream>              // ifstream
 #include <bitset>
 #include <gtkmm.h>
 
 #include "SysInfo.hpp"
 
+// for windows the infos are sparse
 SysInfo::SysInfo()
 {
 }
@@ -62,34 +70,81 @@ cat(const std::string& path)
 std::string
 SysInfo::nodeName()
 {
+#   ifdef __linux
     struct utsname utsname;
     int ret = uname(&utsname);
     if (ret == 0) {
         return utsname.nodename;
     }
+#   endif
+#   ifdef  __WIN32__  
+    //std::cout << "Hostname" << gethostname(buf, sizeof(buf)) << std::endl;
+    TCHAR infoBuf[150];
+    DWORD bufCharCount = sizeof(infoBuf);
+    memset(infoBuf, 0, bufCharCount*sizeof(TCHAR));
+    if (GetComputerName(infoBuf, &bufCharCount)) {   // this is a simple version if you feel funny use the ...W function
+        Glib::ustring name;
+        for (DWORD i = 0; i < bufCharCount; ++i) {
+            name += static_cast<char>((infoBuf[i] & 0x7f));  // this will garble non ascii
+        }
+        return name;
+    }
+    else {
+        std::cout << "SysInfo::nodeName no name " << std::endl;
+    }
+#   endif    
     return "";
 }
+
+#ifdef  __WIN32__  
+static std::string
+get_as_ASCII(unsigned int value) 
+{
+    std::string ret;
+    for (int i = 0; i < 4; i++) {
+        char byte = static_cast<char>((value >> (i * 8)) & 0xff);
+        ret += byte;
+    }
+    return ret;
+}
+#endif
 
 std::string
 SysInfo::machine()
 {
+#   ifdef __linux    
     struct utsname utsname;
     int ret = uname(&utsname);
     if (ret == 0) {
         return utsname.machine;
     }
+#   endif    
+#   ifdef  __WIN32__      
+    // as the windows GetSystemInfo is outdated, and encoded ...    
+    unsigned int eax, ebx, ecx, edx;
+    // EAX=0: Highest Function Parameter and Manufacturer ID
+    unsigned int ret = __get_cpuid(0, &eax, &ebx, &ecx, &edx);
+    if (ret == 1) {
+        std::string cpuid = get_as_ASCII(ebx) + get_as_ASCII(edx) +  get_as_ASCII(ecx);
+        return cpuid;
+    }
+    else {
+        std::cout << "Get cpuid failed ret " << ret << std::endl;
+    }
+#   endif    
     return "";
-    //ctx->show_text(utsname.domainname);  // (none)
 }
 
 std::string
 SysInfo::osVersion()
 {
+#   ifdef __linux    
     struct utsname utsname;
     int ret = uname(&utsname);
     if (ret == 0) {
         return Glib::ustring::sprintf("%s %s", utsname.sysname, utsname.release);
     }
+#   endif    
     return "";
 }
 
@@ -98,6 +153,7 @@ std::string
 SysInfo::netConn(const std::string& netintf)
 {
     std::string netInfo;
+#   ifdef __linux
     struct ifaddrs *ifaddr;
 
     if (getifaddrs(&ifaddr) == -1) {
@@ -164,6 +220,7 @@ SysInfo::netConn(const std::string& netintf)
         }
     }
     freeifaddrs(ifaddr);
+#   endif
     return netInfo;
 }
 
@@ -172,6 +229,7 @@ std::string
 SysInfo::cpuInfo()
 {
 	std::string buf;
+#   ifdef __linux        
 	unsigned int readmask = 0;
 	const unsigned int ALL_MASK = 0x01;
 
@@ -209,6 +267,8 @@ SysInfo::cpuInfo()
 		value += 2;
 	}
 	return std::string(buf.substr(value));
+#   endif
+    return "";
 }
 
 
@@ -217,6 +277,7 @@ SysInfo::memInfo()
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#   ifdef __linux    
     unsigned int readmask = 0;
     const unsigned int ALL_MASK = 0x0f;
     unsigned long mem_total = 0l,mem_avail = 0l,mem_buffers = 0l,mem_cached = 0l;
@@ -264,12 +325,15 @@ SysInfo::memInfo()
 	std::ostringstream oss1;
 	oss1 << (mem_total - mem_avail) / 1024 << "MB used of " <<  mem_total / 1024 << "MB";
 	return oss1.str();
+#   endif 
+        return "";
 #pragma GCC diagnostic pop
 }
 
 std::string
 SysInfo::netInfo()
 {
+#   ifdef __linux      
 	DIR *dir;
 	struct dirent *ent;
 	const char *sdir = "/sys/class/net";
@@ -309,6 +373,7 @@ SysInfo::netInfo()
 		}
 		closedir(dir);
 	}
+#   endif
     return std::string("No adapter found");
 }
 
