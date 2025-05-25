@@ -1,5 +1,5 @@
 # background
-a live star desktop background (some of the info functions are liunx specific)
+a live star desktop background
 (if you expect to see pictures of neil degrasse tyson i'm sorry,
 this was not my intention).
 see AUTHORS for &copy; included data.
@@ -24,7 +24,11 @@ at a somewhat smaller scale...
 
 Depends on genericImg see there for build instructions.
 
-## Python
+## Infos
+
+The infos available for non linux systems are limited ...
+
+### Python
 
 By default for rendering the info blocks python will be used
 (this requires the Development install of python3, python-gobject, py3cairo ).

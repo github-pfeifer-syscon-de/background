@@ -119,3 +119,5 @@
 /test.py
 /test/PyWrapper.cpp
 /test/PyWrapper.hpp
+/nbproject/project.xml
+/nbproject/configurations.xml

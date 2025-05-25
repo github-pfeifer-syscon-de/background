@@ -77,7 +77,7 @@ SysInfo::nodeName()
         return utsname.nodename;
     }
 #   endif
-#   ifdef  __WIN32__  
+#   ifdef  __WIN32__
     //std::cout << "Hostname" << gethostname(buf, sizeof(buf)) << std::endl;
     TCHAR infoBuf[150];
     DWORD bufCharCount = sizeof(infoBuf);
@@ -92,13 +92,13 @@ SysInfo::nodeName()
     else {
         std::cout << "SysInfo::nodeName no name " << std::endl;
     }
-#   endif    
+#   endif
     return "";
 }
 
-#ifdef  __WIN32__  
+#ifdef  __WIN32__
 static std::string
-get_as_ASCII(unsigned int value) 
+get_as_ASCII(unsigned int value)
 {
     std::string ret;
     for (int i = 0; i < 4; i++) {
@@ -112,15 +112,59 @@ get_as_ASCII(unsigned int value)
 std::string
 SysInfo::machine()
 {
-#   ifdef __linux    
+#   ifdef __linux
     struct utsname utsname;
     int ret = uname(&utsname);
     if (ret == 0) {
         return utsname.machine;
     }
-#   endif    
-#   ifdef  __WIN32__      
-    // as the windows GetSystemInfo is outdated, and encoded ...    
+#   endif
+#   ifdef  __WIN32__
+#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
+    char CPUBrandString[0x40];
+    unsigned int CPUInfo[4] = {0,0,0,0};
+    memset(CPUBrandString, 0, sizeof(CPUBrandString));
+    // 0x16 not working for amd as eax is 1 for call 0x0!
+    //   http://www.felixcloutier.com/x86/CPUID.html
+    //   https://www.microbe.cz/docs/CPUID.pdf
+//    __cpuid(0x00000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+//    unsigned int nStd = CPUInfo[0];
+//    memcpy(CPUBrandString, &CPUInfo[1], sizeof(CPUInfo[1]));
+//    memcpy(CPUBrandString+4, &CPUInfo[3], sizeof(CPUInfo[3]));
+//    memcpy(CPUBrandString+8, &CPUInfo[2], sizeof(CPUInfo[2]));
+//    std::cout << "std " << nStd << " id " << CPUBrandString << std::endl;
+
+//    CPUInfo[0] = 0;
+//    CPUInfo[1] = 0;
+//    CPUInfo[2] = 0;
+//    CPUInfo[3] = 0;
+//    __cpuid(0x00000001, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+//    std::cout << "eax 0x" << std::hex << CPUInfo[0] << std::endl;
+//    std::cout << "ebx 0x" << std::hex << CPUInfo[1] << std::endl;
+//    std::cout << "ecx 0x" << std::hex << CPUInfo[2] << std::endl;
+//    std::cout << "edx 0x" << std::hex << CPUInfo[3] << std::endl;
+
+    CPUInfo[0] = 0;
+    CPUInfo[1] = 0;
+    CPUInfo[2] = 0;
+    CPUInfo[3] = 0;
+    __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+    unsigned int nExIds = CPUInfo[0];
+    memset(CPUBrandString, 0, sizeof(CPUBrandString));
+    for (unsigned int i = 0x80000002; i <= nExIds; ++i) {
+        __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+        if (i == 0x80000002)
+            memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+        else if (i == 0x80000003)
+            memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+        else if (i == 0x80000004)
+            memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+    }
+    std::cout << "Brand " << CPUBrandString << std::endl;
+
+    return std::string(CPUBrandString);
+#   else
+    // as the windows GetSystemInfo is outdated, and encoded ...
     unsigned int eax, ebx, ecx, edx;
     // EAX=0: Highest Function Parameter and Manufacturer ID
     unsigned int ret = __get_cpuid(0, &eax, &ebx, &ecx, &edx);
@@ -131,20 +175,20 @@ SysInfo::machine()
     else {
         std::cout << "Get cpuid failed ret " << ret << std::endl;
     }
-#   endif    
+#   endif
     return "";
 }
 
 std::string
 SysInfo::osVersion()
 {
-#   ifdef __linux    
+#   ifdef __linux
     struct utsname utsname;
     int ret = uname(&utsname);
     if (ret == 0) {
         return Glib::ustring::sprintf("%s %s", utsname.sysname, utsname.release);
     }
-#   endif    
+#   endif
     return "";
 }
 
@@ -229,7 +273,7 @@ std::string
 SysInfo::cpuInfo()
 {
 	std::string buf;
-#   ifdef __linux        
+#   ifdef __linux
 	unsigned int readmask = 0;
 	const unsigned int ALL_MASK = 0x01;
 
@@ -277,7 +321,7 @@ SysInfo::memInfo()
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-#   ifdef __linux    
+#   ifdef __linux
     unsigned int readmask = 0;
     const unsigned int ALL_MASK = 0x0f;
     unsigned long mem_total = 0l,mem_avail = 0l,mem_buffers = 0l,mem_cached = 0l;
@@ -325,7 +369,7 @@ SysInfo::memInfo()
 	std::ostringstream oss1;
 	oss1 << (mem_total - mem_avail) / 1024 << "MB used of " <<  mem_total / 1024 << "MB";
 	return oss1.str();
-#   endif 
+#   endif
         return "";
 #pragma GCC diagnostic pop
 }
@@ -333,7 +377,7 @@ SysInfo::memInfo()
 std::string
 SysInfo::netInfo()
 {
-#   ifdef __linux      
+#   ifdef __linux
 	DIR *dir;
 	struct dirent *ent;
 	const char *sdir = "/sys/class/net";
