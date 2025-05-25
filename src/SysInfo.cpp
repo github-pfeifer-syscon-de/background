@@ -45,28 +45,6 @@ SysInfo::SysInfo()
 {
 }
 
-static std::string
-cat(const std::string& path)
-{
-    std::ifstream stat;
-    std::ios_base::iostate exceptionMask = stat.exceptions() | std::ios::failbit | std::ios::badbit;
-    stat.exceptions(exceptionMask);
-    std::string dest;
-    try {
-        stat.open(path);
-        if (!stat.eof()) {
-            std::getline(stat, dest);
-        }
-    }
-    catch (std::ios_base::failure& e) {
-        dest = Glib::ustring::sprintf("err %s", path);
-    }
-    if (stat.is_open()) {
-	    stat.close();
-    }
-	return dest;
-}
-
 std::string
 SysInfo::nodeName()
 {
@@ -96,18 +74,54 @@ SysInfo::nodeName()
     return "";
 }
 
-#ifdef  __WIN32__
-static std::string
-get_as_ASCII(unsigned int value)
-{
-    std::string ret;
-    for (int i = 0; i < 4; i++) {
-        char byte = static_cast<char>((value >> (i * 8)) & 0xff);
-        ret += byte;
+// or maybe use https://stackoverflow.com/questions/152016/detecting-cpu-architecture-compile-time
+extern "C" {
+    const char *getBuild() { //Get current architecture, detectx nearly every architecture. Coded by Freak
+        #if defined(__x86_64__) || defined(_M_X64)
+        return "x86_64";
+        #elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+        return "x86_32";
+        #elif defined(__ARM_ARCH_2__)
+        return "ARM2";
+        #elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
+        return "ARM3";
+        #elif defined(__ARM_ARCH_4T__) || defined(__TARGET_ARM_4T)
+        return "ARM4T";
+        #elif defined(__ARM_ARCH_5_) || defined(__ARM_ARCH_5E_)
+        return "ARM5"
+        #elif defined(__ARM_ARCH_6T2_) || defined(__ARM_ARCH_6T2_)
+        return "ARM6T2";
+        #elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__)
+        return "ARM6";
+        #elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+        return "ARM7";
+        #elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+        return "ARM7A";
+        #elif defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+        return "ARM7R";
+        #elif defined(__ARM_ARCH_7M__)
+        return "ARM7M";
+        #elif defined(__ARM_ARCH_7S__)
+        return "ARM7S";
+        #elif defined(__aarch64__) || defined(_M_ARM64)
+        return "ARM64";
+        #elif defined(mips) || defined(__mips__) || defined(__mips)
+        return "MIPS";
+        #elif defined(__sh__)
+        return "SUPERH";
+        #elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || defined(__ppc__) || defined(__PPC__) || defined(_ARCH_PPC)
+        return "POWERPC";
+        #elif defined(__PPC64__) || defined(__ppc64__) || defined(_ARCH_PPC64)
+        return "POWERPC64";
+        #elif defined(__sparc__) || defined(__sparc)
+        return "SPARC";
+        #elif defined(__m68k__)
+        return "M68K";
+        #else
+        return "UNKNOWN";
+        #endif
     }
-    return ret;
 }
-#endif
 
 std::string
 SysInfo::machine()
@@ -120,61 +134,48 @@ SysInfo::machine()
     }
 #   endif
 #   ifdef  __WIN32__
-#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
-    char CPUBrandString[0x40];
-    unsigned int CPUInfo[4] = {0,0,0,0};
-    memset(CPUBrandString, 0, sizeof(CPUBrandString));
-    // 0x16 not working for amd as eax is 1 for call 0x0!
+    // see https://www.felixcloutier.com/x86/cpuid
+    unsigned int CPUInfo[4] {};
+    char CPUBrandString[0x40] {};
     //   http://www.felixcloutier.com/x86/CPUID.html
     //   https://www.microbe.cz/docs/CPUID.pdf
-//    __cpuid(0x00000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+    __cpuid(0x00000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);    // that sould be generic
 //    unsigned int nStd = CPUInfo[0];
-//    memcpy(CPUBrandString, &CPUInfo[1], sizeof(CPUInfo[1]));
-//    memcpy(CPUBrandString+4, &CPUInfo[3], sizeof(CPUInfo[3]));
-//    memcpy(CPUBrandString+8, &CPUInfo[2], sizeof(CPUInfo[2]));
-//    std::cout << "std " << nStd << " id " << CPUBrandString << std::endl;
-
-//    CPUInfo[0] = 0;
-//    CPUInfo[1] = 0;
-//    CPUInfo[2] = 0;
-//    CPUInfo[3] = 0;
-//    __cpuid(0x00000001, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
-//    std::cout << "eax 0x" << std::hex << CPUInfo[0] << std::endl;
-//    std::cout << "ebx 0x" << std::hex << CPUInfo[1] << std::endl;
-//    std::cout << "ecx 0x" << std::hex << CPUInfo[2] << std::endl;
-//    std::cout << "edx 0x" << std::hex << CPUInfo[3] << std::endl;
-
-    CPUInfo[0] = 0;
-    CPUInfo[1] = 0;
-    CPUInfo[2] = 0;
-    CPUInfo[3] = 0;
-    __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
-    unsigned int nExIds = CPUInfo[0];
-    memset(CPUBrandString, 0, sizeof(CPUBrandString));
-    for (unsigned int i = 0x80000002; i <= nExIds; ++i) {
-        __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
-        if (i == 0x80000002)
-            memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-        else if (i == 0x80000003)
-            memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-        else if (i == 0x80000004)
-            memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+    memcpy(CPUBrandString, &CPUInfo[1], sizeof(CPUInfo[1]));
+    memcpy(CPUBrandString+4, &CPUInfo[3], sizeof(CPUInfo[3]));
+    memcpy(CPUBrandString+8, &CPUInfo[2], sizeof(CPUInfo[2]));
+    //std::cout << "build " << getBuild() << std::endl;
+    if (strcmp(CPUBrandString, "GenuineIntel") == 0) {   // unsure the following will work for non intel?
+        //    std::cout << "std " << nStd << " id " << CPUBrandString << std::endl;
+        //    CPUInfo[0] = 0;
+        //    CPUInfo[1] = 0;
+        //    CPUInfo[2] = 0;
+        //    CPUInfo[3] = 0;
+        //    __cpuid(0x00000001, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+        //    std::cout << "eax 0x" << std::hex << CPUInfo[0] << std::endl;
+        //    std::cout << "ebx 0x" << std::hex << CPUInfo[1] << std::endl;
+        //    std::cout << "ecx 0x" << std::hex << CPUInfo[2] << std::endl;
+        //    std::cout << "edx 0x" << std::hex << CPUInfo[3] << std::endl;
+        memset(CPUBrandString, 0, sizeof(CPUBrandString));
+        CPUInfo[0] = 0;
+        CPUInfo[1] = 0;
+        CPUInfo[2] = 0;
+        CPUInfo[3] = 0;
+        __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+        unsigned int nExIds = CPUInfo[0];
+        memset(CPUBrandString, 0, sizeof(CPUBrandString));
+        for (unsigned int i = 0x80000002; i <= nExIds; ++i) {
+            __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+            if (i == 0x80000002)
+                memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+            else if (i == 0x80000003)
+                memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+            else if (i == 0x80000004)
+                memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+        }
+        // std::cout << "Brand " << CPUBrandString << std::endl;
     }
-    std::cout << "Brand " << CPUBrandString << std::endl;
-
     return std::string(CPUBrandString);
-#   else
-    // as the windows GetSystemInfo is outdated, and encoded ...
-    unsigned int eax, ebx, ecx, edx;
-    // EAX=0: Highest Function Parameter and Manufacturer ID
-    unsigned int ret = __get_cpuid(0, &eax, &ebx, &ecx, &edx);
-    if (ret == 1) {
-        std::string cpuid = get_as_ASCII(ebx) + get_as_ASCII(edx) +  get_as_ASCII(ecx);
-        return cpuid;
-    }
-    else {
-        std::cout << "Get cpuid failed ret " << ret << std::endl;
-    }
 #   endif
     return "";
 }
