@@ -31,7 +31,8 @@ The infos available for non linux systems are limited ...
 ### Python
 
 By default for rendering the info blocks python will be used
-(this requires the Development install of python3, python-gobject, py3cairo ).
+(this requires the Development install of python3, python-gobject and python-cairo
+depending on your Linux flavor names may vary).
 If you don't like this option use
 ```
 ./configure --prefix=/usr --without-python
