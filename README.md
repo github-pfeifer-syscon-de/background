@@ -37,6 +37,9 @@ If you don't like this option use
 ./configure --prefix=/usr --without-python
 ```
 the C++ functions for rendering will be used in this case.
+I had no luck to get the embedded python working properly on windows,
+so your best option is use ```./configure --prefix=/mingw64 --without-python ```
+in this case.
 
 With python you have the option to easily
 modify the displayed infos e.g. use a weather or news service ...
