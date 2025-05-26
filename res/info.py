@@ -22,24 +22,28 @@ class Info:
         return platform.machine()
 
     def osVersion(self):
-        inf=os.uname()
-        return inf.sysname + inf.release
+        try:
+            inf=os.uname()              # this is for linux 
+            return inf.sysname + inf.release
+        except:
+            return os.name             # this works on windows
 
     def proc(self):
         #import platform
         # this is a empty string
         #return platform.processor()
-        file = open("/proc/cpuinfo", "r")
         cpuinfo=""
-        for line in file:
-            if line.startswith("model name	"):
-                line = line.strip()
-                pos = line.find(":")
-                if pos > 0:
-                   pos += 1
-                   cpuinfo = line[pos:].strip()
-                   break
-        file.close()
+        if os.path.isfile("/proc/cpuinfo"):
+            file = open("/proc/cpuinfo", "r")
+            for line in file:
+                if line.startswith("model name	"):
+                    line = line.strip()
+                    pos = line.find(":")
+                    if pos > 0:
+                       pos += 1
+                       cpuinfo = line[pos:].strip()
+                       break
+            file.close()
         return cpuinfo
 
     def meminfo2mb(self,line):
@@ -52,16 +56,17 @@ class Info:
         return 0
 
     def mem(self):
-        file = open("/proc/meminfo", "r")
         total=0
         avail=0
-        for line in file:
-            line = line.strip()
-            if line.startswith("MemTotal:"):
-                total = self.meminfo2mb(line);
-            if line.startswith("MemAvailable:"):
-                avail = self.meminfo2mb(line);
-        file.close()
+        if os.path.isfile("/proc/meminfo"):
+            file = open("/proc/meminfo", "r")
+            for line in file:
+                line = line.strip()
+                if line.startswith("MemTotal:"):
+                    total = self.meminfo2mb(line);
+                if line.startswith("MemAvailable:"):
+                    avail = self.meminfo2mb(line);
+            file.close()
         used=(total-avail)
         if (total > 0):
             return f"{used:.0f}MB used of {total:.0f}MB is {used/total:.0%}"

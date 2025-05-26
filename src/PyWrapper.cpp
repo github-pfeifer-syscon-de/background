@@ -221,7 +221,25 @@ PyClass::ctx2py(const Cairo::RefPtr<Cairo::Context>& ctx)
 
 PyWrapper::PyWrapper()
 {
+    // https://docs.python.org/3/c-api/init_config.html#init-from-config offers many options but not telling the intention
+    // showing path taken from https://github.com/msys2/MINGW-packages/issues/18984
     Py_Initialize(); // Initialize the Python Interpreter
+#   ifdef DEBUG
+    PyObject *sys_module = PyImport_ImportModule("sys");
+    PyObject *sys_path = PyObject_GetAttrString(sys_module, "path");
+    if (PyList_Check(sys_path)) {
+        Py_ssize_t len = PyList_Size(sys_path);
+        for (Py_ssize_t i = 0; i < len; i++) {
+            PyObject *item = PyList_GetItem(sys_path, i);
+            if (PyUnicode_Check(item)) {
+                const char* path_str = PyUnicode_AsUTF8(item);
+                printf("SYS.PATH[%zd]: %s\n", i, path_str);
+            }
+        }
+    }
+    Py_DECREF(sys_path);
+    Py_DECREF(sys_module);
+#   endif    
     if (import_cairo() < 0) {
        std::cout << "Pycairo not initalized!" << std::endl;
     }

@@ -31,16 +31,13 @@ The infos available for non linux systems are limited ...
 ### Python
 
 By default for rendering the info blocks python will be used
-(this requires the Development install of python3, python-gobject and python-cairo
+(this requires the Development install of python (3), python-gobject and python-cairo
 depending on your Linux flavor names may vary).
 If you don't like this option use
 ```
 ./configure --prefix=/usr --without-python
 ```
 the C++ functions for rendering will be used in this case.
-I had no luck to get the embedded python working properly on windows,
-so your best option is use ```./configure --prefix=/mingw64 --without-python ```
-in this case.
 
 With python you have the option to easily
 modify the displayed infos e.g. use a weather or news service ...
@@ -59,3 +56,16 @@ the correct layout when multiple modules will share
 one position for example.
 The python function will be precompiled
 and place alongside the user version of the sources.
+
+#### Windows/Msys2
+
+The simple init does not work with Msys2/Windows as it looks (at least for me).
+If you want to look into the issue there is a #ifdef section in PyWrapper
+that outputs the used path, which allows to detected where things go wrong 
+(look for non existing components).
+Finally by using a mingw shell and setting:
+```
+ export PYTHONPATH="C:/msys64/mingw64/lib/python312.zip;C:/msys64/mingw64/lib/python3.12;C:/msys64/mingw64/lib/python3.12/lib-dynload;C:/msys64/mingw64/lib/python3.12/site-packages"
+```
+things started to look better.
+The displayed infos are still a bit sparse...

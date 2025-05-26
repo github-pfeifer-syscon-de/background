@@ -136,7 +136,7 @@ SysInfo::machine()
 #   ifdef  __WIN32__
     // see https://www.felixcloutier.com/x86/cpuid
     unsigned int CPUInfo[4] {};
-    char CPUBrandString[0x40] {};
+    char CPUBrandString[0x44] {};
     //   http://www.felixcloutier.com/x86/CPUID.html
     //   https://www.microbe.cz/docs/CPUID.pdf
     __cpuid(0x00000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);    // that sould be generic
