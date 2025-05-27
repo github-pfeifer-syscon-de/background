@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <psc_format.hpp>
 #include <StringUtils.hpp>
+#ifdef  __WIN32__    
+#include <windows.h>
+#endif
 
 #include "StarDraw.hpp"
 #include "StarWin.hpp"
@@ -184,6 +188,7 @@ Module::edit(StarDraw* starDraw)
             sigc::bind(
                 sigc::mem_fun(*this, &Module::fileChanged), starDraw));
     }
+#   ifdef __linux
     std::vector<std::string> args;
     args.push_back("/usr/bin/xdg-open");
     args.push_back(localScriptFile->get_path());
@@ -192,6 +197,22 @@ Module::edit(StarDraw* starDraw)
     if (!msg.empty()) {
         starDraw->showError(psc::fmt::format("Error {} opening editor", msg));
     }
+#   endif
+#   ifdef  __WIN32__  
+    SHELLEXECUTEINFO ShExecInfo;
+    auto path = localScriptFile->get_path();
+    std::cout << "Shell exec " << path << std::endl;
+    ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    ShExecInfo.fMask = 0;
+    ShExecInfo.hwnd = NULL;
+    ShExecInfo.lpVerb = "edit";
+    ShExecInfo.lpFile = path;
+    ShExecInfo.lpParameters = NULL;
+    ShExecInfo.lpDirectory = NULL;
+    ShExecInfo.nShow = SW_MAXIMIZE;
+    ShExecInfo.hInstApp = NULL;
+    ShellExecuteEx(&ShExecInfo);    
+#   endif    
 #   endif
 }
 
