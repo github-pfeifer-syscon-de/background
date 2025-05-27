@@ -36,14 +36,36 @@ class Clock:
         ctx.fill();
 
 
-    def drawHand(self,ctx,value,full,radius,width):
+    def drawHand(self,ctx,value,full,fradius,which):
         angleRad = math.radians(360) * value / full
+        radius = fradius*(0.6 if which else 0.85)
         xv = math.sin(angleRad)
         yv = -math.cos(angleRad)
-        ctx.set_line_width(width)
+        ctx.set_line_width(2 if which else 1)
         ctx.move_to(0,0)
         ctx.line_to(radius * xv, radius * yv)
         ctx.stroke()
+
+    def drawArc(self,ctx,value,full,radius,which):
+        ctx.save()
+        now = datetime.datetime.now()
+        pat = cairo.LinearGradient(-radius, 0, radius, 0)
+        if (now.hour < 12):
+          pat.add_color_stop_rgb(0, 0.9, 0.7, 0.1)
+          pat.add_color_stop_rgb(1, 0.1, 0.3, 0.8)
+        else:
+          pat.add_color_stop_rgb(0, 0.1, 0.3, 0.8)
+          pat.add_color_stop_rgb(1, 0.9, 0.7, 0.1)
+        angleRad = math.radians(360) * value / full
+        #ctx.set_line_width(radius*(0.12 if which else 0.06))
+        r = radius * (0.85 if which else 0.63)
+        ctx.arc(0,0,r, -math.radians(90), angleRad - math.radians(90))
+        r = radius * (0.73 if which else 0.7)
+        ctx.arc_negative(0,0,r, angleRad - math.radians(90), -math.radians(90))
+        ctx.close_path()
+        ctx.set_source(pat)
+        ctx.fill()
+        ctx.restore()
 
     def drawAnalog(self,ctx,radius):
         ctx.save()
@@ -54,10 +76,10 @@ class Clock:
         now = datetime.datetime.now()
         min = now.minute
         hours = (now.hour % 12) * 60 + min
-        self.drawHand(ctx, hours, 12*60, radius*0.6, 2)
-        self.drawHand(ctx, min, 60, radius*0.85, 1)
         for i in range(60):
            self.drawRadial(ctx, i, 60, (i % 5) == 0, radius)
+        self.drawHand(ctx, hours, 12*60, radius, True)
+        self.drawHand(ctx, min, 60, radius, False)
         ctx.restore()
         return 0
 

@@ -41,10 +41,21 @@ the C++ functions for rendering will be used in this case.
 
 With python you have the option to easily
 modify the displayed infos e.g. use a weather or news service ...
+Some alternative functions are already add to the sources
+e.g. modify the clock drawAnalog funciton fragment to:
+```
+        min = now.minute
+        hours = (now.hour % 12) * 60 + min
+        for i in range(60):
+           self.drawDot(ctx, i, 60, (i % 5) == 0, radius)
+        self.drawArc(ctx, hours, 12*60, radius, True)
+        self.drawArc(ctx, min, 60, radius, False)
+```
+to get a alternative clock shape.
 
 The .py files are localed by default in /usr/share/background-program
 a user version can be created
-by using the -> Script -> Edit option from preferences
+by using the -> Script -> Edit option from the parameter context menu
 (expects your desktop-enviroment has some editor for python files registered).
 As long as the dialog is shown changes will be made visible when the file
 is saved.
@@ -61,11 +72,10 @@ and place alongside the user version of the sources.
 
 The simple init does not work with Msys2/Windows as it looks (at least for me).
 If you want to look into the issue there is a #ifdef section in PyWrapper
-that outputs the used path, which allows to detected where things go wrong 
+that outputs the used path. This should allows to idententify where things go wrong
 (look for non existing components).
 Finally by using a mingw shell and setting:
 ```
  export PYTHONPATH="C:/msys64/mingw64/lib/python312.zip;C:/msys64/mingw64/lib/python3.12;C:/msys64/mingw64/lib/python3.12/lib-dynload;C:/msys64/mingw64/lib/python3.12/site-packages"
 ```
 things started to look better.
-The displayed infos are still a bit sparse...
