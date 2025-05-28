@@ -364,7 +364,7 @@ ClockModule::installFont(StarDraw* starDraw)
         auto path = file->get_path();
         // the installed font doesn't appear in local\AppData\Microsoft\Windows\Fonts
         //    nor in font list ... but it works...
-        //int ret = AddFontResourceExA(path.c_str(), 0, 0); succeeds, but doesn't show up either
+        int ret = AddFontResourceExA(path.c_str(), 0, 0);
         if (ret == 0) {
             msg =  Glib::ustring::sprintf("Font was not added %s", path);
         }
