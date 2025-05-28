@@ -18,6 +18,9 @@
 
 #include <StringUtils.hpp>
 
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #include "ClockModule.hpp"
 #include "StarDraw.hpp"
@@ -358,15 +361,16 @@ ClockModule::installFont(StarDraw* starDraw)
     Glib::ustring msg;
     if (file->query_exists()) {
 #       ifdef __WIN32__
-        auto localAppData = Glib::get_user_data_dir(); // Glib::getenv("LOCALAPPDATA");
-        std::cout << "localAppData " << localAppData << std::endl;
-        //auto pubShare = Glib::get_user_special_dir(Gio::UserDirectory::PUBLIC_SHARE);
-        auto fontsDir = Gio::File::create_for_path(localAppData);
-        fontsDir = fontsDir->get_child("\\Microsoft\\Windows\\Fonts");
+        auto path = file->get_path();
+        // the installed font doesn't appear in local\AppData\Microsoft\Windows\Fonts
+        //    nor in font list ... but it works...
+        //int ret = AddFontResourceExA(path.c_str(), 0, 0); succeeds, but doesn't show up either
+        if (ret == 0) {
+            msg =  Glib::ustring::sprintf("Font was not added %s", path);
+        }
 #       else
         auto fontsPath = Glib::canonicalize_filename("fonts", Glib::get_user_data_dir());
         auto fontsDir = Gio::File::create_for_path(fontsPath);
-#       endif
         if (!fontsDir->query_exists()) {
             fontsDir->make_directory_with_parents();
         }
@@ -382,6 +386,7 @@ ClockModule::installFont(StarDraw* starDraw)
         else {
             msg = Glib::ustring::sprintf("Error copying %s", file->get_parse_name());
         }
+#       endif
     }
     else {
         msg = Glib::ustring::sprintf("The source %s was not found.", FONT_FILE);
