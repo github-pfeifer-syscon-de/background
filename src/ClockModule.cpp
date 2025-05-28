@@ -277,6 +277,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 void
 ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
+    m_fileLoader = starDraw->getFileLoader();
     builder->get_widget("clockColor", m_clockColor);
     m_clockColor->set_rgba(getPrimaryColor());
 
@@ -307,6 +308,12 @@ ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* sta
     builder->get_widget("editClock", editClock);
     Gtk::Label* clockLabel;
     builder->get_widget("clockLabel", clockLabel);
+
+    builder->get_widget("installFont", m_installFont);
+    m_installFont->signal_clicked().connect(
+        sigc::bind(
+            sigc::mem_fun(*this, &ClockModule::installFont), starDraw));
+
 #   ifdef USE_PYTHON
     editClock->signal_clicked().connect(
         sigc::bind(
@@ -340,4 +347,46 @@ ClockModule::saveParam(bool save)
         setFormat(m_clockFormat->get_text());
     }
     stopMonitor();
+}
+
+void
+ClockModule::installFont(StarDraw* starDraw)
+{
+    std::shared_ptr<FileLoader> fileLoader = starDraw->getFileLoader();
+    const char* FONT_FILE{"DSEG14Modern-Regular.ttf"};
+    auto file = fileLoader->findFile(FONT_FILE);
+    Glib::ustring msg;
+    if (file->query_exists()) {
+#       ifdef __WIN32__
+        auto localAppData = Glib::get_user_data_dir(); // Glib::getenv("LOCALAPPDATA");
+        std::cout << "localAppData " << localAppData << std::endl;
+        //auto pubShare = Glib::get_user_special_dir(Gio::UserDirectory::PUBLIC_SHARE);
+        auto fontsDir = Gio::File::create_for_path(localAppData);
+        fontsDir = fontsDir->get_child("\\Microsoft\\Windows\\Fonts");
+#       else
+        auto fontsPath = Glib::canonicalize_filename("fonts", Glib::get_user_data_dir());
+        auto fontsDir = Gio::File::create_for_path(fontsPath);
+#       endif
+        if (!fontsDir->query_exists()) {
+            fontsDir->make_directory_with_parents();
+        }
+        auto fontFile = fontsDir->get_child(FONT_FILE);
+        if (file->copy(fontFile, Gio::FileCopyFlags::FILE_COPY_OVERWRITE)) {
+#           ifdef __linux
+            std::vector<std::string> args;
+            args.push_back("/usr/bin/fc-cache");
+            GPid pid;
+            msg = fileLoader->run(args, &pid);
+#           endif
+        }
+        else {
+            msg = Glib::ustring::sprintf("Error copying %s", file->get_parse_name());
+        }
+    }
+    else {
+        msg = Glib::ustring::sprintf("The source %s was not found.", FONT_FILE);
+    }
+    if (!msg.empty()) {
+        starDraw->showError(msg);
+    }
 }

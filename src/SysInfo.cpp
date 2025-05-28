@@ -45,6 +45,28 @@ SysInfo::SysInfo()
 {
 }
 
+static std::string
+cat(const std::string& path)
+{
+    std::ifstream stat;
+    std::ios_base::iostate exceptionMask = stat.exceptions() | std::ios::failbit | std::ios::badbit;
+    stat.exceptions(exceptionMask);
+    std::string dest;
+    try {
+        stat.open(path);
+        if (!stat.eof()) {
+            std::getline(stat, dest);
+        }
+    }
+    catch (std::ios_base::failure& e) {
+        dest = Glib::ustring::sprintf("err %s", path);
+    }
+    if (stat.is_open()) {
+	    stat.close();
+    }
+	return dest;
+}
+
 std::string
 SysInfo::nodeName()
 {

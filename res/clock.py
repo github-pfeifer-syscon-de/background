@@ -11,6 +11,8 @@ from gi.repository import Pango, PangoCairo
 
 class Clock:
     def __init__(self):
+        self.night = [0.1, 0.3, 0.8]
+        self.noon = [0.9, 0.7, 0.1]
         return
 
     def drawRadial(self,ctx,value,full,emphasis,radius):
@@ -32,11 +34,11 @@ class Clock:
         angleRad = math.radians(360) * value / full
         xv = math.sin(angleRad)
         yv = -math.cos(angleRad)
-        ctx.arc(xv * radius * 0.9, yv * radius * 0.9, 3.0 if emphasis else 1.5, 0.0, math.radians(360))
+        ctx.arc(xv * radius * 0.92, yv * radius * 0.92, 3.0 if emphasis else 1.5, 0.0, math.radians(360))
         ctx.fill();
 
 
-    def drawHand(self,ctx,value,full,fradius,which):
+    def drawHand(self,ctx,value,full,fradius,which,ispm):
         angleRad = math.radians(360) * value / full
         radius = fradius*(0.6 if which else 0.85)
         xv = math.sin(angleRad)
@@ -46,25 +48,36 @@ class Clock:
         ctx.line_to(radius * xv, radius * yv)
         ctx.stroke()
 
-    def drawArc(self,ctx,value,full,radius,which):
+    def mix(self,val1,val2,fract):
+        r = val1.copy()
+        for i in range(len(val1)):
+           r[i] = val1[i]*(1-fract)+val2[i]*fract
+           r[i] = max(r[i], min(val1[i], val2[i]))
+           r[i] = min(r[i], max(val1[i], val2[i]))
+        return r
+
+    def drawArc(self,ctx,value,full,radius,which,ispm):
         ctx.save()
-        now = datetime.datetime.now()
-        pat = cairo.LinearGradient(-radius, 0, radius, 0)
-        if (now.hour < 12):
-          pat.add_color_stop_rgb(0, 0.9, 0.7, 0.1)
-          pat.add_color_stop_rgb(1, 0.1, 0.3, 0.8)
+        #pat = cairo.LinearGradient(-radius, 0, radius, 0)
+        if (ispm):
+          start = self.noon.copy()
+          end = self.night.copy()
         else:
-          pat.add_color_stop_rgb(0, 0.1, 0.3, 0.8)
-          pat.add_color_stop_rgb(1, 0.9, 0.7, 0.1)
-        angleRad = math.radians(360) * value / full
-        #ctx.set_line_width(radius*(0.12 if which else 0.06))
-        r = radius * (0.85 if which else 0.63)
-        ctx.arc(0,0,r, -math.radians(90), angleRad - math.radians(90))
-        r = radius * (0.73 if which else 0.7)
-        ctx.arc_negative(0,0,r, angleRad - math.radians(90), -math.radians(90))
-        ctx.close_path()
-        ctx.set_source(pat)
-        ctx.fill()
+          start = self.night.copy()
+          end = self.noon.copy()
+        for i in range(value):
+           f = i / full
+           col = self.mix(start,end,f)
+           angleRad1 = math.radians(360) * i / full
+           angleRad2 = math.radians(360) * (i+1.05) / full
+           #ctx.set_line_width(radius*(0.12 if which else 0.06))
+           r = radius * (0.85 if which else 0.63)
+           ctx.arc(0,0,r, -math.radians(90) + angleRad1, angleRad2 - math.radians(90))
+           r = radius * (0.73 if which else 0.7)
+           ctx.arc_negative(0,0,r, angleRad2 - math.radians(90), angleRad1 - math.radians(90))
+           ctx.close_path()
+           ctx.set_source_rgb(col[0], col[1], col[2])
+           ctx.fill()
         ctx.restore()
 
     def drawAnalog(self,ctx,radius):
@@ -75,11 +88,11 @@ class Clock:
         ctx.stroke()
         now = datetime.datetime.now()
         min = now.minute
-        hours = (now.hour % 12) * 60 + min
+        hours = int((now.hour % 12) * 5 + min/12)
         for i in range(60):
-           self.drawRadial(ctx, i, 60, (i % 5) == 0, radius)
-        self.drawHand(ctx, hours, 12*60, radius, True)
-        self.drawHand(ctx, min, 60, radius, False)
+           self.drawDot(ctx, i, 60, (i % 5) == 0, radius)
+        self.drawArc(ctx, hours, 60, radius, True, now.hour >= 12)
+        self.drawArc(ctx, min, 60, radius, False, now.hour >= 12)
         ctx.restore()
         return 0
 

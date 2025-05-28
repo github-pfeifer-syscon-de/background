@@ -159,6 +159,7 @@ FileLoader::run(const std::vector<std::string>& strArgs, GPid* pid)
     args.push_back(nullptr);
     g_autoptr(GError) error = nullptr;
     // Spawn child process.
+    //   this is also supported Glib::spawn_async meanwhile... (but might not for all distros)
     g_spawn_async(nullptr   // working dir
                  , &args[0] // arguments
                  , nullptr  // envptr

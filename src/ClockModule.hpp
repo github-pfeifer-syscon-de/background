@@ -20,6 +20,8 @@
 
 #include "Module.hpp"
 
+class FileLoader;
+
 class ClockModule
 : public Module
 {
@@ -58,6 +60,7 @@ protected:
     Glib::RefPtr<Pango::Layout> createLayout(const Cairo::RefPtr<Cairo::Context>& ctx);
 
     Glib::ustring getEffectiveFormat();
+    void installFont(StarDraw* starDraw);
 
     Gtk::ColorButton* m_clockColor;
     Gtk::Scale* m_clockRadius;
@@ -66,4 +69,5 @@ protected:
     Gtk::CheckButton* m_displayDigital;
     Gtk::FontButton* m_clockFont;
     Gtk::ComboBoxText* m_clockPos;
+    Gtk::Button* m_installFont;
 };
