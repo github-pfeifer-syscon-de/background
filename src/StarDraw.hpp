@@ -86,7 +86,7 @@ public:
     void savePosition();
     void scale(Pango::FontDescription& starFont, double scale);
     void brighten(Gdk::RGBA& calColor, double factor);
-
+    void loadConfig();
     std::vector<PtrModule> createModules();
     std::vector<PtrModule> getModules();
     std::shared_ptr<FileLoader> getFileLoader()

@@ -54,16 +54,12 @@ public:
     int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
     void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) override;
-    void saveParam(bool save) override;
 
     Glib::ustring getPyScriptName() override;
     static constexpr auto pyClassName{"Cal"};
 private:
     int m_width;
     int m_height{0};
-    Gtk::ColorButton* m_calendarColor;
-    Gtk::FontButton* m_calendarFont;
-    Gtk::ComboBoxText* m_calPos;
 };
 
 

@@ -19,7 +19,7 @@
 #include <iostream>
 #include <psc_format.hpp>
 #include <StringUtils.hpp>
-#ifdef  __WIN32__    
+#ifdef  __WIN32__
 #include <windows.h>
 #endif
 
@@ -90,6 +90,68 @@ Module::fillPos(Gtk::ComboBoxText* pos)
     pos->append(POS_MIDDLE, "Middle");
     pos->append(POS_BOTTOM, "Bottom");
 }
+
+void
+Module::setupParam(const Glib::RefPtr<Gtk::Builder>& builder
+            , StarDraw* starDraw
+            , const char* colorId
+            , const char* fontId
+            , const char* posId
+            , const char* editId
+            , const char* editLabelId)
+{
+    builder->get_widget(colorId, m_color);
+    m_color->set_rgba(getPrimaryColor());
+    m_color->signal_color_set().connect([this,starDraw] {
+        setPrimaryColor(m_color->get_rgba());
+        starDraw->compute();
+    });
+
+    builder->get_widget(fontId, m_font);
+    m_font->set_font_name(getFont().to_string());
+    m_font->signal_font_set().connect([this,starDraw] {
+        Pango::FontDescription fontDesc{m_font->get_font_name()};
+        setFont(fontDesc);
+        starDraw->compute();
+    });
+
+    builder->get_widget(posId, m_pos);
+    fillPos(m_pos);
+    m_pos->set_active_id(getPosition());
+    m_pos->signal_changed().connect([this,starDraw] {
+        setPosition(m_pos->get_active_id());
+        starDraw->compute();
+    });
+
+
+    Gtk::Button* editButton;
+    builder->get_widget(editId, editButton);
+    Gtk::Label* editLabel;
+    builder->get_widget(editLabelId, editLabel);
+#   ifdef USE_PYTHON
+    editButton->signal_clicked().connect(
+        sigc::bind(
+            sigc::mem_fun(*this, &Module::edit), starDraw));
+    editLabel->set_text(getEditInfo());
+#   else
+    editButton->set_sensitive(false);
+    editLabel->set_sensitive(false);
+#   endif
+}
+
+
+void
+Module::saveParam(bool save)
+{
+    if (save) {
+        setPrimaryColor(m_color->get_rgba());
+        Pango::FontDescription infoFont{m_font->get_font_name()};
+        setFont(infoFont);
+        setPosition(m_pos->get_active_id());
+    }
+    stopMonitor();
+}
+
 
 std::shared_ptr<PyClass>
 Module::checkPyClass(StarDraw* starDraw, const char* className)
@@ -198,7 +260,7 @@ Module::edit(StarDraw* starDraw)
         starDraw->showError(psc::fmt::format("Error {} opening editor", msg));
     }
 #   endif
-#   ifdef  __WIN32__  
+#   ifdef  __WIN32__
     SHELLEXECUTEINFO ShExecInfo;
     auto path = localScriptFile->get_path();
     std::cout << "Shell exec " << path << std::endl;
@@ -211,8 +273,8 @@ Module::edit(StarDraw* starDraw)
     ShExecInfo.lpDirectory = NULL;
     ShExecInfo.nShow = SW_MAXIMIZE;
     ShExecInfo.hInstApp = NULL;
-    ShellExecuteEx(&ShExecInfo);    
-#   endif    
+    ShellExecuteEx(&ShExecInfo);
+#   endif
 #   endif
 }
 

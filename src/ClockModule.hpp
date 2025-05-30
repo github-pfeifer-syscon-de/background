@@ -62,12 +62,9 @@ protected:
     Glib::ustring getEffectiveFormat();
     void installFont(StarDraw* starDraw);
 
-    Gtk::ColorButton* m_clockColor;
     Gtk::Scale* m_clockRadius;
     Gtk::Entry* m_clockFormat;
     Gtk::CheckButton* m_displayAnalog;
     Gtk::CheckButton* m_displayDigital;
-    Gtk::FontButton* m_clockFont;
-    Gtk::ComboBoxText* m_clockPos;
     Gtk::Button* m_installFont;
 };

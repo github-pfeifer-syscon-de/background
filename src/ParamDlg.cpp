@@ -33,18 +33,39 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
 
     builder->get_widget("startColor", m_startColor);
     m_startColor->set_rgba(m_starDraw->getStartColor());
+    m_startColor->signal_color_set().connect([this] {
+        m_starDraw->setStartColor(m_startColor->get_rgba());
+        m_starDraw->compute();
+    });
 
     builder->get_widget("stopColor", m_stopColor);
     m_stopColor->set_rgba(m_starDraw->getStopColor());
+    m_stopColor->signal_color_set().connect([this] {
+        m_starDraw->setStopColor(m_stopColor->get_rgba());
+        m_starDraw->compute();
+    });
 
     builder->get_widget("starFont", m_starFont);
     m_starFont->set_font_name(m_starDraw->getStarFont().to_string());
+    m_starFont->signal_font_set().connect([this] {
+        Pango::FontDescription starFont{m_starFont->get_font_name()};
+        m_starDraw->setStarFont(starFont);
+        m_starDraw->compute();
+    });
 
     builder->get_widget("showMilkyway", m_showMilkyway);
     m_showMilkyway->set_active(m_starDraw->isShowMilkyway());
+    m_showMilkyway->signal_clicked().connect([this] {
+        m_starDraw->setShowMilkyway(m_showMilkyway->get_active());
+        m_starDraw->compute();
+    });
 
     builder->get_widget("messierVMag", m_messierVMag);
     m_messierVMag->set_value(m_starDraw->getMessierVMagMin());
+    m_messierVMag->signal_value_changed().connect([this] {
+        m_starDraw->setMessierVMagMin(m_messierVMag->get_value());
+        m_starDraw->compute();
+    });
 
     for (auto& mod : m_starDraw->getModules()) {
         mod->setupParam(builder, starDraw);
@@ -77,6 +98,7 @@ ParamDlg::show(StarDraw* starDraw)
 {
     auto builder = Gtk::Builder::create();
     try {
+        starDraw->saveConfig(); // for a new state (first startup) the settings are not yet saved as we may want to restore them, save now
         auto appl = starDraw->getWindow()->getBackgroundAppl();
         builder->add_from_resource(appl->get_resource_base_path() + "/pref-dlg.ui");
         ParamDlg* paramDialog;
@@ -88,6 +110,9 @@ ParamDlg::show(StarDraw* starDraw)
             starDraw->saveConfig();
             // compute is called from starDraw
         }
+        else {
+            starDraw->loadConfig();
+        }
         paramDialog->hide();
         delete paramDialog;
     }
@@ -95,3 +120,4 @@ ParamDlg::show(StarDraw* starDraw)
         std::cerr << "Unable to load pref-dialog: " << ex.what() << std::endl;
     }
 }
+

@@ -48,7 +48,6 @@ public:
     virtual int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
     virtual void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
     virtual void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) = 0;
-    virtual void saveParam(bool save) = 0;
     std::string getName();  // used as config group name
     Gdk::RGBA getPrimaryColor();
     void setPrimaryColor(const Gdk::RGBA& primColor);
@@ -69,10 +68,18 @@ public:
     static constexpr auto POS_TOP{"top"};
     static constexpr auto POS_MIDDLE{"mid"};
     static constexpr auto POS_BOTTOM{"bot"};
+    virtual void saveParam(bool save);
 
 protected:
     void fillPos(Gtk::ComboBoxText* pos);
     std::shared_ptr<PyClass> checkPyClass(StarDraw* starDraw, const char* className);
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder
+            , StarDraw* starDraw
+            , const char* colorId
+            , const char* fontId
+            , const char* posId
+            , const char* editId
+            , const char* editLabelId);
 
     const std::string m_name;
     Glib::ustring m_position;
@@ -82,6 +89,9 @@ protected:
     std::shared_ptr<FileLoader> m_fileLoader;
     std::shared_ptr<PyClass> m_pyClass;
     Glib::RefPtr<Gio::FileMonitor> m_fileMonitor;
+    Gtk::ColorButton* m_color;
+    Gtk::FontButton* m_font;
+    Gtk::ComboBoxText* m_pos;
 };
 
 using PtrModule = std::shared_ptr<Module>;

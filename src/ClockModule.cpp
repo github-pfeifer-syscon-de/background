@@ -280,52 +280,44 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 void
 ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
+    Module::setupParam(builder, starDraw, "clockColor", "clockFont", "clockPos", "editClock", "clockLabel");
     m_fileLoader = starDraw->getFileLoader();
-    builder->get_widget("clockColor", m_clockColor);
-    m_clockColor->set_rgba(getPrimaryColor());
 
     builder->get_widget("clockRadius", m_clockRadius);
     m_clockRadius->set_value(getRadius());
+    m_clockRadius->signal_value_changed().connect([this,starDraw] {
+        setRadius(m_clockRadius->get_value());
+        starDraw->compute();
+    });
 
     builder->get_widget("clockFormat", m_clockFormat);
     m_clockFormat->set_text(getFormat());
-
-    builder->get_widget("clockFont", m_clockFont);
-    m_clockFont->set_font_name(getFont().to_string());
+    m_clockFormat->signal_changed().connect([this,starDraw] {
+        setFormat(m_clockFormat->get_text());
+        starDraw->compute();
+    });
 
     builder->get_widget("checkAnalog", m_displayAnalog);
     builder->get_widget("checkDigital", m_displayDigital);
     m_displayAnalog->set_active(isDisplayAnalog());
     m_displayDigital->set_active(isDisplayDigital());
-    m_displayAnalog->signal_clicked().connect(
-            sigc::mem_fun(*this, &ClockModule::update));
-    m_displayDigital->signal_clicked().connect(
-            sigc::mem_fun(*this, &ClockModule::update));
+    m_displayAnalog->signal_clicked().connect([this,starDraw] {
+        update();
+        setDisplayAnalog(m_displayAnalog->get_active());
+        starDraw->compute();
+    });
+    m_displayDigital->signal_clicked().connect([this,starDraw] {
+        update();
+        setDisplayDigital(m_displayDigital->get_active());
+        starDraw->compute();
+    });
     update();
-
-    builder->get_widget("clockPos", m_clockPos);
-    fillPos(m_clockPos);
-    m_clockPos->set_active_id(getPosition());
-
-    Gtk::Button* editClock;
-    builder->get_widget("editClock", editClock);
-    Gtk::Label* clockLabel;
-    builder->get_widget("clockLabel", clockLabel);
 
     builder->get_widget("installFont", m_installFont);
     m_installFont->signal_clicked().connect(
         sigc::bind(
             sigc::mem_fun(*this, &ClockModule::installFont), starDraw));
 
-#   ifdef USE_PYTHON
-    editClock->signal_clicked().connect(
-        sigc::bind(
-            sigc::mem_fun(*this, &ClockModule::edit), starDraw));
-    clockLabel->set_text(getEditInfo());
-#   else
-    editClock->set_sensitive(false);
-    clockLabel->set_sensitive(false);
-#   endif
 }
 
 void
@@ -333,23 +325,19 @@ ClockModule::update()
 {
     m_clockRadius->set_sensitive(m_displayAnalog->get_active());
     m_clockFormat->set_sensitive(m_displayDigital->get_active());
-    m_clockFont->set_sensitive(m_displayDigital->get_active());
+    m_font->set_sensitive(m_displayDigital->get_active());
 }
 
 void
 ClockModule::saveParam(bool save)
 {
+    Module::saveParam(save);
     if (save) {
-        setPrimaryColor(m_clockColor->get_rgba());
-        setPosition(m_clockPos->get_active_id());
         setRadius(m_clockRadius->get_value());
-        Pango::FontDescription clockFont{m_clockFont->get_font_name()};
-        setFont(clockFont);
         setDisplayAnalog(m_displayAnalog->get_active());
         setDisplayDigital(m_displayDigital->get_active());
         setFormat(m_clockFormat->get_text());
     }
-    stopMonitor();
 }
 
 void

@@ -73,7 +73,8 @@ and place alongside the user version of the sources.
 The simple init does not work with Msys2/Windows as it seems (at least for me).
 If you want to look into the issue there is a #ifdef section in PyWrapper
 that outputs the used path. This should allows to idententify where things go wrong
-(look for wrong path components).
+(look for directory components with a weired location,
+the included .zip entry seems to be optional).
 By using a mingw shell and setting:
 ```
  export PYTHONPATH="C:/msys64/mingw64/lib/python312.zip;C:/msys64/mingw64/lib/python3.12;C:/msys64/mingw64/lib/python3.12/lib-dynload;C:/msys64/mingw64/lib/python3.12/site-packages"

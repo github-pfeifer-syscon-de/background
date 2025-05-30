@@ -90,9 +90,9 @@ class Clock:
         min = now.minute
         hours = int((now.hour % 12) * 5 + min/12)
         for i in range(60):
-           self.drawDot(ctx, i, 60, (i % 5) == 0, radius)
-        self.drawArc(ctx, hours, 60, radius, True, now.hour >= 12)
-        self.drawArc(ctx, min, 60, radius, False, now.hour >= 12)
+           self.drawRadial(ctx, i, 60, (i % 5) == 0, radius)
+        self.drawHand(ctx, hours, 60, radius, True, now.hour >= 12)
+        self.drawHand(ctx, min, 60, radius, False, now.hour >= 12)
         ctx.restore()
         return 0
 

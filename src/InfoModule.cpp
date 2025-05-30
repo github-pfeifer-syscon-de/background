@@ -101,39 +101,5 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
 void
 InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
-    builder->get_widget("infoColor", m_infoColor);
-    m_infoColor->set_rgba(getPrimaryColor());
-
-    builder->get_widget("infoFont", m_infoFont);
-    m_infoFont->set_font_name(getFont().to_string());
-
-    builder->get_widget("infoPos", m_infoPos);
-    fillPos(m_infoPos);
-    m_infoPos->set_active_id(getPosition());
-
-    Gtk::Button* editInfo;
-    builder->get_widget("editInfo", editInfo);
-    Gtk::Label* infoLabel;
-    builder->get_widget("infoLabel", infoLabel);
-#   ifdef USE_PYTHON
-    editInfo->signal_clicked().connect(
-        sigc::bind(
-            sigc::mem_fun(*this, &InfoModule::edit), starDraw));
-    infoLabel->set_text(getEditInfo());
-#   else
-    editInfo->set_sensitive(false);
-    infoLabel->set_sensitive(false);
-#   endif
-}
-
-void
-InfoModule::saveParam(bool save)
-{
-    if (save) {
-        setPrimaryColor(m_infoColor->get_rgba());
-        Pango::FontDescription infoFont{m_infoFont->get_font_name()};
-        setFont(infoFont);
-        setPosition(m_infoPos->get_active_id());
-    }
-    stopMonitor();
+    Module::setupParam(builder, starDraw, "infoColor", "infoFont", "infoPos", "editInfo", "infoLabel");
 }

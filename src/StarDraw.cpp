@@ -62,9 +62,26 @@ StarDraw::StarDraw(BaseObjectType* cobject
 #pragma GCC diagnostic pop
 
 void
+StarDraw::loadConfig()
+{
+    auto configName{"background.conf"};
+    if (!m_config) {
+        m_config = std::make_shared<KeyConfig>(configName);
+    }
+    else {
+        try {
+            m_config->getConfig()->load_from_file(m_config->getConfigName());
+        }
+        catch (const Glib::FileError& exc) {
+            std::cerr << "Cound not read " << exc.what() << " config " << configName << " (it may not yet exist and will be created)." << std::endl;
+        }
+    }
+}
+
+void
 StarDraw::setupConfig()
 {
-    m_config = std::make_shared<KeyConfig>("background.conf");
+    loadConfig();
     std::string cfg = getGlobeConfigName();
     // since it is more convenient to use the location we saved for glglobe load&save it from there
     //   but this keepts the risk of overwriting the coordinates (if you change them on both sides...)
@@ -96,8 +113,7 @@ std::string
 StarDraw::getGlobeConfigName()
 {
     // share config with glglobe as we already have coordinates
-    std::string fullPath = g_canonicalize_filename("glglobe.conf", Glib::get_user_config_dir().c_str());
-    //Glib:canonicalize_file_name()
+    auto fullPath = Glib::canonicalize_filename("glglobe.conf", Glib::get_user_config_dir());
     //std::cout << "using config " << fullPath << std::endl;
     return fullPath;
 }
@@ -629,11 +645,11 @@ StarDraw::scale(Pango::FontDescription& starFont, double scale)
 }
 
 void
-StarDraw::brighten(Gdk::RGBA& calColor, double factor)
+StarDraw::brighten(Gdk::RGBA& color, double factor)
 {
-    calColor.set_red(calColor.get_red() * factor);
-    calColor.set_green(calColor.get_green() * factor);
-    calColor.set_blue(calColor.get_blue() * factor);
+    color.set_red(color.get_red() * factor);
+    color.set_green(color.get_green() * factor);
+    color.set_blue(color.get_blue() * factor);
 }
 
 GeoPosition

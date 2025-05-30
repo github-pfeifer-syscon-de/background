@@ -145,39 +145,5 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
 void
 CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
 {
-    builder->get_widget("calendarColor", m_calendarColor);
-    m_calendarColor->set_rgba(getPrimaryColor());
-
-    builder->get_widget("calendarFont", m_calendarFont);
-    m_calendarFont->set_font_name(getFont().to_string());
-
-    builder->get_widget("calPos", m_calPos);
-    fillPos(m_calPos);
-    m_calPos->set_active_id(getPosition());
-
-    Gtk::Button* editCal;
-    builder->get_widget("editCal", editCal);
-    Gtk::Label* calLabel;
-    builder->get_widget("calLabel", calLabel);
-#   ifdef USE_PYTHON
-    editCal->signal_clicked().connect(
-        sigc::bind(
-            sigc::mem_fun(*this, &CalendarModule::edit), starDraw));
-    calLabel->set_text(getEditInfo());
-#   else
-    editCal->set_sensitive(false);
-    calLabel->set_sensitive(false);
-#   endif
-}
-
-void
-CalendarModule::saveParam(bool save)
-{
-    if (save) {
-        setPrimaryColor(m_calendarColor->get_rgba());
-        Pango::FontDescription calFont{m_calendarFont->get_font_name()};
-        setFont(calFont);
-        setPosition(m_calPos->get_active_id());
-    }
-    stopMonitor();
+    Module::setupParam(builder, starDraw, "calendarColor", "calendarFont", "calPos", "editCal", "calLabel");
 }
