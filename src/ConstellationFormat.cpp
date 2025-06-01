@@ -93,11 +93,14 @@ ConstellationFormat::readConstellations()
 	try {
         auto file = m_fileLoader->findFile(constlDataFile);
         if (file) {
-            auto lines = FileLoader::readLines(file);
-            for (auto& line : lines) {
+            LineReader lineReader(file);
+            std::string line;
+            line.reserve(80);
+            while (lineReader.hasNext()) {
+                lineReader.next(line);
                 parseLine(line, constellations);
             }
-	    }
+        }
 	    else {
             std::cout << "The constellation data " << constlDataFile << " was not found!" << std::endl;
 	    }

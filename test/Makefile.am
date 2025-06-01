@@ -31,6 +31,7 @@ astro_test_LDADD =  \
 	../src/background-Planets.o \
 	../src/background-Messier.o \
 	../src/background-MessierLoader.o \
+	../src/background-FileLoader.o \
 	$(GENERICIMG_LIBS)
 
 check_PROGRAMS = astro_test

@@ -27,6 +27,7 @@
 #include "Math.hpp"
 #include "Planets.hpp"
 #include "MessierLoader.hpp"
+#include "FileLoader.hpp"
 
 static constexpr auto expAz = 155.96;
 static constexpr auto expAlt = 69.0103;
@@ -149,11 +150,123 @@ test_mix()
 
     return true;
 }
+
+static bool
+test_read()
+{
+    std::vector<std::string> lines;
+    try {
+        auto dir = Glib::get_current_dir();
+        auto fileName = Glib::canonicalize_filename("data_test.txt", dir);
+        auto file = Gio::File::create_for_path(fileName);
+        Glib::RefPtr<Gio::FileOutputStream> fileStrm;
+        if (!file->query_exists()) {
+            fileStrm = file->create_file(Gio::FileCreateFlags::FILE_CREATE_NONE);
+        }
+        else {
+            fileStrm = file->append_to(Gio::FileCreateFlags::FILE_CREATE_REPLACE_DESTINATION);
+            fileStrm->truncate(0);
+        }
+        std::string str; // {"\xd6\xdc\xdf\xc4\xe4\xf6"};
+        str += (unsigned char)0xd6;//Ö write some iso-8859-15 compatible data
+        str += (unsigned char)0xdc;//Ü
+        str += (unsigned char)0xdf;//ß
+        str += (unsigned char)0xc4;//Ä
+        str += (unsigned char)0xe4;//ä
+        str += (unsigned char)0xf6;//ö
+        fileStrm->write(str);
+        fileStrm->close();
+
+        LineReaderEnc lineReaderEnc(file, "ISO-8859-15", true);
+        Glib::ustring data;
+        bool first = lineReaderEnc.next(data);
+        std::cout << "data " << data << std::endl;
+        file->remove();
+        if (!first) {
+            std::cout << "Read not the expected start " << std::endl;
+            return false;
+        }
+        Glib::ustring exp = StringUtils::u8str(u8"ÖÜßÄäö");
+        if (data != exp) {
+            std::cout << "Read not the expected data " << data << std::endl;
+            return false;
+        }
+        bool next = lineReaderEnc.next(data);
+        if (next) {
+            std::cout << "Read not the expected end " << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+    catch (const Glib::Error& err) {
+        std::cout << "Error " << err.what() << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+// active if function is getting used
+//static bool
+//test_read2()
+//{
+//    std::vector<Glib::ustring> lines;
+//    try {
+//        auto dir = Glib::get_current_dir();
+//        auto fileName = Glib::canonicalize_filename("data_test2.txt", dir);
+//        auto file = Gio::File::create_for_path(fileName);
+//        Glib::RefPtr<Gio::FileOutputStream> fileStrm;
+//        if (!file->query_exists()) {
+//            fileStrm = file->create_file(Gio::FileCreateFlags::FILE_CREATE_NONE);
+//        }
+//        else {
+//            fileStrm = file->append_to(Gio::FileCreateFlags::FILE_CREATE_REPLACE_DESTINATION);
+//            fileStrm->truncate(0);
+//        }
+//        std::string str; // {"\xd6\xdc\xdf\xc4\xe4\xf6"};
+//        str += (unsigned char)0xd6;//Ö write some iso-8859-15 compatible data
+//        str += (unsigned char)0xdc;//Ü
+//        str += (unsigned char)0xdf;//ß
+//        str += (unsigned char)0xc4;//Ä
+//        str += (unsigned char)0xe4;//ä
+//        str += (unsigned char)0xf6;//ö
+//        fileStrm->write(str);
+//        fileStrm->close();
+//
+//        lines = FileLoader::readLines(file, 8, "ISO-8859-15", true);
+//        std::cout << "lines " << lines.size() << std::endl;
+//        file->remove();
+//        if (lines.size() != 1) {
+//            std::cout << "Read not the expected count " << lines.size() << std::endl;
+//            return false;
+//        }
+//        Glib::ustring exp = StringUtils::u8str(u8"ÖÜßÄäö");
+//        if (lines[0] != exp) {
+//            std::cout << "Read not the expected data " << lines[0] << std::endl;
+//            return false;
+//        }
+//
+//        return true;
+//    }
+//    catch (const Glib::Error& err) {
+//        std::cout << "Error " << err.what() << std::endl;
+//        return false;
+//    }
+//
+//    return true;
+//}
+
 /*
  *
  */
 int main(int argc, char** argv)
 {
+    //std::locale::global(std::locale("de_DE.ISO-8859-15@euro"));
+    //std::cout << "Loc " << std::setlocale(LC_ALL, nullptr) << std::endl;
+    std::setlocale(LC_ALL, "");      // make locale dependent, and make glib accept u8 const !!!
+    Glib::init();
+    Gio::init();
     if (!test_azAlt()) {
         return 1;
     }
@@ -172,6 +285,8 @@ int main(int argc, char** argv)
     if (!test_mix()) {
         return 6;
     }
+    if (!test_read()) {
+        return 7;
+    }
     return 0;
 }
-

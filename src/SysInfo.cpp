@@ -38,33 +38,12 @@
 #include <bitset>
 #include <gtkmm.h>
 
+#include "FileLoader.hpp"
 #include "SysInfo.hpp"
 
 // for windows the infos are sparse
 SysInfo::SysInfo()
 {
-}
-
-static std::string
-cat(const std::string& path)
-{
-    std::ifstream stat;
-    std::ios_base::iostate exceptionMask = stat.exceptions() | std::ios::failbit | std::ios::badbit;
-    stat.exceptions(exceptionMask);
-    std::string dest;
-    try {
-        stat.open(path);
-        if (!stat.eof()) {
-            std::getline(stat, dest);
-        }
-    }
-    catch (std::ios_base::failure& e) {
-        dest = Glib::ustring::sprintf("err %s", path);
-    }
-    if (stat.is_open()) {
-	    stat.close();
-    }
-	return dest;
 }
 
 std::string
@@ -410,19 +389,31 @@ SysInfo::netInfo()
 				&& strncmp(ent->d_name, "e", 1) == 0) {
    				std::ostringstream oss1;
 				auto path = Glib::ustring::sprintf("%s/%s/operstate", sdir, ent->d_name);
-				auto updown = cat(path);
+                LineReader lineReader(Gio::File::create_for_path(path));
+                std::string updown;
+                if (lineReader.hasNext()) {
+                    lineReader.next(updown);
+                }
                 if (updown == "up") {
                     path = Glib::ustring::sprintf("%s/%s/speed", sdir, ent->d_name);
-                    unsigned int speed = std::stoi(cat(path));
+                    LineReader lineReader2(Gio::File::create_for_path(path));
+                    unsigned int speed{};
                     char unit = 'M';
-                    if (speed >= 1000) {
-                        speed /= 1000;
-                        unit = 'G';
+                    if (lineReader2.hasNext()) {
+                        std::string speedd;
+                        lineReader2.next(speedd);
+                        speed = std::stoi(speedd);
+                        if (speed >= 1000) {
+                            speed /= 1000;
+                            unit = 'G';
+                        }
                     }
-
                     path = Glib::ustring::sprintf("%s/%s/duplex", sdir, ent->d_name);
-                    auto duplex = cat(path);
-
+                    LineReader lineReader3(Gio::File::create_for_path(path));
+                    std::string duplex;
+                    if (lineReader3.hasNext()) {
+                        lineReader3.next(duplex);
+                    }
                     auto conn = netConn(ent->d_name);
                     oss1 << ent->d_name
                          << " " << speed << unit

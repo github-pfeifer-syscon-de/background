@@ -17,7 +17,9 @@
  */
 
 #include <iostream>
-
+#include <psc_format.hpp>
+#include <StringUtils.hpp>
+#include <exception>
 
 #include "FileLoader.hpp"
 
@@ -78,23 +80,57 @@ FileLoader::find(const Glib::ustring& name)
 
 
 std::vector<Glib::ustring>
-FileLoader::readLines(const Glib::RefPtr<Gio::File>& file)
+FileLoader::readLines(const Glib::RefPtr<Gio::File>& file, size_t expected, const Glib::ustring& encoding, bool useException)
 {
     std::vector<Glib::ustring> ret;
-    ret.reserve(64);
-    auto fileStrm = file->read();
-    auto dataStrm = Gio::DataInputStream::create(fileStrm);
-    while (true) {
-        std::string line;
-        dataStrm->read_line_utf8(line);
-        ret.push_back(line);
-        if (dataStrm->get_available() <= 0u) { // this works after reading, but fails if used in the head of loop!
-            break;
+    ret.reserve(expected);
+    Glib::RefPtr<Gio::FileInputStream> fileStrm;
+    try {
+        fileStrm = file->read();
+        Glib::RefPtr<Gio::InputStream> convStrm;
+        if (encoding != "UTF-8") {
+            //auto conv = Gio::CharsetConverter::create("UTF-8", encoding); // this is broken
+            g_autoptr(GError) err{};
+            GCharsetConverter* cc = g_charset_converter_new("UTF-8", encoding.c_str(), &err);
+            if (err) {
+                std::cout << "Error new converter " << err->message << std::endl;
+                if (useException) {
+                    throw Glib::Error(err);
+                }
+                return ret;
+            }
+            auto conv = Glib::wrap(cc);
+            convStrm = Gio::ConverterInputStream::create(fileStrm, conv);
+        }
+        else {
+            convStrm = fileStrm;
+        }
+        auto dataStrm = Gio::DataInputStream::create(convStrm);
+        while (true) {
+            std::string line;
+            dataStrm->read_line(line);
+            ret.push_back(line);
+            if (dataStrm->get_available() <= 0u) { // this works after reading, but fails if used in the head of loop!
+                break;
+            }
+        }
+        try {
+            dataStrm->close();
+        }
+        catch (const Glib::Error& err) {        // Since the second close seems more important
+        }
+        fileStrm->close();
+    }
+    catch (const Glib::Error& err) {
+        auto msg = psc::fmt::format("FileLoader::readLines error {}", err.what());
+        std::cout << msg << std::endl;
+        if (fileStrm) {
+            fileStrm->close();
+        }
+        if (useException) {
+            throw;
         }
     }
-    dataStrm->close();
-    fileStrm->close();
-    //std::cout << "FileLoader::readLines  " << file->get_path() << " lines " << ret.size() << std::endl;
     return ret;
 }
 
@@ -175,4 +211,79 @@ FileLoader::run(const std::vector<std::string>& strArgs, GPid* pid)
         g_child_watch_add(*pid, child_watch_cb, this);
     }
     return "";
+}
+
+LineReaderEnc::LineReaderEnc(const Glib::RefPtr<Gio::File>& file, const Glib::ustring& encoding, bool useException )
+: m_useException{useException}
+{
+    g_autoptr(GError) err{};
+    auto filePath = file->get_path();
+    m_channel = g_io_channel_new_file(filePath.c_str(), "r", &err);
+    if (err) {
+        m_next = false;
+        std::cout << "LineReaderEnc::LineReaderEnc error " << err->message << " open" << std::endl;
+        if (useException) {
+            throw Glib::Error(err);
+        }
+    }
+    else {
+        if (encoding != "UTF-8") {  // as utf-8 is the default at least with linx
+            if (g_io_channel_set_encoding(m_channel, encoding.c_str(), &err) != G_IO_STATUS_NORMAL) {
+                m_next = false;
+                std::cout << "FileLoader::readLines error " << err->message << " encoding" << std::endl;
+                if (useException) {
+                    throw Glib::Error(err);
+                }
+            }
+        }
+    }
+}
+
+LineReaderEnc::~LineReaderEnc()
+{
+    if (m_channel) {
+        g_io_channel_shutdown(m_channel, false, nullptr);
+        g_io_channel_unref(m_channel);
+        m_channel = nullptr;
+    }
+}
+
+
+bool
+LineReaderEnc::next(Glib::ustring& str)
+{
+    if (m_next) {
+        again:
+        char* cstr{};
+        size_t len;
+        g_autoptr(GError) err{};
+        GIOStatus status = g_io_channel_read_line(m_channel, &cstr, &len, nullptr, &err);
+        switch (status) {
+            case G_IO_STATUS_EOF:
+                m_next = false;
+                str = "";       // in case someone uses it reset
+                break;
+            case G_IO_STATUS_NORMAL:
+                {
+                    str = cstr;
+                    StringUtils::rtrim(str);    // make compatible to Gio::DataInputStream remove line-endings (also blanks)
+                    g_free(cstr);
+                }
+                break;
+            case G_IO_STATUS_AGAIN:
+                goto again;
+            case G_IO_STATUS_ERROR:
+            default:
+                m_next = false;
+                str = "";       // in case someone uses it reset
+                if (err) {
+                    std::cout << "LineReaderEnc::readLines next " << err->message << " reading" << std::endl;
+                    if (m_useException) {
+                        throw Glib::Error(err);
+                    }
+                }
+                break;
+        }
+    }
+    return m_next;
 }
