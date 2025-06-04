@@ -230,7 +230,7 @@ LineReaderEnc::LineReaderEnc(const Glib::RefPtr<Gio::File>& file, const Glib::us
         if (encoding != "UTF-8") {  // as utf-8 is the default at least with linx
             if (g_io_channel_set_encoding(m_channel, encoding.c_str(), &err) != G_IO_STATUS_NORMAL) {
                 m_next = false;
-                std::cout << "FileLoader::readLines error " << err->message << " encoding" << std::endl;
+                std::cout << "LineReaderEnc::LineReaderEnc error " << err->message << " encoding " << encoding << std::endl;
                 if (useException) {
                     throw Glib::Error(err);
                 }
@@ -242,9 +242,14 @@ LineReaderEnc::LineReaderEnc(const Glib::RefPtr<Gio::File>& file, const Glib::us
 LineReaderEnc::~LineReaderEnc()
 {
     if (m_channel) {
-        g_io_channel_shutdown(m_channel, false, nullptr);
+        g_autoptr(GError) err{};
+        g_io_channel_shutdown(m_channel, false, &err);
         g_io_channel_unref(m_channel);
         m_channel = nullptr;
+        if (err) {
+            std::cout << "LineReaderEnc::~LineReaderEnc error " << err->message << std::endl;
+            // throwing excep in destructor is a bad idea
+        }
     }
 }
 

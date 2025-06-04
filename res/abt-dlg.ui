@@ -15,7 +15,7 @@ see Authors for detailed references.
 </property>
     <property name="comments" translatable="yes">Live to desktop background.</property>
     <property name="authors">R. Pfeifer </property>
-    <property name="artists">Thanks for the great Gtk-toolkit and its Gtkmm adaption.</property>
+    <property name="artists">Thanks for the great Gtk-toolkit and its Gtkmm binding.</property>
     <property name="logo-icon-name">image</property>
     <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">

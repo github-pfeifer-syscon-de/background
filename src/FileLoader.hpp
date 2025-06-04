@@ -62,7 +62,12 @@ public:
             }
         }
         if (m_fileStrm) {
-            m_fileStrm->close();
+            try {   // don't want to crash the app
+                m_fileStrm->close();
+            }
+            catch (const Glib::Error& err) {
+                std::cout << "Error " << err.what() << " closing " << m_file->get_path() << std::endl;
+            }
         }
     }
     bool hasNext()

@@ -17,6 +17,8 @@ class Cal:
     #   fills in 0 for not actual month
     def build(self,year,month):
         # maybe integrate print(f" firstweekday {cal.getfirstweekday()}")
+        #  this is nice property that isn't locale dependend ... and there are only partial workarounds :(
+        #  see https://github.com/projecthamster/hamster/blob/master/src/hamster/lib/stuff.py#L153
         cal = calendar.Calendar()
         self.weeknums=[]
         self.rows=[]

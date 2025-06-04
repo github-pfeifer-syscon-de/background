@@ -44,14 +44,13 @@ modify the displayed infos e.g. use a weather or news service ...
 Some alternative functions are already added to the sources
 e.g. modify the clock drawAnalog function to:
 ```
-        min = now.minute
-        hours = (now.hour % 12) * 60 + min
         for i in range(60):
-           self.drawDot(ctx, i, 60, (i % 5) == 0, radius)
-        self.drawArc(ctx, hours, 12*60, radius, True)
-        self.drawArc(ctx, min, 60, radius, False)
+           self.drawRadial(ctx, i, 60, (i % 5) == 0, radius)
+        self.drawHand(ctx, hours, 60, radius, True, now.hour >= 12)
+        self.drawHand(ctx, min, 60, radius, False, now.hour >= 12)
+
 ```
-to get a alternative clock shape.
+to get a "classic" clock shape.
 
 The .py files are localed by default in /usr/share/background-program
 a user version can be created
