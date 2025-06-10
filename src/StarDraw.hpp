@@ -19,22 +19,14 @@
 #pragma once
 
 #include <gtkmm.h>
-#include <KeyConfig.hpp>
 
 #include "Layout.hpp"
 #include "GeoPosition.hpp"
 #include "JulianDate.hpp"
-#include "SysInfo.hpp"
-#include "Milkyway.hpp"
-#include "Module.hpp"
+#include "StarPaint.hpp"
 
-class HipparcosFormat;
-class ConstellationFormat;
-class BackgroundApp;
 class StarWin;
 class StarMountOp;
-class MessierLoader;
-
 
 class StarDraw
 : public Gtk::DrawingArea
@@ -46,94 +38,25 @@ public:
     explicit StarDraw(const StarDraw& orig) = delete;
     virtual ~StarDraw() = default;
 
-    static constexpr auto TEXT_GRAY_LOW{0.3};
-    static constexpr auto TEXT_GRAY{0.6};
-    static constexpr auto TEXT_GRAY_MID{0.75};
-    static constexpr auto TEXT_GRAY_EMPHASIS{0.9};
-    static constexpr auto SUN_MOON_RADIUS{7.0};
-    static constexpr auto PLANET_RADIUS{3.0};
-    static constexpr auto MAX_STAR_RADIUS{3.0};
-    static constexpr auto MIN_STAR_RADIUS{1.0};
-    static constexpr auto MESSIER_RADIUS{4.0};
-    static constexpr auto START_COLOR_KEY{"startColor"};
-    static constexpr auto STOP_COLOR_KEY{"stopColor"};
-    static constexpr auto STAR_FONT_KEY{"starFont"};
-    static constexpr auto DEFAULT_STAR_FONT{"Sans 7"};
-    static constexpr auto MAIN_GRP{"main"};
-    static constexpr auto UPDATE_INTERVAL_KEY{"updateIntervalMinutes"};
-    static constexpr auto SHOW_MILKYWAY_KEY{"showMilkyway"};
-    static constexpr auto MESSIER_VMAGMIN_KEY{"messierVMagMin"};
-    void compute();
+    void update();
     void update(Glib::DateTime dateTime, GeoPosition& pos);
-    GeoPosition getGeoPosition();
-    void setGeoPosition(const GeoPosition& geoPos);
-
-    std::shared_ptr<KeyConfig> getConfig();
-    Pango::FontDescription getStarFont();
-    void setStarFont(const Pango::FontDescription& descr);
-    Gdk::RGBA getStartColor();
-    void setStartColor(const Gdk::RGBA& startColor);
-    Gdk::RGBA getStopColor();
-    void setStopColor(const Gdk::RGBA& stopColor);
-    int getIntervalMinutes();
-    void setIntervalMinutes(int intervalMinutes);
-    bool isShowMilkyway();
-    void setShowMilkyway(bool showMilkyway);
-    double getMessierVMagMin();
-    void setMessierVMagMin(double showMessier);
-    StarWin* getWindow();
-    void saveConfig();
-    void savePosition();
-    void scale(Pango::FontDescription& starFont, double scale);
-    void brighten(Gdk::RGBA& calColor, double factor);
-    void loadConfig();
-    std::vector<PtrModule> createModules();
-    std::vector<PtrModule> getModules();
-    std::shared_ptr<FileLoader> getFileLoader()
-    {
-        return m_fileLoader;
-    }
     void showError(const Glib::ustring& msg, Gtk::MessageType msgType = Gtk::MessageType::MESSAGE_INFO);
+    void setUpdateBlocked(bool updateBlocked)
+    {
+        m_updateBlocked = updateBlocked;
+    }
 
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
-
-    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    std::vector<NamedPoint> cluster(const std::vector<NamedPoint>& points, double distance = 20.0);
-
-    std::string getGlobeConfigName();
-    void setupConfig();
+    StarWin* getWindow();
 
     bool on_button_press_event(GdkEventButton* event) override;
     Gtk::Menu *build_popup();
-    void on_menu_param();
-    void on_menu_time();
-    std::vector<PtrModule> findModules(const char* pos);
-    void drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
-    void drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
-    void drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
 
 private:
-    std::shared_ptr<HipparcosFormat> m_starFormat;
-    std::shared_ptr<ConstellationFormat> m_constlFormat;
-    GeoPosition m_geoPos;
-    std::shared_ptr<KeyConfig> m_config;
-    static constexpr auto GRP_GLGLOBE_MAIN{"globe"};
-    static constexpr auto LATITUDE_KEY{"lat"};
-    static constexpr auto LONGITUDE_KEY{"lon"};
     Cairo::RefPtr<Cairo::ImageSurface> m_image;
-    std::shared_ptr<Milkyway> m_milkyway;
-    std::shared_ptr<MessierLoader> m_messier;
     bool m_updateBlocked{false};
     Glib::DateTime m_displayTimeUtc;
     StarWin* m_starWin;
-    std::vector<PtrModule> m_modules;
-    std::shared_ptr<FileLoader> m_fileLoader;
+    PtrStarPaint m_starPaint;
 };

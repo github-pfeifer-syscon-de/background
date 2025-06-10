@@ -51,9 +51,9 @@ public:
     explicit CalendarModule(const CalendarModule& orig) = delete;
     virtual ~CalendarModule() = default;
 
-    int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) override;
+    int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin) override;
+    void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin) override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin) override;
 
     Glib::ustring getPyScriptName() override;
     static constexpr auto pyClassName{"Cal"};

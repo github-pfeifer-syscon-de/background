@@ -1,5 +1,6 @@
+/* -*- Mode: c++; c-basic-offset: 4; tab-width: 4;  coding: utf-8; -*-  */
 /*
- * Copyright (C) 2018 rpf
+ * Copyright (C) 2025 RPf <gpl3@pfeifer-syscon.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,30 +19,22 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <garcon-gtk/garcon-gtk.h>
 
-class StarDraw;
-class GeoPosition;
+class StarWin;
 
-class ParamDlg
-: public Gtk::Dialog
+class AppMenu
 {
 public:
-    ParamDlg(BaseObjectType* cobject
-            , const Glib::RefPtr<Gtk::Builder>& builder
-            , StarWin* starWin);
-    virtual ~ParamDlg() = default;
+    AppMenu();
+    explicit AppMenu(const AppMenu& orig) = delete;
+    virtual ~AppMenu();
 
-    static void show(StarWin* starWin);
-
-protected:
-    void on_response(int response_id) override;
+    void on_menu_show(StarWin *starWin);
+    void addMenu(Gtk::Menu* popup);
 
 private:
-    StarWin* m_starWin;
-    Gtk::SpinButton* m_updateInterval;
-    Gtk::ColorButton* m_startColor;
-    Gtk::ColorButton* m_stopColor;
-    Gtk::FontButton* m_starFont;
-    Gtk::CheckButton* m_showMilkyway;
-    Gtk::Scale* m_messierVMag;
+    GarconMenu* m_garcon_menu{nullptr};
+    GtkWidget* m_menuWidget{nullptr};
 };
+

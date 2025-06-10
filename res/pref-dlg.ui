@@ -89,7 +89,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Start color</property>
+                    <property name="label" translatable="yes">Zenith</property>
                     <property name="xalign">1</property>
                   </object>
                   <packing>
@@ -116,7 +116,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Stop color</property>
+                    <property name="label" translatable="yes">Horizon</property>
                     <property name="xalign">1</property>
                   </object>
                   <packing>

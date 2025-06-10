@@ -18,7 +18,7 @@
 
 
 #include "CalendarModule.hpp"
-#include "StarDraw.hpp"
+#include "StarWin.hpp"
 #include "Math.hpp"
 #include "FileLoader.hpp"
 #include "config.h"
@@ -47,11 +47,11 @@ Grid::put(Glib::RefPtr<Pango::Layout>& layout
 
 
 int
-CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     auto calFont = getFont();
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, pyClassName);
+    auto pyClass = checkPyClass(starWin, pyClassName);
     if (!pyClass) {
         std::cout << "CalendarModule::getHeight no Class!" << std::endl;
         return 0;
@@ -59,7 +59,7 @@ CalendarModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* st
     auto fontName = calFont.to_string();
     int height = static_cast<int>(pyClass->invokeMethod("getHeight", ctx, fontName));
     if (pyClass->hasFailed()) {
-        starDraw->showError(pyClass->getError());
+        starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         height = 0;
     }
     return height;
@@ -79,21 +79,21 @@ CalendarModule::getPyScriptName()
 }
 
 void
-CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     if (m_height == 0) {
-        getHeight(ctx, starDraw);
+        getHeight(ctx, starWin);
     }
 
     getPrimaryColor(ctx);
     auto calFont = getFont();
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, pyClassName);
+    auto pyClass = checkPyClass(starWin, pyClassName);
     if (pyClass) {
         auto font = calFont.to_string();
         pyClass->invokeMethod("draw", ctx, font);
         if (pyClass->hasFailed()) {
-            starDraw->showError(pyClass->getError());
+            starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         }
     }
     else {
@@ -143,7 +143,8 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* star
 }
 
 void
-CalendarModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
+CalendarModule::setupParam(
+    const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin)
 {
-    Module::setupParam(builder, starDraw, "calendarColor", "calendarFont", "calPos", "editCal", "calLabel");
+    Module::setupParam(builder, starWin, "calendarColor", "calendarFont", "calPos", "editCal", "calLabel");
 }

@@ -28,10 +28,10 @@ class TimeDlg
 public:
     TimeDlg(BaseObjectType* cobject
             , const Glib::RefPtr<Gtk::Builder>& builder
-            , StarDraw* starDraw);
+            , StarWin* starWin);
     virtual ~TimeDlg() = default;
 
-    static void show(StarDraw* starDraw);
+    static void show(StarWin* starWin);
     GeoPosition getGeoPosition() const;
 
 protected:
@@ -44,7 +44,6 @@ private:
     Gtk::Calendar* m_calendar;
     Gtk::SpinButton* m_spinH;
     Gtk::SpinButton* m_spinM;
-    StarDraw* m_starDraw;
-
+    StarWin* m_starWin;
 };
 

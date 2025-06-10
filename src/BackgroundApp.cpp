@@ -17,18 +17,81 @@
  */
 
 #include <iostream>
+#include <iomanip>
+#include <iostream>
 #include <exception>
 
 #include "config.h"
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
 
+
+
+StarOptionGroup::StarOptionGroup()
+: Glib::OptionGroup(
+    "Star desk options", "control the startup for star desk", "use --daemon or -d to startup in daemon mode, otherwise interactive mode is used")
+, m_arg_daemon{false}
+{
+
+  Glib::OptionEntry entry4;
+  entry4.set_long_name("daemon");
+  entry4.set_short_name('d');
+  entry4.set_description("Activate daemon mode");
+  //entry4.set_flags(Glib::OptionEntry::Flags::FLAG_OPTIONAL_ARG);
+  add_entry(entry4, m_arg_daemon);
+
+  Glib::OptionEntry entry_remaining;
+  entry_remaining.set_long_name(G_OPTION_REMAINING);
+
+  add_entry(entry_remaining, m_remaining_list);
+}
+
+bool
+StarOptionGroup::on_pre_parse(Glib::OptionContext& /* context */, Glib::OptionGroup& /* group */)
+{
+    // This is called before the m_arg_* instances are given their values.
+    // You do not need to override this method. This is just here to show you how,
+    // in case you want to do any extra processing.
+#   ifdef DEBUG
+    std::cout << "on_pre_parse called" << std::endl;
+#   endif
+    return true;
+}
+
+bool
+StarOptionGroup::on_post_parse(Glib::OptionContext& /* context */, Glib::OptionGroup& /* group */)
+{
+    // This is called after the m_arg_* instances are given their values.
+    // You do not need to override this method. This is just here to show you how,
+    // in case you want to do any extra processing.
+#   ifdef DEBUG
+    std::cout << "on_post_parse called" << std::endl;
+#   endif
+    return true;
+}
+
+void
+StarOptionGroup::on_error(Glib::OptionContext& /* context */, Glib::OptionGroup& /* group */)
+{
+    std::cout << "on_error called" << std::endl;
+}
+
+
 BackgroundApp::BackgroundApp(int argc, char **argv)
 : Gtk::Application(argc, argv, "de.pfeifer_syscon.background", Gio::ApplicationFlags::APPLICATION_HANDLES_OPEN)
 , m_exec{argv[0]}
 {
+    Glib::OptionContext context;
+    context.set_main_group(m_group);
+    try {
+        context.parse(argc, argv);
+    }
+    catch (const Glib::Error& ex) {
+        std::cout << "Exception " << ex.what() << " parsing options" << std::endl;
+    }
+
     #ifdef DEBUG
-    std::cout << "BackgroundApp::BackgroundApp" << std::endl;
+    std::cout << "BackgroundApp::BackgroundApp" << std::boolalpha << m_group.m_arg_daemon << std::endl;
     #endif
 }
 
@@ -38,13 +101,16 @@ BackgroundApp::createStarWindow()
 {
     StarWin* starView{nullptr};
     auto builder = Gtk::Builder::create();
+    const char* name = "/star-win.ui";
+    //if (m_group.m_arg_daemon) {
+    //    name = "/star-win2.ui";
+    //}
     try {
-        //Gtk::Application* appl = m_appSupport.getApplication();
-        builder->add_from_resource(get_resource_base_path() + "/star-win.ui");
+        builder->add_from_resource(get_resource_base_path() + name);
         builder->get_widget_derived("StarWin", starView, this);
     }
     catch (const Glib::Error &ex) {
-        std::cerr << "Unable to load imageview.ui: " << ex.what() << std::endl;
+        std::cerr << "Unable to load : " << name << " error " << ex.what() << std::endl;
     }
     return starView;
 }
@@ -74,10 +140,11 @@ BackgroundApp::on_activate()
 {
     // either on_activate is called (no args)
     StarWin* imageView = getOrCreateStarWindow(); // on instance shoud be sufficent
-    imageView->set_keep_below(true);
-    imageView->show();
-    // this crashes (probably need to show first...)
-    //imageView->get_parent_window()->show_unraised();
+    if (!m_group.m_arg_daemon) {
+        imageView->set_keep_below(true);
+    }
+    imageView->show_all();
+
 }
 
 #pragma GCC diagnostic push
@@ -131,6 +198,12 @@ BackgroundApp::on_action_about() {
     }
 }
 
+bool
+BackgroundApp::isDaemon()
+{
+    return m_group.m_arg_daemon;
+}
+
 void
 BackgroundApp::on_action_help() {
 
@@ -150,25 +223,27 @@ BackgroundApp::on_startup()
     #endif
     Gtk::Application::on_startup();
 
-    add_action("quit", sigc::mem_fun(*this, &BackgroundApp::on_action_quit));
+   // Add actions and keyboard accelerators for the application menu.
     add_action("about", sigc::mem_fun(*this, &BackgroundApp::on_action_about));
-    add_action("help", sigc::mem_fun(*this, &BackgroundApp::on_action_help));
+    add_action("quit", sigc::mem_fun(*this, &BackgroundApp::on_action_quit));
+    set_accel_for_action("app.quit", "<Ctrl>Q");
 
-//    m_builder = Gtk::Builder::create();
-//    try {
-//        m_builder->add_from_resource(get_resource_base_path() + "/app-menu.ui");
-//        auto menuObj = m_builder->get_object("menubar");
-//        auto menuBar = Glib::RefPtr<Gio::Menu>::cast_dynamic(menuObj);
-//        if (menuBar) {
-//            set_menubar(menuBar);
-//        }
-//        else {
-//            std::cerr << "Cound not find/cast menubar!" << std::endl;
-//        }
-//    }
-//    catch (const Glib::FileError& ex) {
-//        std::cerr << "Unable to load menubar: " << ex.what() << std::endl;
-//    }
+    if (m_group.m_arg_daemon) {
+        auto refBuilder = Gtk::Builder::create();
+        try {
+            refBuilder->add_from_resource(get_resource_base_path() + "/app-menu.ui");
+            auto object = refBuilder->get_object("appmenu");
+            auto app_menu = Glib::RefPtr<Gio::MenuModel>::cast_dynamic(object);
+            if (app_menu)
+                set_app_menu(app_menu);
+            else
+                std::cerr << "BackgroundApp::on_startup(): No \"appmenu\" object in app_menu.ui"
+                    << std::endl;
+        }
+        catch (const Glib::Error& ex) {
+            std::cerr << "BackgroundApp::on_startup(): " << ex.what() << std::endl;
+        }
+    }
 }
 
 int main(int argc, char** argv)

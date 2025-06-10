@@ -23,11 +23,11 @@
 #include <windows.h>
 #endif
 
-#include "StarDraw.hpp"
 #include "StarWin.hpp"
 #include "SysInfo.hpp"
 #include "Math.hpp"
 #include "FileLoader.hpp"
+#include "Module.hpp"
 #include "config.h"
 
 std::string
@@ -93,7 +93,7 @@ Module::fillPos(Gtk::ComboBoxText* pos)
 
 void
 Module::setupParam(const Glib::RefPtr<Gtk::Builder>& builder
-            , StarDraw* starDraw
+            , StarWin* starWin
             , const char* colorId
             , const char* fontId
             , const char* posId
@@ -102,25 +102,25 @@ Module::setupParam(const Glib::RefPtr<Gtk::Builder>& builder
 {
     builder->get_widget(colorId, m_color);
     m_color->set_rgba(getPrimaryColor());
-    m_color->signal_color_set().connect([this,starDraw] {
+    m_color->signal_color_set().connect([this,starWin] {
         setPrimaryColor(m_color->get_rgba());
-        starDraw->compute();
+        starWin->update();
     });
 
     builder->get_widget(fontId, m_font);
     m_font->set_font_name(getFont().to_string());
-    m_font->signal_font_set().connect([this,starDraw] {
+    m_font->signal_font_set().connect([this,starWin] {
         Pango::FontDescription fontDesc{m_font->get_font_name()};
         setFont(fontDesc);
-        starDraw->compute();
+        starWin->update();
     });
 
     builder->get_widget(posId, m_pos);
     fillPos(m_pos);
     m_pos->set_active_id(getPosition());
-    m_pos->signal_changed().connect([this,starDraw] {
+    m_pos->signal_changed().connect([this,starWin] {
         setPosition(m_pos->get_active_id());
-        starDraw->compute();
+        starWin->update();
     });
 
 
@@ -131,7 +131,7 @@ Module::setupParam(const Glib::RefPtr<Gtk::Builder>& builder
 #   ifdef USE_PYTHON
     editButton->signal_clicked().connect(
         sigc::bind(
-            sigc::mem_fun(*this, &Module::edit), starDraw));
+            sigc::mem_fun(*this, &Module::edit), starWin));
     editLabel->set_text(getEditInfo());
 #   else
     editButton->set_sensitive(false);
@@ -154,11 +154,11 @@ Module::saveParam(bool save)
 
 
 std::shared_ptr<PyClass>
-Module::checkPyClass(StarDraw* starDraw, const char* className)
+Module::checkPyClass(StarWin* starWin, const char* className)
 {
 #   ifdef USE_PYTHON
     if (!m_pyClass || m_pyClass->isUpdated()) {
-        m_fileLoader = starDraw->getFileLoader();
+        m_fileLoader = starWin->getFileLoader();
         auto infoScript = m_pyWrapper->load(m_fileLoader, className, getPyScriptName());
         if (infoScript) {
             if (infoScript->hasFailed()) {
@@ -166,7 +166,7 @@ Module::checkPyClass(StarDraw* starDraw, const char* className)
                 if (m_pyClass) {
                     m_pyClass->setSourceModified();    // keep old version, but adjust modified so we don't popup again
                 }
-                starDraw->getWindow()->showMessage(infoScript->getError());
+                starWin->showMessage(infoScript->getError(), Gtk::MessageType::MESSAGE_ERROR);
             }
             else {
                 m_pyClass = infoScript;
@@ -181,7 +181,7 @@ Module::checkPyClass(StarDraw* starDraw, const char* className)
 }
 
 void
-Module::fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarDraw* starDraw)
+Module::fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarWin* starWin)
 {
     //Glib::ustring info;
     //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED) {
@@ -227,12 +227,12 @@ Module::fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio:
     auto basename = file->get_basename();
     if (basename == getPyScriptName()
      && event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
-        starDraw->compute();
+        starWin->update();
     }
 }
 
 void
-Module::edit(StarDraw* starDraw)
+Module::edit(StarWin* starWin)
 {
 #   ifdef USE_PYTHON
     auto localScriptFile = m_pyClass->getLocalPyFile();
@@ -248,7 +248,8 @@ Module::edit(StarDraw* starDraw)
         m_fileMonitor = localScriptFile->monitor_file(Gio::FileMonitorFlags::FILE_MONITOR_NONE);
         m_fileMonitor->signal_changed().connect(
             sigc::bind(
-                sigc::mem_fun(*this, &Module::fileChanged), starDraw));
+                sigc::mem_fun(*this, &Module::fileChanged)
+                , starWin));
     }
 #   ifdef __linux
     std::vector<std::string> args;
@@ -257,7 +258,7 @@ Module::edit(StarDraw* starDraw)
     GPid pid;
     auto msg = m_fileLoader->run(args, &pid);
     if (!msg.empty()) {
-        starDraw->showError(psc::fmt::format("Error {} opening editor", msg));
+        starWin->showMessage(psc::fmt::format("Error {} opening editor", msg), Gtk::MessageType::MESSAGE_ERROR);
     }
 #   endif
 #   ifdef  __WIN32__

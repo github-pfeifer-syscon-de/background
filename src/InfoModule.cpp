@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-#include "StarDraw.hpp"
+#include "StarWin.hpp"
 #include "Math.hpp"
 #include "config.h"
 
@@ -33,11 +33,11 @@ InfoModule::getPyScriptName()
 
 
 int
-InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     auto infoFont = getFont();
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, pyClassName);
+    auto pyClass = checkPyClass(starWin, pyClassName);
     if (!pyClass) {
         std::cout << "InfoModule::getHeight no Class!" << std::endl;
         return 0;
@@ -45,7 +45,7 @@ InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDr
     auto fontName = infoFont.to_string();
     auto height = static_cast<int>(pyClass->invokeMethod("getHeight", ctx, fontName));
     if (pyClass->hasFailed()) {
-        starDraw->showError(pyClass->getError());
+        starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         height = 0;
     }
     return height;
@@ -71,19 +71,19 @@ InfoModule::getText(SysInfo& sysInfo)
 }
 
 void
-InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     getPrimaryColor(ctx);
     auto infoFont = getFont();
     SysInfo sysInfo;
     auto netInfo = sysInfo.netInfo();
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, pyClassName);
+    auto pyClass = checkPyClass(starWin, pyClassName);
     if (pyClass) {
         auto font = infoFont.to_string();
         pyClass->invokeMethod("draw", ctx, font, netInfo);
         if (pyClass->hasFailed()) {
-            starDraw->showError(pyClass->getError());
+            starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         }
     }
     else {
@@ -99,7 +99,7 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw
 }
 
 void
-InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
+InfoModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin)
 {
-    Module::setupParam(builder, starDraw, "infoColor", "infoFont", "infoPos", "editInfo", "infoLabel");
+    Module::setupParam(builder, starWin, "infoColor", "infoFont", "infoPos", "editInfo", "infoLabel");
 }

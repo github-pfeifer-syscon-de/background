@@ -167,10 +167,7 @@ child_watch_cb( GPid     pid
 {
     //g_message("Child %" G_PID_FORMAT, pid);
     g_autoptr(GError) error = nullptr;
-    if (g_spawn_check_wait_status(status, &error)) {
-        // went fine ...
-    }
-    else {
+    if (!g_spawn_check_wait_status(status, &error)) {
         //StarWin* starWin = static_cast<StarWin*>(user_data);
         auto msg = Glib::ustring::sprintf("Open failed with %s", error->message);
         //if (starWin) {

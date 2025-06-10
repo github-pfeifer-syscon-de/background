@@ -7,6 +7,7 @@ AM_CPPFLAGS = \
         -DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(GENERICIMG_CFLAGS) \
 	$(PYTHON_CFLAGS) \
+	$(GARCON_CFLAGS) \
 	$(HARU_CFLAGS)
 
 #	-Wpedantic -pedantic-errors -Wsign-conversion e.g. breaks resource.c, report many headers impractical to use
@@ -38,6 +39,7 @@ background_LDADD =  \
 	$(GENERICIMG_LIBS) \
 	$(JSONGLIB1_LIBS) \
 	$(PYTHON_LIBS) \
+	$(GARCON_LIBS) \
 	$(HARU_LIBS)
 
 background_SOURCES = resources.c \
@@ -49,6 +51,8 @@ background_SOURCES = resources.c \
 	StarMountOperation.cpp \
 	StarDraw.hpp \
 	StarDraw.cpp \
+	StarPaint.hpp \
+	StarPaint.cpp \
 	Module.hpp \
 	Module.cpp \
 	InfoModule.hpp \
@@ -115,6 +119,11 @@ background_SOURCES = resources.c \
 if PYTHON
 background_SOURCES += PyWrapper.hpp \
 	PyWrapper.cpp
+endif
+
+if APPMENU
+background_SOURCES += AppMenu.hpp \
+	AppMenu.cpp
 endif
 
 if HAVE_PDF

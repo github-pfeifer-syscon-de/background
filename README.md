@@ -1,4 +1,4 @@
-# background
+# StarDesk
 a live star desktop background
 (if you expect to see pictures of neil degrasse tyson i'm sorry,
 this was not my intention).
@@ -23,6 +23,41 @@ And as a side effect, some insight might be easier to gain
 at a somewhat smaller scale...
 
 Depends on genericImg see there for build instructions.
+
+## Running
+
+There are two separate modi how to run this program.
+Without any parameter the program runs in interactive mode.
+A window is opened that displays the described infos,
+changes can be made by right clicking on the content.
+
+Alternativly this can be run in daemon mode with
+either the option -d or --daemon.
+In this case a placeholder window is opened
+that gives access to a application menu.
+The image is updated by the desktop enviroment.
+As there is no common convention for this setting,
+it might help to search some suggestions on the web.
+(But be warned the image stays if the program is terminated,
+i suggest playing "i will always be in a club in 1973 ... "
+so you check a instance of the program is running before
+trusting the displayed time).
+
+### Find config-name for Xfce4
+
+On the first start in daemaon-mode
+the setting desktopBackground in background.conf
+is created. Most likely this will not work, so you have
+to find the correct setting by running
+```
+xfconf-query -c xfce4-desktop -m
+```
+in a terminal and changing the background
+by the config dialog of the desktop enviroment,
+this will print the settings name used for this.
+So the correct settings name can be modified for
+the desktopBackground setting (after -p).
+The placeholder $img and will be replaced with the image file.
 
 ## Infos
 

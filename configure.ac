@@ -37,6 +37,16 @@ AS_IF([test "x$with_python" != "xno"], [
 
 AM_CONDITIONAL([PYTHON], [test "x$with_python" != "xno"])
 
+
+AC_ARG_WITH([appmenu], AS_HELP_STRING([--with-appmenu], [Include a app-menu EXPERIMENTAL (based on garcon2, comes with xfce4)]))
+
+AS_IF([test "x$with_appmenu" == "xyes"], [
+    PKG_CHECK_MODULES([GARCON], [garcon-gtk3-1], [AC_DEFINE([USE_APPMENU], [1], [Using python])])
+])
+
+AM_CONDITIONAL([APPMENU], [test "x$with_appmenu" == "xyes"])
+
+
 AC_SEARCH_LIBS([HPDF_Page_BeginText], [hpdf], [USE_LIBHARU="true"])
 
 AM_CONDITIONAL([HAVE_PDF], [test x$USE_LIBHARU = xtrue])

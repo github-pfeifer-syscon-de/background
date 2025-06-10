@@ -33,9 +33,9 @@ public:
     explicit ClockModule(const ClockModule& orig) = delete;
     virtual ~ClockModule() = default;
 
-    int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) override;
-    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) override;
+    int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin) override;
+    void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin) override;
+    void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin) override;
     void saveParam(bool save) override;
     static constexpr auto RADIUS_KEY{"radius"};
     static constexpr auto FORMAT{"format"};
@@ -55,12 +55,12 @@ protected:
     void update();
     void drawRadialLine(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, bool emphasis, double outer);
     void drawHand(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int full, double outer, double width);
-    void displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw);
-    void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center);
+    void displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin);
+    void displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin, bool center);
     Glib::RefPtr<Pango::Layout> createLayout(const Cairo::RefPtr<Cairo::Context>& ctx);
 
     Glib::ustring getEffectiveFormat();
-    void installFont(StarDraw* starDraw);
+    void installFont(StarWin* starDraw);
 
     Gtk::Scale* m_clockRadius;
     Gtk::Entry* m_clockFormat;

@@ -31,7 +31,7 @@ class PyWrapper;
 class PyClass;
 #endif
 
-class StarDraw;
+class StarWin;
 
 class Module
 {
@@ -45,9 +45,9 @@ public:
     explicit Module(const Module& orig) = delete;
     virtual ~Module() = default;
 
-    virtual int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
-    virtual void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw) = 0;
-    virtual void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw) = 0;
+    virtual int getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin) = 0;
+    virtual void display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin) = 0;
+    virtual void setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin) = 0;
     std::string getName();  // used as config group name
     Gdk::RGBA getPrimaryColor();
     void setPrimaryColor(const Gdk::RGBA& primColor);
@@ -56,8 +56,8 @@ public:
     void setPosition(const Glib::ustring& position);
     Pango::FontDescription getFont();
     void setFont(Pango::FontDescription& descr);
-    void edit(StarDraw* starDraw);
-    void fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarDraw* starDraw);
+    void edit(StarWin* starWin);
+    void fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarWin* starWin);
     virtual Glib::ustring getPyScriptName() = 0;
     Glib::ustring getEditInfo();
     void stopMonitor();
@@ -72,9 +72,9 @@ public:
 
 protected:
     void fillPos(Gtk::ComboBoxText* pos);
-    std::shared_ptr<PyClass> checkPyClass(StarDraw* starDraw, const char* className);
+    std::shared_ptr<PyClass> checkPyClass(StarWin* starWin, const char* className);
     void setupParam(const Glib::RefPtr<Gtk::Builder>& builder
-            , StarDraw* starDraw
+            , StarWin* starWin
             , const char* colorId
             , const char* fontId
             , const char* posId

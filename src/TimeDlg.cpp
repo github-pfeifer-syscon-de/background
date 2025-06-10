@@ -27,11 +27,11 @@
 
 TimeDlg::TimeDlg(BaseObjectType* cobject
                 , const Glib::RefPtr<Gtk::Builder>& builder
-                , StarDraw* starDraw)
+                , StarWin* starWin)
 : Gtk::Dialog(cobject)
-, m_starDraw{starDraw}
+, m_starWin{starWin}
 {
-    auto geoPos = m_starDraw->getGeoPosition();
+    auto geoPos = m_starWin->getGeoPosition();
     builder->get_widget("longitude", m_longitude);
     m_longitude->set_value(geoPos.getLonDegrees());
     m_longitude->signal_value_changed().connect(sigc::mem_fun(*this, &TimeDlg::on_time_changed));
@@ -75,32 +75,32 @@ TimeDlg::on_time_changed()
     //          << " M " << m_spinM->get_value()
     //          << " date " << localNow.format_iso8601() << std::endl;
     auto geoPos = getGeoPosition();
-    m_starDraw->update(localNow.to_utc(), geoPos);
+    m_starWin->update(localNow.to_utc(), geoPos);
 }
 
 void
 TimeDlg::on_response(int response_id)
 {
     if (response_id == Gtk::RESPONSE_OK) {
-        m_starDraw->setGeoPosition(getGeoPosition());
+        m_starWin->setGeoPosition(getGeoPosition());
     }
     Gtk::Dialog::on_response(response_id);
 }
 
 void
-TimeDlg::show(StarDraw* starDraw)
+TimeDlg::show(StarWin* starWin)
 {
     auto builder = Gtk::Builder::create();
     try {
-        auto appl = starDraw->getWindow()->getBackgroundAppl();
+        auto appl = starWin->getBackgroundAppl();
         builder->add_from_resource(appl->get_resource_base_path() + "/time-dlg.ui");
         TimeDlg* timeDialog;
-        builder->get_widget_derived("TimeDlg", timeDialog, starDraw);
+        builder->get_widget_derived("TimeDlg", timeDialog, starWin);
         //auto icon = Gdk::Pixbuf::create_from_resource(appl->get_resource_base_path() + "/background.png");
         //paramDialog->set_logo(icon);
-        timeDialog->set_transient_for(*starDraw->getWindow());
+        timeDialog->set_transient_for(*starWin);
         if (timeDialog->run() == Gtk::RESPONSE_OK) {
-            starDraw->savePosition();
+            starWin->savePosition();
         }
         timeDialog->hide();
         delete timeDialog;

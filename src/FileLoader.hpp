@@ -42,7 +42,7 @@ private:
     Glib::ustring m_startPath;
 };
 
-// best use with Ascii/UTF-8
+// best use with Ascii/UTF-8, otherwise your get a bunch of bytes
 class LineReader
 {
 public:

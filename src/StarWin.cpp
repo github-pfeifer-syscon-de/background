@@ -18,12 +18,22 @@
 
 #include <cmath>
 #include <iostream>
+#include <StringUtils.hpp>
+#include <psc_format.hpp>
 
 #include "StarWin.hpp"
 #include "StarDraw.hpp"
 #include "BackgroundApp.hpp"
 #include "StarMountOperation.hpp"
 #include "FileLoader.hpp"
+#include "StarPaint.hpp"
+#include "KeyConfig.hpp"
+#include "ParamDlg.hpp"
+#include "TimeDlg.hpp"
+#include "FileLoader.hpp"
+#ifdef USE_APPMENU
+#include "AppMenu.hpp"
+#endif
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
@@ -37,9 +47,22 @@ StarWin::StarWin(BaseObjectType* cobject
     auto pix = Gdk::Pixbuf::create_from_resource(m_backAppl->get_resource_base_path() + "/background.png");
     set_icon(pix);
 
-    builder->get_widget_derived("drawingArea", m_drawingArea, this);
-    set_decorated(false);
-    maximize();
+    setupConfig();
+    m_fileLoader = std::make_shared<FileLoader>(backAppl->get_exec_path());
+    m_starPaint = std::make_shared<StarPaint>(this);
+    if (m_backAppl->isDaemon()) {
+        add_action("preferences", sigc::mem_fun(*this, &StarWin::on_menu_param));
+        add_action("time", sigc::mem_fun(*this, &StarWin::on_menu_time));
+        update();
+    }
+    else {
+        builder->get_widget_derived("drawingArea", m_drawingArea, this);
+        set_decorated(false);
+        maximize();
+#       ifdef USE_APPMENU
+        m_appMenu = std::make_shared<AppMenu>();
+#       endif
+    }
     updateTimer();
     signal_hide().connect([this] {
         if (m_timer.connected()) {
@@ -47,6 +70,118 @@ StarWin::StarWin(BaseObjectType* cobject
         }
     });
 }
+
+
+void
+StarWin::loadConfig()
+{
+    if (!m_config) {
+        m_config = std::make_shared<KeyConfig>(CONFIG_NAME);
+    }
+    else {
+        try {
+            m_config->getConfig()->load_from_file(m_config->getConfigName());
+        }
+        catch (const Glib::FileError& exc) {
+            std::cerr << "Cound not read " << exc.what() << " config " << CONFIG_NAME << " (it may not yet exist and will be created)." << std::endl;
+        }
+    }
+}
+
+void
+StarWin::setupConfig()
+{
+    loadConfig();
+    std::string cfg = getGlobeConfigName();
+    // since it is more convenient to use the location we saved for glglobe load&save it from there
+    //   but this keeps the risk of overwriting the coordinates (if you change them on both sides...)
+    try {
+        auto cfgFile = Gio::File::create_for_path(cfg);
+        if (!cfgFile->query_exists()) {
+            Glib::ustring msg("No config found, please enter your position.");
+            showMessage(msg);
+            on_menu_time();
+        }
+        else {
+            auto config = std::make_shared<Glib::KeyFile>();
+            if (config->load_from_file(cfg, Glib::KEY_FILE_NONE)
+             && config->has_group(GRP_GLGLOBE_MAIN)) {
+                if (config->has_key(GRP_GLGLOBE_MAIN, LATITUDE_KEY))
+                    m_geoPos.setLatDegrees(config->get_double(GRP_GLGLOBE_MAIN, LATITUDE_KEY));
+                if (config->has_key(GRP_GLGLOBE_MAIN, LONGITUDE_KEY))
+                    m_geoPos.setLonDegrees(config->get_double(GRP_GLGLOBE_MAIN, LONGITUDE_KEY));
+            }
+        }
+    }
+    catch (const Glib::Error &ex) {
+        auto msg = Glib::ustring::sprintf("Error %s loading %s", ex.what(), cfg);
+        showMessage(msg, Gtk::MessageType::MESSAGE_ERROR);
+    }
+}
+
+std::string
+StarWin::getGlobeConfigName()
+{
+    // share config with glglobe as we already have coordinates
+    auto fullPath = Glib::canonicalize_filename("glglobe.conf", Glib::get_user_config_dir());
+    //std::cout << "using config " << fullPath << std::endl;
+    return fullPath;
+}
+
+void
+StarWin::saveConfig()
+{
+    try {
+        m_config->saveConfig();
+    }
+    catch (const Glib::Error &ex) {
+        auto msg = Glib::ustring::sprintf("Error %s saving config", ex.what());
+        showMessage(msg, Gtk::MessageType::MESSAGE_ERROR);
+    }
+}
+
+void
+StarWin::savePosition()
+{
+    // handle glglobe&background config
+    std::string cfg = getGlobeConfigName();
+    try {
+        auto config = std::make_shared<Glib::KeyFile>();
+        auto cfgFile = Gio::File::create_for_path(cfg);
+        if (cfgFile->query_exists()) {     // do load as file may contains other stuff
+            config->load_from_file(cfg, Glib::KEY_FILE_NONE);
+        }
+        config->set_double(GRP_GLGLOBE_MAIN, LATITUDE_KEY, m_geoPos.getLatDegrees());
+        config->set_double(GRP_GLGLOBE_MAIN, LONGITUDE_KEY, m_geoPos.getLonDegrees());
+        config->save_to_file(cfg);
+    }
+    catch (const Glib::Error &ex) {
+        auto msg = Glib::ustring::sprintf("Error %s saving %s", ex.what(), cfg);
+        showMessage(msg, Gtk::MessageType::MESSAGE_ERROR);
+    }
+}
+
+void
+StarWin::on_menu_param()
+{
+	ParamDlg::show(this);
+    update();
+}
+
+void
+StarWin::on_menu_time()
+{
+    if (m_drawingArea) {
+        m_drawingArea->setUpdateBlocked(true); // as we want to shift time block default updates
+    }
+	TimeDlg::show(this);
+    if (m_drawingArea) {
+        m_drawingArea->setUpdateBlocked(false);
+    }
+    update();      // reset to default view
+}
+
+
 
 BackgroundApp*
 StarWin::getBackgroundAppl()
@@ -61,24 +196,140 @@ StarWin::updateTimer()
     // aim for next minute change,
     //  with some extra to prevent a underrun
     //  (overall there seems rather be a chance to overshoot especially with load)
-    uint32_t intervalMinutes = 1;
-    if (m_drawingArea) {
-        intervalMinutes = m_drawingArea->getIntervalMinutes();
-    }
-    auto delay = (intervalMinutes * 60000u + 50u) - static_cast<unsigned int>(dateTime.get_seconds() * 1000.0);
+    uint32_t intervalMinutes = getIntervalMinutes();
+    auto delay = (intervalMinutes * 60000u + 20u) - static_cast<unsigned int>(dateTime.get_seconds() * 1000.0);
     m_timer = Glib::signal_timeout().connect(
-            sigc::mem_fun(*this, &StarWin::timeoutHandler),
-            delay);
+            sigc::mem_fun(*this, &StarWin::updatePeriodic)
+            , delay);
 }
 
 bool
-StarWin::timeoutHandler()
+StarWin::updatePeriodic()
 {
-    if (m_drawingArea) {
-        m_drawingArea->compute();
-    }
+    auto now = Glib::DateTime::create_now_utc();
+    auto pos = getGeoPosition();
+    update(now, pos);   // dont use update() to avoid delay
     updateTimer();
     return false;
+}
+
+void
+StarWin::update()
+{
+    if (m_timerUpdate.connected()) {
+        m_timerUpdate.disconnect();
+    }
+    // delay updating in case of rapid config changes
+    m_timerUpdate = Glib::signal_timeout().connect(
+        [this] {
+            auto now = Glib::DateTime::create_now_utc();
+            auto pos = getGeoPosition();
+            update(now, pos);
+            return false;
+        }, 100);
+}
+
+void
+StarWin::split(const std::string &line, char delim, std::vector<std::string> &ret)
+{
+    size_t pos = 0;
+    while (pos < line.length()) {
+        size_t next = line.find(delim, pos);
+        if (next != std::string::npos) {
+            auto fld = line.substr(pos, next - pos);
+            ret.push_back(fld);
+            ++next;
+        }
+        else {
+            if (pos < line.length()) {
+                size_t end = line.length();
+                if (line.at(end-1) == '\n') {
+                    --end;
+                }
+                if (end - pos > 0) {
+                    auto fld = line.substr(pos, end - pos);
+                    ret.push_back(fld);
+                }
+            }
+            break;
+        }
+        pos = next;
+    }
+}
+
+void
+StarWin::update(Glib::DateTime now, GeoPosition& pos)
+{
+    if (m_backAppl->isDaemon()) {
+        auto screen = Gdk::Screen::get_default();
+        int width = screen->get_width();
+        int height = screen->get_height();
+        auto image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
+        Layout layout(width, height);
+        auto ctx = Cairo::Context::create(image);
+        m_starPaint->drawImage(ctx, now, pos, layout);
+        // create new
+        auto dateTime = now.format("%F_%H%M%S%f");  // build a long name, as updates work only when filename changes e.g. from settings dialog
+        auto fileName = psc::fmt::format("{}{}.png", IMAGE_PREFIX, dateTime);
+        auto localDir = m_fileLoader->getLocalDir();
+        auto temp = localDir->get_child(fileName);
+        //std::cout << "Temp " << temp->get_path() << std::endl;
+        image->write_to_png(temp->get_path());
+        std::vector<std::string> cmds;
+        cmds.reserve(16);
+        auto cmd = m_config->getString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY);
+        split(cmd, ' ', cmds);
+        if (cmds.empty()) {
+            cmds.push_back("/usr/bin/xfconf-query");
+            cmds.push_back("-c");
+            cmds.push_back("xfce4-desktop");
+            cmds.push_back("-p");
+            cmds.push_back("/backdrop/screen0/monitor1/workspace0/last-image");
+            cmds.push_back("-s");
+            cmds.push_back(DESKTOP_BACKGR_IMAGE);
+            std::function<std::string(const std::string& item)> lambda =
+                [] (const std::string& item) -> auto
+                {
+                    return item;
+                };
+            cmd = StringUtils::concat(cmds, std::string(" "), lambda);
+            m_config->setString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY, cmd);
+            saveConfig();
+            showMessage(Glib::ustring::sprintf("A config to change the desktop background was not found, a default for Xfce was created you need to adapt it most likely (see %s).", CONFIG_NAME));
+        }
+        for (uint32_t i = 0; i < cmds.size(); ++i) {
+            if (cmds[i] == DESKTOP_BACKGR_IMAGE) {
+                cmds[i] = temp->get_path();
+            }
+        }
+        GPid pid;
+        m_fileLoader->run(cmds, &pid);
+        cleanUp(localDir, fileName);
+    }
+    else {
+        m_drawingArea->update(now, pos);
+    }
+}
+
+// remove any leftover files
+void
+StarWin::cleanUp(Glib::RefPtr<Gio::File>& dir, const std::string& keepName)
+{
+    auto cancel = Gio::Cancellable::create();
+    auto enumer = dir->enumerate_children(cancel);
+    while (true) {
+        auto fileInfo = enumer->next_file();
+        if (!fileInfo) {
+            break;
+        }
+        if (fileInfo->get_file_type() == Gio::FileType::FILE_TYPE_REGULAR
+         && StringUtils::startsWith(fileInfo->get_name(), IMAGE_PREFIX)
+         && StringUtils::endsWith(fileInfo->get_name(), ".png")
+         && fileInfo->get_name() != keepName) {
+            auto file = dir->get_child(fileInfo->get_name());
+            file->remove();
+        }
+    }
 }
 
 
@@ -101,7 +352,7 @@ StarWin::on_mount(Glib::RefPtr<Gio::AsyncResult>& result)
                 std::vector<std::string> args;
                 args.push_back(arg0);
                 args.push_back(mount->get_root()->get_uri());
-                auto msg = m_drawingArea->getFileLoader()->run(args, &m_pid);
+                auto msg = m_starPaint->getFileLoader()->run(args, &m_pid);
                 if (!msg.empty()) {
                     showMessage(
                           Glib::ustring::sprintf("Open %s failed with %s", arg0, msg)
@@ -215,10 +466,44 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
         pMenuPopup->append(*cancel);
     }
 
+	auto mparam = Gtk::make_managed<Gtk::MenuItem>("_Parameter", true);
+	mparam->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_param));
+	pMenuPopup->append(*mparam);
+
+	auto mtime = Gtk::make_managed<Gtk::MenuItem>("_Timeshift&Position", true);
+	mtime->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_time));
+	pMenuPopup->append(*mtime);
+
+
+	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
+	mabout->signal_activate().connect(sigc::mem_fun(*m_backAppl, &BackgroundApp::on_action_about));
+	pMenuPopup->append(*mabout);
+
+
+#   ifdef USE_APPMENU
+	auto mapps = Gtk::make_managed<Gtk::MenuItem>("_Apps", true);
+    mapps->signal_activate().connect(
+        sigc::bind(
+              sigc::mem_fun(*m_appMenu.get(), &AppMenu::on_menu_show)
+            , this));
+    pMenuPopup->append(*mapps);
+	//m_appMenu->addMenu(pMenuPopup);
+#   endif
+
+	auto mclose = Gtk::make_managed<Gtk::MenuItem>("_Close", true);
+	mclose->signal_activate().connect(sigc::mem_fun(*this, &StarWin::do_close));
+	pMenuPopup->append(*mclose);
+
     //auto mounts = m_volumeMonitor->get_mounts();
     //for (auto mount : mounts) {
     //    std::cout << "Mount " << mount->get_name() << std::endl;
     //}
+}
+
+void
+StarWin::do_close()
+{
+    hide(); // terminates app as well
 }
 
 void
@@ -227,5 +512,29 @@ StarWin::showMessage(const Glib::ustring& msg, Gtk::MessageType msgType)
     Gtk::MessageDialog messagedialog(*this, msg, false, msgType);
     messagedialog.run();
     messagedialog.hide();
+}
+
+GeoPosition
+StarWin::getGeoPosition()
+{
+    return m_geoPos;
+}
+
+void
+StarWin::setGeoPosition(const GeoPosition& geoPos)
+{
+    m_geoPos = geoPos;
+}
+
+int
+StarWin::getIntervalMinutes()
+{
+    return m_config->getInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, 1);
+}
+
+void
+StarWin::setIntervalMinutes(int intervalMinutes)
+{
+    return m_config->setInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
 }
 

@@ -207,7 +207,7 @@ test_read()
     return true;
 }
 
-// active if function is getting used
+// activate if function is getting used
 //static bool
 //test_read2()
 //{

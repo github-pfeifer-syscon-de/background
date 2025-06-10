@@ -23,7 +23,7 @@
 #endif
 
 #include "ClockModule.hpp"
-#include "StarDraw.hpp"
+#include "StarWin.hpp"
 #include "Math.hpp"
 #include "FileLoader.hpp"
 #include "config.h"
@@ -43,11 +43,11 @@ ClockModule::createLayout(const Cairo::RefPtr<Cairo::Context>& ctx)
 }
 
 int
-ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     int analogHeight{},digitalHeight{};
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, pyClassName);
+    auto pyClass = checkPyClass(starWin, pyClassName);
     if (!pyClass) {
         std::cout << "ClockModule::getHeight no Class!" << std::endl;
         return 0;
@@ -55,7 +55,7 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
     if (isDisplayAnalog()) {
         analogHeight = static_cast<int>(pyClass->invokeMethod("getAnalogHeight", ctx, getRadius()));
         if (pyClass->hasFailed()) {
-            starDraw->showError(pyClass->getError());
+            starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
             analogHeight = 0;
         }
     }
@@ -64,7 +64,7 @@ ClockModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starD
         auto fontName = fontDesc.to_string();
         digitalHeight = static_cast<int>(pyClass->invokeMethod("getDigitalHeight", ctx, fontName, getFormat()));
         if (pyClass->hasFailed()) {
-            starDraw->showError(pyClass->getError());
+            starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
             digitalHeight = 0;
         }
     }
@@ -182,7 +182,7 @@ ClockModule::drawHand(const Cairo::RefPtr<Cairo::Context>& ctx, int value, int f
 // this was kept for reference the drawing was migrated
 //    to python to allow more flexibility
 void
-ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+ClockModule::displayAnalog(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     ctx->save();
     ctx->translate(getRadius(), getRadius());
@@ -217,7 +217,7 @@ ClockModule::getEffectiveFormat()
 }
 
 void
-ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw, bool center)
+ClockModule::displayDigital(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin, bool center)
 {
     auto pangoLayout = createLayout(ctx);
     if (!center) {
@@ -238,11 +238,11 @@ ClockModule::getPyScriptName()
 }
 
 void
-ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDraw)
+ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     getPrimaryColor(ctx);
 #   ifdef USE_PYTHON
-    auto pyClass = checkPyClass(starDraw, pyClassName);
+    auto pyClass = checkPyClass(starWin, pyClassName);
     if (!pyClass) {
         std::cout << "ClockModule::display no Class!" << std::endl;
         return;
@@ -254,7 +254,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 #       ifdef USE_PYTHON
         pyClass->invokeMethod("drawAnalog", ctx, getRadius());
         if (pyClass->hasFailed()) {
-            starDraw->showError(pyClass->getError());
+            starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         }
 #       else
         displayAnalog(ctx, starDraw);
@@ -269,7 +269,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
         auto fontName= clockFont.to_string();
         pyClass->invokeMethod("drawDigital", ctx, fontName, fmt, isDisplayAnalog() ? getRadius() : 0.0);
         if (pyClass->hasFailed()) {
-            starDraw->showError(pyClass->getError());
+            starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         }
 #       else
         displayDigital(ctx, starDraw, isDisplayAnalog());
@@ -278,45 +278,45 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarDraw* starDra
 }
 
 void
-ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarDraw* starDraw)
+ClockModule::setupParam(const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin)
 {
-    Module::setupParam(builder, starDraw, "clockColor", "clockFont", "clockPos", "editClock", "clockLabel");
-    m_fileLoader = starDraw->getFileLoader();
+    Module::setupParam(builder, starWin, "clockColor", "clockFont", "clockPos", "editClock", "clockLabel");
+    m_fileLoader = starWin->getFileLoader();
 
     builder->get_widget("clockRadius", m_clockRadius);
     m_clockRadius->set_value(getRadius());
-    m_clockRadius->signal_value_changed().connect([this,starDraw] {
+    m_clockRadius->signal_value_changed().connect([this,starWin] {
         setRadius(m_clockRadius->get_value());
-        starDraw->compute();
+        starWin->update();
     });
 
     builder->get_widget("clockFormat", m_clockFormat);
     m_clockFormat->set_text(getFormat());
-    m_clockFormat->signal_changed().connect([this,starDraw] {
+    m_clockFormat->signal_changed().connect([this,starWin] {
         setFormat(m_clockFormat->get_text());
-        starDraw->compute();
+        starWin->update();
     });
 
     builder->get_widget("checkAnalog", m_displayAnalog);
     builder->get_widget("checkDigital", m_displayDigital);
     m_displayAnalog->set_active(isDisplayAnalog());
     m_displayDigital->set_active(isDisplayDigital());
-    m_displayAnalog->signal_clicked().connect([this,starDraw] {
+    m_displayAnalog->signal_clicked().connect([this,starWin] {
         update();
         setDisplayAnalog(m_displayAnalog->get_active());
-        starDraw->compute();
+        starWin->update();
     });
-    m_displayDigital->signal_clicked().connect([this,starDraw] {
+    m_displayDigital->signal_clicked().connect([this,starWin] {
         update();
         setDisplayDigital(m_displayDigital->get_active());
-        starDraw->compute();
+        starWin->update();
     });
     update();
 
     builder->get_widget("installFont", m_installFont);
     m_installFont->signal_clicked().connect(
         sigc::bind(
-            sigc::mem_fun(*this, &ClockModule::installFont), starDraw));
+            sigc::mem_fun(*this, &ClockModule::installFont), starWin));
 
 }
 
@@ -341,9 +341,9 @@ ClockModule::saveParam(bool save)
 }
 
 void
-ClockModule::installFont(StarDraw* starDraw)
+ClockModule::installFont(StarWin* starWin)
 {
-    std::shared_ptr<FileLoader> fileLoader = starDraw->getFileLoader();
+    std::shared_ptr<FileLoader> fileLoader = starWin->getFileLoader();
     const char* FONT_FILE{"DSEG14Modern-Regular.ttf"};
     auto file = fileLoader->findFile(FONT_FILE);
     Glib::ustring msg;
@@ -351,7 +351,7 @@ ClockModule::installFont(StarDraw* starDraw)
 #       ifdef __WIN32__
         auto path = file->get_path();
         // the installed font doesn't appear in local\AppData\Microsoft\Windows\Fonts
-        //    nor in font list ... but it works...
+        //    nor in font list ... but it works...for session
         int ret = AddFontResourceExA(path.c_str(), 0, 0);
         if (ret == 0) {
             msg =  Glib::ustring::sprintf("Font was not added %s", path);
@@ -380,6 +380,6 @@ ClockModule::installFont(StarDraw* starDraw)
         msg = Glib::ustring::sprintf("The source %s was not found.", FONT_FILE);
     }
     if (!msg.empty()) {
-        starDraw->showError(msg);
+        starWin->showMessage(msg, Gtk::MessageType::MESSAGE_ERROR);
     }
 }
