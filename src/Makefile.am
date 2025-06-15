@@ -113,19 +113,25 @@ background_SOURCES = resources.c \
 	MessierLoader.cpp \
 	ParamDlg.hpp \
 	ParamDlg.cpp \
+	Renderer.hpp \
+	Renderer.cpp \
 	TimeDlg.hpp \
 	TimeDlg.cpp
 
 if PYTHON
-background_SOURCES += PyWrapper.hpp \
+background_SOURCES += \
+	PyWrapper.hpp \
 	PyWrapper.cpp
 endif
 
 if APPMENU
-background_SOURCES += AppMenu.hpp \
+background_SOURCES += \
+	AppMenu.hpp \
 	AppMenu.cpp
 endif
 
-if HAVE_PDF
-background_SOURCES +=
+if PDF_LIBHARU
+background_SOURCES += \
+	HaruRenderer.hpp \
+	HaruRenderer.cpp
 endif

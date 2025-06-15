@@ -32,6 +32,7 @@
 #include "InfoModule.hpp"
 #include "CalendarModule.hpp"
 #include "StarWin.hpp"
+#include "Renderer.hpp"
 
 #include "StarPaint.hpp"
 
@@ -72,13 +73,12 @@ StarPaint::cluster(const std::vector<NamedPoint>& points, double distance)
 }
 
 void
-StarPaint::draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_messier(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
-    ctx->save();
+    renderer->save();
     auto starDesc = getStarFont();
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(starDesc);
-    int width, height;
+    auto text = renderer->createText(starDesc);
+    //double width, height;
     auto messiers = m_messier->getMessiers();
     const auto messierVMagMin = getMessierVMagMin();
     std::vector<NamedPoint> points;
@@ -97,8 +97,10 @@ StarPaint::draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
             }
         }
 	}
-    auto clusterRadius{layout.getHeight() / 75.0};
+    const auto messierRadius{layout.getMin() / MESSIER_FACTOR};
+    const auto clusterRadius{layout.getMin() / CLUSTER_FACTOR};
 #   ifdef DEBUG
+    std::cout << "messierRadius " << messierRadius << " fix " << MESSIER_RADIUS << std::endl;
     std::cout << "StarPaint::draw_messier"
               << " height " <<  layout.getHeight()
               << " dist " <<  clusterRadius << std::endl;
@@ -110,39 +112,30 @@ StarPaint::draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
     for (auto& cluster : clusters) {
         double xMax(-layout.getWidth()),yMax(-layout.getHeight());
         for (auto& point : cluster.getMagPoints()) {
-            ctx->save();
-            ctx->translate(point.getX() - MESSIER_RADIUS, point.getY() - MESSIER_RADIUS);
-            auto gradient = Cairo::RadialGradient::create(MESSIER_RADIUS, MESSIER_RADIUS, 0.0, MESSIER_RADIUS, MESSIER_RADIUS, MESSIER_RADIUS); // the queue word here is concentric
             auto brightness = Math::mix(TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW, (point.getVmagnitude() - 4.0) / 3.0);
-            gradient->add_color_stop_rgba(0.0, brightness, brightness, brightness, 1.0);   // this is stop, r, g, b, a
-            gradient->add_color_stop_rgba(1.0, brightness, brightness, brightness, 0.0);   // fade difuse
-            ctx->rectangle(0.0, 0.0, MESSIER_RADIUS*2.0, MESSIER_RADIUS*2.0);
-            ctx->clip();
-            ctx->set_source(gradient);
-            ctx->paint();
-            ctx->restore();
-            xMax = std::max(xMax, point.getX() + MESSIER_RADIUS);
-            yMax = std::max(yMax, point.getY() + MESSIER_RADIUS);
+            RenderColor start(brightness, brightness, brightness, 1.0);
+            RenderColor stop(brightness, brightness, brightness, 0.0);
+            renderer->diffuseDot(point.getX(), point.getY(), messierRadius, start, stop);
+            xMax = std::max(xMax, point.getX() + messierRadius);
+            yMax = std::max(yMax, point.getY());
         }
-        ctx->set_source_rgb(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
-        pangoLayout->set_text(cluster.getName());
-        pangoLayout->get_pixel_size(width, height);
-        ctx->move_to( xMax + MESSIER_RADIUS + 1.0
-                    , yMax - static_cast<double>(height) / 2.0);   //
-        pangoLayout->show_in_cairo_context(ctx);
+        RenderColor textColor(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
+        renderer->setSource(textColor);
+        text->setText(cluster.getName());
+        renderer->showText(text, xMax, yMax, TextAlign::LeftTop);
     }
-    ctx->restore();
+    renderer->restore();
 }
 
 void
-StarPaint::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_planets(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
-    ctx->save();
     auto starDesc = getStarFont();
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(starDesc);
-    int width, height;
+    auto text = renderer->createText(starDesc);
     Planets planets;
+    const auto planetRadius{layout.getMin() / PLANET_FACTOR};
+    RenderColor grayEmph(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
+    RenderColor grayText(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
 	for (auto& planet : planets.getOtherPlanets()) {
 #       ifdef DEBUG
         std::cout << "StarPaint::draw_planets " << planet->getName() << std::endl;
@@ -151,22 +144,17 @@ StarPaint::draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDa
 	    auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
 	    if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
-            ctx->arc(p.getX() - PLANET_RADIUS, p.getY() - PLANET_RADIUS, PLANET_RADIUS, 0.0, Math::TWO_PI);
-            ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
-            ctx->fill();
-            ctx->set_source_rgb(TEXT_GRAY_MID, TEXT_GRAY_MID, TEXT_GRAY_MID);
-            pangoLayout->set_text(Glib::ustring::sprintf("%s %.1fAU", planet->getName(), raDec->getDistanceAU()));
-            pangoLayout->get_pixel_size(width, height);
-            ctx->move_to( p.getX() + 4.0
-                        , p.getY() - static_cast<double>(height) / 2.0);   //
-            pangoLayout->show_in_cairo_context(ctx);
+            renderer->setSource(grayEmph);
+            renderer->dot(p.getX(), p.getY(), planetRadius);
+            renderer->setSource(grayText);
+            text->setText(Glib::ustring::sprintf("%s %.1fAU", planet->getName(), raDec->getDistanceAU()));
+            renderer->showText(text, p.getX() + planetRadius, p.getY(), TextAlign::LeftTop);
 	    }
 	}
-    ctx->restore();
 }
 
 void
-StarPaint::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_sun(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     auto raDec = Sun::position(jd);
     //std::cout << "Sun ra " << raDec->getRaDegrees() << " dec " << raDec->getDecDegrees() << std::endl;
@@ -174,37 +162,32 @@ StarPaint::draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& 
     //std::cout << "Sun az " << azAlt->getAzimutDegrees() << " az " << azAlt->getAltitudeDegrees() << std::endl;
     if (azAlt->isVisible()) {
         auto p = azAlt->toScreen(layout);
-        ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW);
-        ctx->arc(p.getX(), p.getY(), SUN_MOON_RADIUS, 0.0, Math::TWO_PI);
-        ctx->fill();
+        RenderColor sunColor(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW);
+        renderer->setTrueSource(sunColor);
+        renderer->dot(p.getX(), p.getY(), getSunMoonRadius(layout));
     }
 }
 
 void
-StarPaint::draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_moon(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     auto raDec = Moon::position(jd);
     auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
     if (azAlt->isVisible()) {
         Moon moon;
-        ctx->save();
         auto p = azAlt->toScreen(layout);
-        ctx->translate(p.getX(), p.getY());
-        moon.showPhase(jd, ctx, SUN_MOON_RADIUS);
-        ctx->restore();
+        renderer->showPhase(moon.getPhase(jd), p.getX(), p.getY(), getSunMoonRadius(layout));
     }
 }
 
 
 void
-StarPaint::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_milkyway(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
+    double lineWidth = getLineWidth(layout);
+    renderer->setLineWidth(lineWidth);
     for (auto poly : m_milkyway->getBounds()) {
-        ctx->begin_new_path();
-        int intens = poly->getIntensity();
-        double dintens = 0.1 + (double)intens / 20.0;
-        ctx->set_source_rgb(dintens, dintens, 0.25 + dintens);
-        ctx->set_line_width(1.0);
+        //renderer->beginNewPath(); this is important if we decide to only partly draw the shapes
         std::list<std::shared_ptr<AzimutAltitude>> azAlts;  // saving intermediate saves us recalculation
         bool anyVisible = false;
         for (auto raDec : poly->getPoints()) {
@@ -212,24 +195,31 @@ StarPaint::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianD
             azAlts.push_back(azAlt);
             anyVisible |= azAlt->isVisible();
         }
-        uint32_t skipped = 0;
+        uint32_t skipped{};
         if (anyVisible) {       // do not draw if outside
+            int intens = poly->getIntensity();
+            double dintens = 0.1 + (double)intens / 20.0;
+            RenderColor milkyColor(dintens, dintens, 0.25 + dintens);
+            renderer->setTrueSource(milkyColor);
             bool move = true;
+            //std::cout << "Starting poly" << std::endl;
             for (auto azAlt : azAlts) {
-                if (azAlt->isVisible()) { // stop drawing beyond horizont, with some additional to allow closing
+                //if (azAlt->isVisible()) { // stop drawing beyond horizont, with some additional to allow closing
                     auto p = azAlt->toScreen(layout);
                     if (move) {
-                        ctx->move_to(p.getX(), p.getY());
+                        //std::cout << "  move " << p.getX() << " y " << p.getY() << std::endl;
+                        renderer->moveTo(p.getX(), p.getY());
                         move = false;
                     }
                     else {
-                        ctx->line_to(p.getX(), p.getY());
+                        //std::cout << "  line " << p.getX() << " y " << p.getY() << std::endl;
+                        renderer->lineTo(p.getX(), p.getY());
                     }
-                }
-                else {
-                    move = true;
-                    ++skipped;
-                }
+                //}
+                //else {
+                //    move = true;
+                //    ++skipped;
+                //}
             }
         }
         else {
@@ -245,67 +235,90 @@ StarPaint::draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianD
         //    so we stick to some abstraction
         //ctx->close_path();
         //ctx->fill();
-        ctx->stroke();
+        renderer->stroke();
     }
     auto raDec = m_milkyway->getGalacticCenter();
     auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
     if (azAlt->isVisible()) {
-        ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+        RenderColor centColor(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+        renderer->setSource(centColor);
         auto p = azAlt->toScreen(layout);
-        auto w = static_cast<double>(layout.getMin()) / 200.0;
-        ctx->move_to(p.getX()-w,p.getY());
-        ctx->line_to(p.getX()+w,p.getY());
-        ctx->move_to(p.getX(),p.getY()-w);
-        ctx->line_to(p.getX(),p.getY()+w);
-        ctx->set_line_width(1.0);
-        ctx->stroke();
-        ctx->move_to(p.getX()+w,p.getY()+w);
+        auto w = static_cast<double>(layout.getMin()) / (SUNMOON_FACTOR / 2.0);
+        renderer->setLineWidth(getLineWidth(layout));
+        renderer->moveTo(p.getX()-w,p.getY());
+        renderer->lineTo(p.getX()+w,p.getY());
+        renderer->moveTo(p.getX(),p.getY()-w);
+        renderer->lineTo(p.getX(),p.getY()+w);
+        renderer->stroke();
         auto starDesc = getStarFont();
-        auto pangoLayout = Pango::Layout::create(ctx);
-        pangoLayout->set_font_description(starDesc);
-        pangoLayout->set_text("Gal.cent.");
-        pangoLayout->show_in_cairo_context(ctx);
-
+        auto text = renderer->createText(starDesc);
+        text->setText("Gal.cent.");
+        renderer->showText(text, p.getX()+w, p.getY(), TextAlign::LeftTop);
     }
 }
 
 void
-StarPaint::draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_stars(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
-    ctx->set_source_rgb(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
+    RenderColor starColor(TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS, TEXT_GRAY_EMPHASIS);
+    renderer->setSource(starColor);
+    auto minStarRadius = static_cast<double>(layout.getMin()) / MIN_STAR_FACTOR;
+    auto maxStarRadius = static_cast<double>(layout.getMin()) / MAX_STAR_FACTOR;
     for (auto s : m_starFormat->getStars()) {
         auto raDec = s->getRaDec();
         auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
         if (azAlt->isVisible()) {
             auto p = azAlt->toScreen(layout);
-            auto rs = Math::mix(MAX_STAR_RADIUS, MIN_STAR_RADIUS, ((s->getVmagnitude() - 3.0) / 2.0));
+            auto rs = Math::mix(maxStarRadius, minStarRadius, ((s->getVmagnitude() - 3.0) / 2.0));
             //std::cout << "x " << p.getX() << " y " << p.getY() << " rs " << rs << "\n";
-            ctx->arc(p.getX(), p.getY(), rs, 0.0, Math::TWO_PI);
-            ctx->fill();
+            renderer->dot(p.getX(), p.getY(), rs);
         }
     }
 }
 
+double
+StarPaint::getLineWidth(const Layout& layout)
+{
+    auto lineWidth = static_cast<double>(layout.getMin()) / LINE_WIDTH_FACTOR;
+#   ifdef DEBUG
+    std::cout << "LineWidth " << lineWidth << std::endl;
+#   endif
+    return lineWidth;
+}
+
+double
+StarPaint::getSunMoonRadius(const Layout& layout)
+{
+    auto sunRadius = static_cast<double>(layout.getMin()) / SUNMOON_FACTOR;
+#   ifdef DEBUG
+    std::cout << "SunRadius " << sunRadius << " fix " << SUN_MOON_RADIUS << std::endl;
+#   endif
+    return sunRadius;
+}
 
 void
-StarPaint::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::draw_constl(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     auto starDesc = getStarFont();
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(starDesc);
-    int width, height;
-    pangoLayout->set_text("M");
-    pangoLayout->get_pixel_size(width, height);
+    auto text = renderer->createText(starDesc);
+    //double width, height;
+    //text->setText("M");
+    //text->getSize(width, height);
+    auto lineWidth = getLineWidth(layout);
     for (auto c : m_constlFormat->getConstellations()) {
         Point2D sum;
-        int count = 0;
         bool anyVisible = false;
         auto polylines = c->getPolylines();
+#       ifdef DEBUG
+        std::cout << "Constl " << c->getName() << std::endl;
+#       endif
+        uint32_t count{};
         for (auto l : polylines) {
             int prio = l->getWidth();
-            double gray = Math::mix(TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW, (prio - 1) / 3.0);
-            ctx->set_source_rgb(gray, gray, gray);
-            ctx->set_line_width((prio <= 1) ? 1.5 : 1.0);
+            auto gray = Math::mix(TEXT_GRAY_EMPHASIS, TEXT_GRAY_LOW, (prio - 1) / 3.0);
+            RenderColor grayColor(gray, gray, gray);
+            renderer->setSource(grayColor);
+            renderer->setLineWidth((prio <= 1) ? lineWidth * 1.5 : lineWidth);
             bool visible = false;
             for (auto raDec : l->getPoints()) {
                 auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
@@ -315,79 +328,78 @@ StarPaint::draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDat
             }
             if (visible) {
                 anyVisible = true;
+                bool first{true};
                 for (auto raDec : l->getPoints()) {
                     auto azAlt = geoPos.toAzimutAltitude(raDec, jd);
                     auto p = azAlt->toScreen(layout);
                     sum.add(p);
-                    if (count == 0) {
-                        ctx->move_to(p.getX(), p.getY());
+                    ++count;
+                    if (first) {
+                        renderer->moveTo(p.getX(), p.getY());
+                        first = false;
                     }
                     else {
-                        ctx->line_to(p.getX(), p.getY());
+                        renderer->lineTo(p.getX(), p.getY());
                     }
-                    ++count;
                 }
-                ctx->stroke();
+                renderer->stroke();
             }
         }
         if (anyVisible) {
-            ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+            RenderColor gray(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+            renderer->setSource(gray);
             double avgX = sum.getX() / (double)count;
             double avgY = sum.getY() / (double)count;
-            ctx->move_to(avgX, avgY);
-            pangoLayout->set_text(c->getName());
-            pangoLayout->show_in_cairo_context(ctx);
+            text->setText(c->getName());
+            renderer->showText(text, avgX, avgY, TextAlign::LeftTop);
         }
     }
 }
 
 void
-StarPaint::drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
+StarPaint::drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
+    renderer->save();
     const double r = layout.getMin() / 2.0;
-    auto grad = Cairo::RadialGradient::create((layout.getWidth()/2), (layout.getHeight()/2), r / 3.0, (layout.getWidth()/2), (layout.getHeight()/2), r);
+    auto grad = renderer->createRadialGradient((layout.getWidth()/2), (layout.getHeight()/2), r / 3.0, (layout.getWidth()/2), (layout.getHeight()/2), r);
     auto startColor = getStartColor();
     auto stopColor = getStopColor();
-    grad->add_color_stop_rgb(0.0, startColor.get_red(), startColor.get_green(), startColor.get_blue());
-    grad->add_color_stop_rgb(1.0, stopColor.get_red(), stopColor.get_green(), stopColor.get_blue());
-    ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
-    ctx->set_source(grad);
-    ctx->fill();
-    ctx->translate((layout.getWidth()/2), (layout.getHeight()/2));
-    ctx->arc(0.0, 0.0, r, 0.0, Math::TWO_PI);
-    ctx->clip();    // as we draw some lines beyond the horizon
+    grad->addColorStop(0.0, startColor);
+    grad->addColorStop(1.0, stopColor);
+    renderer->setSource(grad);
+    renderer->rectangle(layout.getXOffs(), layout.getYOffs(), layout.getWidth(), layout.getHeight());
+    renderer->fill();
+    renderer->translate((layout.getXOffs() + layout.getWidth()/2)
+                      , (layout.getYOffs() + layout.getHeight()/2));
+    renderer->circle(0.0, 0.0, r);
+    renderer->clip();    // as we draw some lines beyond the horizon
     if (isShowMilkyway()) {
-        draw_milkyway(ctx, jd, geoPos, layout);
+        draw_milkyway(renderer, jd, geoPos, layout);
     }
-    draw_constl(ctx, jd, geoPos, layout);
-    draw_stars(ctx, jd, geoPos, layout);
-    draw_moon(ctx, jd, geoPos, layout);
-    draw_sun(ctx, jd, geoPos, layout);
-    draw_planets(ctx, jd, geoPos, layout);
-    draw_messier(ctx, jd, geoPos, layout);
+    draw_constl(renderer, jd, geoPos, layout);
+    draw_stars(renderer, jd, geoPos, layout);
+    draw_moon(renderer, jd, geoPos, layout);
+    draw_sun(renderer, jd, geoPos, layout);
+    draw_planets(renderer, jd, geoPos, layout);
+    draw_messier(renderer, jd, geoPos, layout);
 
-    ctx->set_source_rgb(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+    RenderColor gray(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
+    renderer->setSource(gray);
     auto starFont = getStarFont();
     scale(starFont, 1.75);
-    auto pangoLayout = Pango::Layout::create(ctx);
-    pangoLayout->set_font_description(starFont);
-    pangoLayout->set_text("S");
-    int width, height;
-    pangoLayout->get_pixel_size(width, height);
-    ctx->move_to(0.0, r - height);
-    pangoLayout->show_in_cairo_context(ctx);
-    pangoLayout->set_text("E");
-    pangoLayout->get_pixel_size(width, height);
-    ctx->move_to(-r + width, 0.0);
-    pangoLayout->show_in_cairo_context(ctx);
-    pangoLayout->set_text("N");
-    pangoLayout->get_pixel_size(width, height);
-    ctx->move_to(0.0, -r + height);
-	pangoLayout->show_in_cairo_context(ctx);
-    pangoLayout->set_text("W");
-    pangoLayout->get_pixel_size(width, height);
-    ctx->move_to(r - width, 0.0);
-	pangoLayout->show_in_cairo_context(ctx);
+    auto text = renderer->createText(starFont);
+    //double width, height;
+    //text->getSize(width, height);
+    auto r1 = r - 1.0;   // avoid placing out of clipping
+    text->setText("S");
+    renderer->showText(text, 0.0, r1, TextAlign::LeftBottom);
+    text->setText("E");
+    renderer->showText(text, -r1, 0.0, TextAlign::LeftMid);
+    text->setText("N");
+	renderer->showText(text, 0.0, -r1, TextAlign::LeftTop);
+    text->setText("W");
+    renderer->showText(text, r1, 0.0, TextAlign::RightMid);
+    renderer->restore();
 }
 
 
@@ -575,7 +587,8 @@ StarPaint::drawImage(Cairo::RefPtr<Cairo::Context>& ctx
     JulianDate jd(now);
     //std::cout << std::fixed << "jd " << jd.getJulianDate() << std::endl;
     ctx->save();
-    drawSky(ctx, jd, pos, layout);
+    CairoRenderer cairoRenderer(ctx);
+    drawSky(&cairoRenderer, jd, pos, layout);
     ctx->restore();
 
     drawTop(ctx, layout, findModules(Module::POS_TOP));

@@ -34,6 +34,11 @@
 #ifdef USE_APPMENU
 #include "AppMenu.hpp"
 #endif
+#include <ImageFileChooser.hpp>
+#ifdef USE_PDF
+#include <HaruRenderer.hpp>
+#endif
+#include <Renderer.hpp>
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
@@ -51,8 +56,12 @@ StarWin::StarWin(BaseObjectType* cobject
     m_fileLoader = std::make_shared<FileLoader>(backAppl->get_exec_path());
     m_starPaint = std::make_shared<StarPaint>(this);
     if (m_backAppl->isDaemon()) {
+        iconify();
         add_action("preferences", sigc::mem_fun(*this, &StarWin::on_menu_param));
         add_action("time", sigc::mem_fun(*this, &StarWin::on_menu_time));
+#       ifdef USE_PDF
+        add_action("export", sigc::mem_fun(*this, &StarWin::exportPdf));
+#       endif
         update();
     }
     else {
@@ -171,17 +180,11 @@ StarWin::on_menu_param()
 void
 StarWin::on_menu_time()
 {
-    if (m_drawingArea) {
-        m_drawingArea->setUpdateBlocked(true); // as we want to shift time block default updates
-    }
+    m_updateBlocked = true;
 	TimeDlg::show(this);
-    if (m_drawingArea) {
-        m_drawingArea->setUpdateBlocked(false);
-    }
+    m_updateBlocked = false;
     update();      // reset to default view
 }
-
-
 
 BackgroundApp*
 StarWin::getBackgroundAppl()
@@ -206,9 +209,11 @@ StarWin::updateTimer()
 bool
 StarWin::updatePeriodic()
 {
-    auto now = Glib::DateTime::create_now_utc();
-    auto pos = getGeoPosition();
-    update(now, pos);   // dont use update() to avoid delay
+    if (!m_updateBlocked) {
+        auto now = Glib::DateTime::create_now_utc();
+        auto pos = getGeoPosition();
+        update(now, pos);
+    }
     updateTimer();
     return false;
 }
@@ -230,34 +235,6 @@ StarWin::update()
 }
 
 void
-StarWin::split(const std::string &line, char delim, std::vector<std::string> &ret)
-{
-    size_t pos = 0;
-    while (pos < line.length()) {
-        size_t next = line.find(delim, pos);
-        if (next != std::string::npos) {
-            auto fld = line.substr(pos, next - pos);
-            ret.push_back(fld);
-            ++next;
-        }
-        else {
-            if (pos < line.length()) {
-                size_t end = line.length();
-                if (line.at(end-1) == '\n') {
-                    --end;
-                }
-                if (end - pos > 0) {
-                    auto fld = line.substr(pos, end - pos);
-                    ret.push_back(fld);
-                }
-            }
-            break;
-        }
-        pos = next;
-    }
-}
-
-void
 StarWin::update(Glib::DateTime now, GeoPosition& pos)
 {
     if (m_backAppl->isDaemon()) {
@@ -275,10 +252,8 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
         auto temp = localDir->get_child(fileName);
         //std::cout << "Temp " << temp->get_path() << std::endl;
         image->write_to_png(temp->get_path());
-        std::vector<std::string> cmds;
-        cmds.reserve(16);
-        auto cmd = m_config->getString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY);
-        split(cmd, ' ', cmds);
+        std::string cmd = m_config->getString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY);
+        auto cmds = StringUtils::splitConsec(cmd, ' ');
         if (cmds.empty()) {
             cmds.push_back("/usr/bin/xfconf-query");
             cmds.push_back("-c");
@@ -538,3 +513,43 @@ StarWin::setIntervalMinutes(int intervalMinutes)
     return m_config->setInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
 }
 
+void
+StarWin::exportPdf()
+{
+#   ifdef USE_PDF
+    auto now = Glib::DateTime::create_now_utc();
+    auto pos = getGeoPosition();
+    auto dateTime = now.to_local().format("%F_%H:%M");
+    auto info = Glib::ustring::sprintf("%s lon %.1lf° lat %.1lf°", dateTime, pos.getLonDegrees(), pos.getLatDegrees());
+
+    JulianDate jd(now);
+    try {
+        HaruRenderer haruRenderer;
+        Layout layout = haruRenderer.getLayout();
+        auto screen = get_screen();
+        auto ref = std::min(screen->get_height(), screen->get_width());
+        // this is just a guess, since the display may appear somewhere else, but we can't tell
+        haruRenderer.setReference(ref);
+        auto starFont = m_starPaint->getStarFont();
+        m_starPaint->scale(starFont, 1.5);
+        auto infoTxt = haruRenderer.createText(starFont);
+        infoTxt->setText(info);
+        //std::cout << "layout " << layout.getWidth() << " height " << layout.getHeight() << std::endl;
+        //std::cout << "info " << info << " xOffs " << layout.getXOffs() << " height " << layout.getHeight() - layout.getYOffs() << std::endl;
+        haruRenderer.showText(infoTxt, layout.getXOffs(), layout.getYOffs() + (layout.getHeight() -  layout.getMin()) / 2.0, TextAlign::LeftBottom);
+        haruRenderer.setInvertY(true);      // as we work with cairo coordinates from here on
+        m_starPaint->drawSky(&haruRenderer, jd, pos, layout);
+        ImageFileChooser file_chooser(*this, true, {"pdf"});
+        if (file_chooser.run() == Gtk::ResponseType::RESPONSE_ACCEPT) {
+            haruRenderer.save(file_chooser.get_file()->get_path());
+        }
+    }
+    catch (const std::exception& ex) {
+        std::cout << "Error exporting " << ex.what() << std::endl;
+    }
+    catch (...) {
+        std::cout << "Any error when exporting!" << std::endl;
+    }
+
+#   endif
+}

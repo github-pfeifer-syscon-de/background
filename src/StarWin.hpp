@@ -82,8 +82,7 @@ protected:
     void on_mount(Glib::RefPtr<Gio::AsyncResult>& result);
     void on_eject(Glib::RefPtr<Gio::AsyncResult>& result);
     void cleanUp(Glib::RefPtr<Gio::File>&dir, const std::string& keepName);
-    void split(const std::string &line, char delim, std::vector<std::string> &ret);
-
+    void exportPdf();
     static constexpr auto IMAGE_PREFIX{"starDesk_"};
     static constexpr auto CONFIG_NAME{"background.conf"};
     static constexpr auto DESKTOP_BACKGR_IMAGE{"$img"};
@@ -108,6 +107,7 @@ private:
     Glib::RefPtr<Gio::Volume> m_activeVolume;   // e.g. the volume we are currently working on opening, ejecting...
     GPid m_pid;
     std::shared_ptr<StarPaint> m_starPaint;
+    bool m_updateBlocked{false};
 
 #   ifdef USE_APPMENU
     std::shared_ptr<AppMenu> m_appMenu;

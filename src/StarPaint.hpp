@@ -33,6 +33,7 @@ class ConstellationFormat;
 class BackgroundApp;
 class MessierLoader;
 class StarWin;
+class Renderer;
 
 class StarPaint
 {
@@ -45,11 +46,15 @@ public:
     static constexpr auto TEXT_GRAY{0.6};
     static constexpr auto TEXT_GRAY_MID{0.75};
     static constexpr auto TEXT_GRAY_EMPHASIS{0.9};
-    static constexpr auto SUN_MOON_RADIUS{7.0};
-    static constexpr auto PLANET_RADIUS{3.0};
-    static constexpr auto MAX_STAR_RADIUS{3.0};
-    static constexpr auto MIN_STAR_RADIUS{1.0};
-    static constexpr auto MESSIER_RADIUS{4.0};
+
+    static constexpr auto LINE_WIDTH_FACTOR{900.0};
+    static constexpr auto MIN_STAR_FACTOR{900.0};
+    static constexpr auto MAX_STAR_FACTOR{350.0};
+    static constexpr auto PLANET_FACTOR{300.0};
+    static constexpr auto MESSIER_FACTOR{300.0};
+    static constexpr auto CLUSTER_FACTOR{75.0};
+    static constexpr auto SUNMOON_FACTOR{200.0};
+
     static constexpr auto START_COLOR_KEY{"startColor"};
     static constexpr auto STOP_COLOR_KEY{"stopColor"};
     static constexpr auto STAR_FONT_KEY{"starFont"};
@@ -82,22 +87,24 @@ public:
             , const Glib::DateTime& now
             , GeoPosition& pos
             , Layout& layout);
+    void drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
 
 protected:
-    void draw_planets(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_sun(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_moon(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_stars(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_constl(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void drawSky(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_milkyway(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
-    void draw_messier(const Cairo::RefPtr<Cairo::Context>& ctx, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_planets(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_sun(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_moon(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_stars(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_constl(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_milkyway(Renderer* renderer ,const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
+    void draw_messier(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     std::vector<NamedPoint> cluster(const std::vector<NamedPoint>& points, double distance = 20.0);
 
     std::vector<PtrModule> findModules(const char* pos);
     void drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
     void drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
     void drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+    double getLineWidth(const Layout& layout);
+    double getSunMoonRadius(const Layout& layout);
 
 
 private:

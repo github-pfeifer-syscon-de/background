@@ -19,63 +19,13 @@
 
 #include "Moon.hpp"
 #include "Math.hpp"
+#include "Renderer.hpp"
 
 Moon::Moon()
 {
 
 }
 
-/**
- * @param radius
- * @param phase 0 right .. 1 center .. 2 left
- */
-void
-Moon::halfRight(const Cairo::RefPtr<Cairo::Context>& cr, double radius, double phase)
-{
-	double bezierCircApprox = BEZIER_APPROX * radius;
-	double phaseInv = 1.0 - phase;
-	double extend = radius + radius * phaseInv;
-	double radius2 = radius * 2.0;
-    cr->move_to(radius, 0.0);
-	cr->curve_to(radius + bezierCircApprox * phaseInv, 0.0,
-				extend, radius - bezierCircApprox,
-				extend, radius);
-	cr->curve_to(extend, radius + bezierCircApprox,
-				radius + bezierCircApprox * phaseInv, radius2,
-				radius, radius2);
-	// add fixed part
-	cr->curve_to(radius + bezierCircApprox, radius2,
-				radius2, radius + bezierCircApprox,
-				radius2, radius);
-	cr->curve_to(radius2, radius - bezierCircApprox,
-				radius + bezierCircApprox, 0.0,
-				radius, 0.0);
-	cr->close_path();
-}
-
-/**
- * is draw into rect of size and orgin in the top left
- */
-void
-Moon::showPhase(const JulianDate& jd, const Cairo::RefPtr<Cairo::Context>& cr, double radius)
-{
-	Phase phase = Moon::getPhase(jd);
-    cr->arc(radius, radius, radius, 0.0, Math::TWO_PI);
-	if (phase.isWanning()) {
-	    cr->set_source_rgb(0.6, 0.6, 0.6);
-	    cr->fill();
-	    cr->set_source_rgb(0.3, 0.3, 0.3);
-	    halfRight(cr, radius, 2.0 - (2.0 * phase.getPhase()));
-	    cr->fill();
-	}
-	else {
-	    cr->set_source_rgb(0.3, 0.3, 0.3);
-	    cr->fill();
-	    cr->set_source_rgb(0.6, 0.6, 0.6);
-	    halfRight(cr, radius, 2.0 * phase.getPhase());
-	    cr->fill();
-	}
-}
 
 double
 Moon::sind(double r)

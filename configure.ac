@@ -22,7 +22,7 @@ LT_INIT
 AC_CANONICAL_HOST
 AC_MSG_NOTICE([host_os $host_os])
 
-PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.4.3])
+PKG_CHECK_MODULES([GENERICIMG], [genericimg >= 0.4.4])
 
 dnl dont repeat dependies from genericimg
 dnl PKG_CHECK_MODULES([GTKMM], [gtkmm-3.0])
@@ -49,7 +49,7 @@ AM_CONDITIONAL([APPMENU], [test "x$with_appmenu" == "xyes"])
 
 AC_SEARCH_LIBS([HPDF_Page_BeginText], [hpdf], [USE_LIBHARU="true"])
 
-AM_CONDITIONAL([HAVE_PDF], [test x$USE_LIBHARU = xtrue])
+AM_CONDITIONAL([PDF_LIBHARU], [test x$USE_LIBHARU = xtrue])
 
 if test "x$USE_LIBHARU" = xtrue; then
     AC_DEFINE([USE_PDF], [1], [Using hpdf])

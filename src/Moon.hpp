@@ -29,19 +29,11 @@
 class Moon
 {
 public:
-    // https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%c3%a9zier-curves#27863181
-    // for mathematicians this is a approximation for all other people it is a circle segment
-    static constexpr auto BEZIER_APPROX = (4.0 * (std::sqrt(2.0) - 1.0) / 3.0);
 
     Moon();
     explicit Moon(const Moon& orig) = delete;
     virtual ~Moon() = default;
 
-
-    /**
-     * is draw into rect of size and orgin in the top left
-     */
-    void showPhase(const JulianDate& jd, const Cairo::RefPtr<Cairo::Context>& cr, double radius);
 
     //Low precision geocentric moon position (RA,DEC) from Astronomical Almanac page D22 (2017 ed)
     static std::shared_ptr<RaDec> position(const JulianDate& jd);
@@ -53,10 +45,5 @@ private:
     static double constrain(double d);
     static double sind(double r);
     static double cosd(double r);
-    /**
-     * @param radius
-     * @param phase 0 right .. 1 center .. 2 left
-     */
-    void halfRight(const Cairo::RefPtr<Cairo::Context>& cr, double radius, double phase);
 };
 

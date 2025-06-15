@@ -25,7 +25,7 @@
 class Phase
 {
 public:
-    explicit Phase(const Phase& orig) = default;
+    Phase(const Phase& orig) = default;
     virtual ~Phase() = default;
 
     Phase(double i);

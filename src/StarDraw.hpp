@@ -41,10 +41,6 @@ public:
     void update();
     void update(Glib::DateTime dateTime, GeoPosition& pos);
     void showError(const Glib::ustring& msg, Gtk::MessageType msgType = Gtk::MessageType::MESSAGE_INFO);
-    void setUpdateBlocked(bool updateBlocked)
-    {
-        m_updateBlocked = updateBlocked;
-    }
 
 protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
@@ -55,7 +51,6 @@ protected:
 
 private:
     Cairo::RefPtr<Cairo::ImageSurface> m_image;
-    bool m_updateBlocked{false};
     Glib::DateTime m_displayTimeUtc;
     StarWin* m_starWin;
     PtrStarPaint m_starPaint;

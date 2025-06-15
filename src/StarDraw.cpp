@@ -40,11 +40,10 @@ StarDraw::StarDraw(BaseObjectType* cobject
 void
 StarDraw::update()
 {
-    if (!m_updateBlocked) { // no default updating while dialog is showing
-        auto now = Glib::DateTime::create_now_utc();
-        auto pos = m_starWin->getGeoPosition();
-        update(now, pos);
-    }
+
+    auto now = Glib::DateTime::create_now_utc();
+    auto pos = m_starWin->getGeoPosition();
+    update(now, pos);
 }
 
 

@@ -28,6 +28,8 @@
 #include "Planets.hpp"
 #include "MessierLoader.hpp"
 #include "FileLoader.hpp"
+//#include "Phase.hpp"
+//#include "HaruRenderer.hpp"
 
 static constexpr auto expAz = 155.96;
 static constexpr auto expAlt = 69.0103;
@@ -207,6 +209,27 @@ test_read()
     return true;
 }
 
+// if you want to debug the phase display use this
+//static bool
+//test_pdf()
+//{
+//    auto pdfExport = std::make_shared<PdfExport>();
+//    auto page = std::make_shared<PdfPage>(pdfExport);
+////
+//    auto width = page->getWidth();
+//    auto height = page->getHeight();
+//    auto radius{(width - 40.0f) / 2.0f};
+//    Phase phase(0.5);
+//
+//    HaruRenderer haruRenderer;
+//    haruRenderer.translate(width / 2.0f, height / 2.0f);
+//    haruRenderer.showPhase(phase, 0.0, 0.0, radius);
+//
+//    haruRenderer.save("moon_phase.pdf");
+//
+//    return true;
+//}
+
 // activate if function is getting used
 //static bool
 //test_read2()
@@ -288,5 +311,8 @@ int main(int argc, char** argv)
     if (!test_read()) {
         return 7;
     }
+    //if (!test_pdf()) {
+    //    return 8;
+    //}
     return 0;
 }

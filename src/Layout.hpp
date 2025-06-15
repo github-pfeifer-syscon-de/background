@@ -22,15 +22,21 @@ class Layout
 {
 public:
     Layout(int _width, int _height);
-    explicit Layout(const Layout& orig) = delete;
+    Layout(const Layout& orig) = default;
     virtual ~Layout() = default;
 
     int getWidth() const;
     int getHeight() const;
     int getMin() const;
 
+    int getXOffs() const;
+    void setXOffs(int xOffs);
+    int getYOffs() const;
+    void setYOffs(int yOffs);
 private:
-    int width;
-    int height;
+    int m_width;
+    int m_height;
+    int m_xOffs{};
+    int m_yOffs{};
 };
 

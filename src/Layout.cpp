@@ -22,25 +22,47 @@
 
 
 Layout::Layout(int _width, int _height)
-: width{_width}
-, height{_height}
+: m_width{_width}
+, m_height{_height}
 {
 }
 
 int
 Layout::getWidth() const
 {
-    return width;
+    return m_width;
 }
 
 int
 Layout::getHeight() const
 {
-    return height;
+    return m_height;
 }
 
 int
 Layout::getMin() const
 {
-    return std::min(width, height);
+    return std::min(m_width, m_height);
+}
+
+int Layout::getXOffs() const
+{
+    return m_xOffs;
+}
+
+void Layout::setXOffs(int xOffs)
+{
+    m_xOffs = xOffs;
+}
+
+int
+Layout::getYOffs() const
+{
+    return m_yOffs;
+}
+
+void
+Layout::setYOffs(int yOffs)
+{
+    m_yOffs = yOffs;
 }

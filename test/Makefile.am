@@ -8,6 +8,7 @@ AM_CPPFLAGS = \
 	-DPACKAGE_SRC_DIR=\""$(srcdir)."\" \
 	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(GENERICIMG_CFLAGS) \
+	$(HARU_CFLAGS) \
 	-I ../src
 
 AM_CFLAGS= \
@@ -32,6 +33,10 @@ astro_test_LDADD =  \
 	../src/background-Messier.o \
 	../src/background-MessierLoader.o \
 	../src/background-FileLoader.o \
+	../src/background-Phase.o \
+	../src/background-Renderer.o \
+	../src/background-HaruRenderer.o \
+	$(HARU_LIBS) \
 	$(GENERICIMG_LIBS)
 
 check_PROGRAMS = astro_test
