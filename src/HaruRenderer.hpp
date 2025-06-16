@@ -29,13 +29,13 @@ class HaruGradient
 : public RenderGradient
 {
 public:
-    HaruGradient(const std::shared_ptr<PdfPage>& page);
+    HaruGradient(const std::shared_ptr<psc::pdf::PdfPage>& page);
     explicit HaruGradient(const HaruGradient& orig) = delete;
     virtual ~HaruGradient() = default;
     void addColorStop(double pos, RenderColor& rgba) override;
     void addColorStop(double pos, Gdk::RGBA& rgba) override;
 private:
-    std::shared_ptr<PdfPage> m_page;
+    std::shared_ptr<psc::pdf::PdfPage> m_page;
 
 };
 
@@ -43,10 +43,9 @@ class HaruText
 : public RenderText
 {
 public:
-    HaruText(const std::shared_ptr<PdfPage>& page
-            , const std::shared_ptr<PdfFont>& font
-            , float fontSize
-            , const Glib::RefPtr<Gio::CharsetConverter>& conv);
+    HaruText(const std::shared_ptr<psc::pdf::PdfPage>& page
+            , const std::shared_ptr<psc::pdf::PdfFont>& font
+            , float fontSize);
     explicit HaruText(const RenderText& orig) = delete;
     virtual ~HaruText() = default;
     void setText(const Glib::ustring& text) override;
@@ -56,12 +55,10 @@ public:
     double getHeight();
 
 private:
-    std::shared_ptr<PdfPage> m_page;
-    std::shared_ptr<PdfFont> m_font;
-    Glib::ustring m_text;
+    std::shared_ptr<psc::pdf::PdfPage> m_page;
+    std::shared_ptr<psc::pdf::PdfFont> m_font;
     std::string m_encoded;
     float m_fontSize;
-    Glib::RefPtr<Gio::CharsetConverter> m_conv;
 };
 
 class HaruRenderer
@@ -110,12 +107,11 @@ protected:
     void halfRight(double radius, double phase);
 
 private:
-    std::shared_ptr<PdfExport> m_pdfExport;
-    std::shared_ptr<PdfFont> m_font;
-    std::shared_ptr<PdfPage> m_page;
+    std::shared_ptr<psc::pdf::PdfExport> m_pdfExport;
+    std::shared_ptr<psc::pdf::PdfFont> m_font;
+    std::shared_ptr<psc::pdf::PdfPage> m_page;
     uint32_t m_points{};
     bool m_invertY{false};
-    Glib::RefPtr<Gio::CharsetConverter> m_conv;
     double m_reference{1024.0};
 };
 

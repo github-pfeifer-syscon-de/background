@@ -25,7 +25,7 @@
 #include "Math.hpp"
 
 
-HaruGradient::HaruGradient(const std::shared_ptr<PdfPage>& page)
+HaruGradient::HaruGradient(const std::shared_ptr<psc::pdf::PdfPage>& page)
 : RenderGradient()
 , m_page{page}
 {
@@ -43,15 +43,13 @@ HaruGradient::addColorStop(double pos, Gdk::RGBA& rgba)
 
 }
 
-HaruText::HaruText(const std::shared_ptr<PdfPage>& page
-                , const std::shared_ptr<PdfFont>& font
-                , float fontSize
-                , const Glib::RefPtr<Gio::CharsetConverter>& conv)
+HaruText::HaruText(const std::shared_ptr<psc::pdf::PdfPage>& page
+                , const std::shared_ptr<psc::pdf::PdfFont>& font
+                , float fontSize)
 : RenderText()
 , m_page{page}
 , m_font{font}
 , m_fontSize{fontSize}
-, m_conv{conv}
 {
 
 }
@@ -59,28 +57,7 @@ HaruText::HaruText(const std::shared_ptr<PdfPage>& page
 void
 HaruText::setText(const Glib::ustring& text)
 {
-    m_text = text;
-    if (m_conv) {
-        size_t size{m_text.bytes() + 16};   // expect single byte encodings, which reduce the size
-        std::vector<char> buf(size);
-        gsize out,read;
-        //std::cout << "Converting " << m_text  << std::endl;
-        Gio::ConverterResult res = m_conv->convert(
-                  reinterpret_cast<const void*>(m_text.data()), m_text.bytes()
-                , reinterpret_cast<void*>(&buf[0]), size
-                , Gio::ConverterFlags::CONVERTER_NO_FLAGS, read, out);
-        if (res == Gio::ConverterResult::CONVERTER_ERROR) {
-            std::cout << "Error " << static_cast<int>(res) << " charset " << m_conv->property_to_charset().get_value() << " converting" << std::endl;
-            out = 0;
-        }
-        std::string str(buf.data(), out);
-        //std::cout << "   to " << StringUtils::hexdump(str.c_str(), str.length()) << std::endl;
-        m_encoded = std::move(str);
-    }
-    else {
-        m_encoded = m_text; // we have no choice, or just Ascii hopefully
-    }
-
+    m_encoded = m_font->encodeText(text);
 }
 
 std::string
@@ -137,20 +114,10 @@ HaruText::getSize(double& width, double& height)
 
 HaruRenderer::HaruRenderer()
 : Renderer()
-, m_pdfExport{std::make_shared<PdfExport>()}
+, m_pdfExport{std::make_shared<psc::pdf::PdfExport>()}
 {
-    // Gio::Charsetconvert doesn't do anything just freaks out ...
-    g_autoptr(GError) err{};
-    auto gconv = g_charset_converter_new(ENCODING, "UTF-8", &err);  // "ISO-8859-15"
-    if (err) {
-        std::cout << "Error creating charset converter " << ENCODING << " " << err->message << std::endl;
-    }
-    else {
-        m_conv = Glib::wrap(gconv);
-        m_conv->set_use_fallback(true);
-    }
     m_font = m_pdfExport->createFontInternalWithEncoding(ENCODING);
-    m_page = std::make_shared<PdfPage>(m_pdfExport);
+    m_page = std::make_shared<psc::pdf::PdfPage>(m_pdfExport);
 #   ifdef DEBUG
     std::cout << "HaruRenderer::HaruRenderer" << std::endl;
 #   endif
@@ -272,7 +239,7 @@ HaruRenderer::createText(Pango::FontDescription& fontDesc)
     //std::cout << "Font realSize " << realSize
     //          << " factor " << factor
     //          << " fontSize " << fontSize << std::endl;
-    return std::make_shared<HaruText>(m_page, m_font, fontSize, m_conv);
+    return std::make_shared<HaruText>(m_page, m_font, fontSize);
 }
 
 void
