@@ -449,6 +449,11 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
 	mtime->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_time));
 	pMenuPopup->append(*mtime);
 
+#   ifdef USE_PDF
+ 	auto pdfExport = Gtk::make_managed<Gtk::MenuItem>("Pdf _Export", true);
+	pdfExport->signal_activate().connect(sigc::mem_fun(*this, &StarWin::exportPdf));
+	pMenuPopup->append(*pdfExport);
+#   endif
 
 	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
 	mabout->signal_activate().connect(sigc::mem_fun(*m_backAppl, &BackgroundApp::on_action_about));
