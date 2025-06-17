@@ -50,14 +50,14 @@ public:
     virtual ~HaruText() = default;
     void setText(const Glib::ustring& text) override;
     void getSize(double& width, double& height) override;
-    std::string getText();
+    Glib::ustring getText();
     float getFontSize();
     double getHeight();
 
 private:
     std::shared_ptr<psc::pdf::PdfPage> m_page;
     std::shared_ptr<psc::pdf::PdfFont> m_font;
-    std::string m_encoded;
+    Glib::ustring m_text;
     float m_fontSize;
 };
 
@@ -102,7 +102,7 @@ public:
     Layout getLayout();
     void setReference(double ref);
 
-    static constexpr auto ENCODING{"ISO8859-15"};
+    static constexpr auto ENCODING{"UTF-8"};
 protected:
     void halfRight(double radius, double phase);
 

@@ -57,13 +57,13 @@ HaruText::HaruText(const std::shared_ptr<psc::pdf::PdfPage>& page
 void
 HaruText::setText(const Glib::ustring& text)
 {
-    m_encoded = m_font->encodeText(text);
+    m_text = text;
 }
 
-std::string
+Glib::ustring
 HaruText::getText()
 {
-    return m_encoded;
+    return m_text;
 }
 
 float
@@ -90,12 +90,12 @@ HaruText::getSize(double& width, double& height)
     float fWidth{};
     float cs = m_page->getCharSpace();
     float ws = m_page->getWordSpace();
-    std::string txt = getText();
+    auto txt = getText();
     auto pdfBytes = reinterpret_cast<const HPDF_BYTE*>(txt.c_str());
     //std::cout << "cs " << cs << " ws " << ws << std::endl;
     auto avail = HPDF_Font_MeasureText(pdfFont
                          , pdfBytes
-                         , static_cast<HPDF_UINT>(txt.length())
+                         , static_cast<HPDF_UINT>(txt.bytes())
                          , m_page->getWidth()       /* width */
                          , m_fontSize               /* font_size */
                          , cs                       /* char_space */
@@ -116,7 +116,7 @@ HaruRenderer::HaruRenderer()
 : Renderer()
 , m_pdfExport{std::make_shared<psc::pdf::PdfExport>()}
 {
-    m_font = m_pdfExport->createFontInternalWithEncoding(ENCODING);
+    m_font = m_pdfExport->createFontTTFMatch("sans-serif", ENCODING, false);
     m_page = std::make_shared<psc::pdf::PdfPage>(m_pdfExport);
 #   ifdef DEBUG
     std::cout << "HaruRenderer::HaruRenderer" << std::endl;
