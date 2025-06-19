@@ -20,10 +20,12 @@
 #include <iomanip>
 #include <iostream>
 #include <exception>
+#include <KeyConfig.hpp>
 
 #include "config.h"
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
+#include "StarPaint.hpp"
 
 
 
@@ -46,30 +48,6 @@ StarOptionGroup::StarOptionGroup()
   add_entry(entry_remaining, m_remaining_list);
 }
 
-bool
-StarOptionGroup::on_pre_parse(Glib::OptionContext& /* context */, Glib::OptionGroup& /* group */)
-{
-    // This is called before the m_arg_* instances are given their values.
-    // You do not need to override this method. This is just here to show you how,
-    // in case you want to do any extra processing.
-#   ifdef DEBUG
-    std::cout << "on_pre_parse called" << std::endl;
-#   endif
-    return true;
-}
-
-bool
-StarOptionGroup::on_post_parse(Glib::OptionContext& /* context */, Glib::OptionGroup& /* group */)
-{
-    // This is called after the m_arg_* instances are given their values.
-    // You do not need to override this method. This is just here to show you how,
-    // in case you want to do any extra processing.
-#   ifdef DEBUG
-    std::cout << "on_post_parse called" << std::endl;
-#   endif
-    return true;
-}
-
 void
 StarOptionGroup::on_error(Glib::OptionContext& /* context */, Glib::OptionGroup& /* group */)
 {
@@ -82,12 +60,18 @@ BackgroundApp::BackgroundApp(int argc, char **argv)
 , m_exec{argv[0]}
 {
     Glib::OptionContext context;
-    context.set_main_group(m_group);
+    StarOptionGroup group;
+    context.set_main_group(group);
     try {
         context.parse(argc, argv);
+        m_daemon = group.m_arg_daemon;
     }
     catch (const Glib::Error& ex) {
         std::cout << "Exception " << ex.what() << " parsing options" << std::endl;
+    }
+    m_config = StarWin::createConfig();
+    if (!m_daemon) {
+        m_daemon = m_config->getBoolean(StarPaint::MAIN_GRP, DAEMON_KEY, false);
     }
 
     #ifdef DEBUG
@@ -107,7 +91,7 @@ BackgroundApp::createStarWindow()
     //}
     try {
         builder->add_from_resource(get_resource_base_path() + name);
-        builder->get_widget_derived("StarWin", starView, this);
+        builder->get_widget_derived("StarWin", starView, this, m_config);
     }
     catch (const Glib::Error &ex) {
         std::cerr << "Unable to load : " << name << " error " << ex.what() << std::endl;
@@ -140,7 +124,7 @@ BackgroundApp::on_activate()
 {
     // either on_activate is called (no args)
     StarWin* imageView = getOrCreateStarWindow(); // on instance shoud be sufficent
-    if (!m_group.m_arg_daemon) {
+    if (!isDaemon()) {
         imageView->set_keep_below(true);
     }
     imageView->show_all();
@@ -201,7 +185,7 @@ BackgroundApp::on_action_about() {
 bool
 BackgroundApp::isDaemon()
 {
-    return m_group.m_arg_daemon;
+    return m_daemon ;
 }
 
 void
@@ -228,7 +212,7 @@ BackgroundApp::on_startup()
     add_action("quit", sigc::mem_fun(*this, &BackgroundApp::on_action_quit));
     set_accel_for_action("app.quit", "<Ctrl>Q");
 
-    if (m_group.m_arg_daemon) {
+    if (isDaemon()) {
         auto refBuilder = Gtk::Builder::create();
         try {
             refBuilder->add_from_resource(get_resource_base_path() + "/app-menu.ui");

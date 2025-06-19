@@ -38,7 +38,8 @@ class StarWin
 public:
     StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , BackgroundApp* backAppl);
+        , BackgroundApp* backAppl
+        , std::shared_ptr<KeyConfig> config);
     explicit StarWin(const StarWin& orig) = delete;
     virtual ~StarWin() = default;
 
@@ -72,6 +73,8 @@ public:
     void update(Glib::DateTime dateTime, GeoPosition& pos);
     void on_menu_param();
     void on_menu_time();
+    static std::shared_ptr<KeyConfig> createConfig();
+    static void loadThisConfig(const std::shared_ptr<KeyConfig>& config);
 
 protected:
     std::string getGlobeConfigName();

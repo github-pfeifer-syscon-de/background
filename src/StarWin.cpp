@@ -42,9 +42,11 @@
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , BackgroundApp* backAppl)
+        , BackgroundApp* backAppl
+        , std::shared_ptr<KeyConfig> config)
 : Gtk::ApplicationWindow(cobject)
 , m_backAppl{backAppl}
+, m_config{config}
 , m_volumeMonitor{Gio::VolumeMonitor::get()}
 , m_cancelable{Gio::Cancellable::create()}
 {
@@ -81,26 +83,34 @@ StarWin::StarWin(BaseObjectType* cobject
 }
 
 
+std::shared_ptr<KeyConfig>
+StarWin::createConfig()
+{
+    auto config = std::make_shared<KeyConfig>(CONFIG_NAME);
+    loadThisConfig(config);
+    return config;
+}
+
+void
+StarWin::loadThisConfig(const std::shared_ptr<KeyConfig>& config)
+{
+    try {
+        config->getConfig()->load_from_file(config->getConfigName());
+    }
+    catch (const Glib::FileError& exc) {
+        std::cerr << "Cound not read " << exc.what() << " config " << CONFIG_NAME << " (it may not yet exist and will be created)." << std::endl;
+    }
+}
+
 void
 StarWin::loadConfig()
 {
-    if (!m_config) {
-        m_config = std::make_shared<KeyConfig>(CONFIG_NAME);
-    }
-    else {
-        try {
-            m_config->getConfig()->load_from_file(m_config->getConfigName());
-        }
-        catch (const Glib::FileError& exc) {
-            std::cerr << "Cound not read " << exc.what() << " config " << CONFIG_NAME << " (it may not yet exist and will be created)." << std::endl;
-        }
-    }
+    loadThisConfig(m_config);
 }
 
 void
 StarWin::setupConfig()
 {
-    loadConfig();
     std::string cfg = getGlobeConfigName();
     // since it is more convenient to use the location we saved for glglobe load&save it from there
     //   but this keeps the risk of overwriting the coordinates (if you change them on both sides...)

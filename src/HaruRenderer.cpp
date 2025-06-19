@@ -72,44 +72,13 @@ HaruText::getFontSize()
     return m_fontSize;
 }
 
-double
-HaruText::getHeight()
-{
-    auto pdfFont = m_font->getPdfFont();
-    double height = HPDF_Font_GetCapHeight(pdfFont);
-    // see https://stackoverflow.com/questions/42320887/hpdf-units-for-text-width-and-height
-    height = height / 1000.0 * getFontSize();   // 1000 suggested by doc for HPDF_Font_GetUnicodeWidth
-    return height;
-}
 
 void
 HaruText::getSize(double& width, double& height)
 {
-    auto pdfFont = m_font->getPdfFont();
-    height = getHeight();
-    float fWidth{};
-    float cs = m_page->getCharSpace();
-    float ws = m_page->getWordSpace();
-    auto txt = getText();
-    auto pdfBytes = reinterpret_cast<const HPDF_BYTE*>(txt.c_str());
-    //std::cout << "cs " << cs << " ws " << ws << std::endl;
-    auto avail = HPDF_Font_MeasureText(pdfFont
-                         , pdfBytes
-                         , static_cast<HPDF_UINT>(txt.bytes())
-                         , m_page->getWidth()       /* width */
-                         , m_fontSize               /* font_size */
-                         , cs                       /* char_space */
-                         , ws                       /* word_space */
-                         , HPDF_FALSE               /* wordwrap */
-                         , &fWidth);
-    width = fWidth;
-#   ifdef DEBUG
-    std::cout << "HaruText::getSize " << m_text
-              << " Width " << width
-              << " height " << height
-              << " avail " << avail << std::endl;
-#   endif
-    // = static_cast<int>(m_text.length() * 10);
+    m_font->setSize(getFontSize());
+    width = m_font->getTextWidth(m_page, m_text);
+    height = m_font->getCapHeight();
 }
 
 HaruRenderer::HaruRenderer()
@@ -290,9 +259,8 @@ HaruRenderer::showText(std::shared_ptr<RenderText>& text, double x, double y, Te
                 y -= height / 2.0;
                 break;
         }
-        m_page->setFont(m_font, haruText->getFontSize());
         // use as extra offset as we use externally the top, and here we reference the baseline
-        m_page->drawText(haruText->getText(), toX(x), toY(y));
+        m_page->drawText(haruText->getText(), m_font, toX(x), toY(y));
     }
     else {
         std::cout << "HaruRenderer::showText wrong instance given!" << std::endl;

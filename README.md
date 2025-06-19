@@ -32,12 +32,16 @@ A window is opened that displays the described infos,
 changes can be made by right clicking on the content.
 
 Alternativly this can be run in daemon mode with
-either the option -d or --daemon.
+either the option -d or --daemon
+(since desktops may be stubborn about starting a program with
+a parameter, this mode is also available when adding daemon=true
+to main config section).
 In this case a placeholder window is opened
 that gives access to a application menu.
 The image is updated by the desktop enviroment.
 As there is no common convention for this setting,
-it might help to search some suggestions on the web.
+it might help to search some suggestions on the web
+what command changes the background.
 (But be warned the image stays if the program is terminated,
 i suggest playing "i will always be in a club in 1973 ... "
 so you check a instance of the program is running before

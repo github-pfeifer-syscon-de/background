@@ -22,6 +22,8 @@
 
 #include <glibmm.h>
 
+class KeyConfig;
+
 class StarOptionGroup
 : public Glib::OptionGroup
 {
@@ -29,8 +31,6 @@ public:
     StarOptionGroup();
 
 protected:
-    bool on_pre_parse(Glib::OptionContext& context, Glib::OptionGroup& group) override;
-    bool on_post_parse(Glib::OptionContext& context, Glib::OptionGroup& group) override;
     void on_error(Glib::OptionContext& context, Glib::OptionGroup& group) override;
 
 
@@ -62,6 +62,9 @@ public:
     void on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint) override;
     void on_action_about();
     bool isDaemon();
+
+    static constexpr auto DAEMON_KEY{"daemon"};
+
 protected:
     StarWin* getOrCreateStarWindow();
     StarWin* createStarWindow();
@@ -69,8 +72,9 @@ protected:
 private:
     StarWin* m_starAppWindow{nullptr};
     Glib::ustring m_exec;
+    bool m_daemon{false};
+    std::shared_ptr<KeyConfig> m_config;
     //Glib::RefPtr<Gtk::Builder> m_builder;
-    StarOptionGroup m_group;
     void on_action_quit();
     void on_action_help();
 };
