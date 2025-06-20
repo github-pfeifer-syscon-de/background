@@ -77,8 +77,9 @@ void
 HaruText::getSize(double& width, double& height)
 {
     m_font->setSize(getFontSize());
-    width = m_font->getTextWidth(m_page, m_text);
-    height = m_font->getCapHeight();
+    m_page->setFont(m_font);
+    width = m_page->getTextWidth(m_text);
+    height = m_font->getAscent();
 }
 
 HaruRenderer::HaruRenderer()
@@ -86,7 +87,7 @@ HaruRenderer::HaruRenderer()
 , m_pdfExport{std::make_shared<psc::pdf::PdfExport>()}
 {
     m_font = m_pdfExport->createFontTTFMatch("sans-serif", ENCODING, false);
-    m_page = std::make_shared<psc::pdf::PdfPage>(m_pdfExport);
+    m_page = m_pdfExport->createPage();
 #   ifdef DEBUG
     std::cout << "HaruRenderer::HaruRenderer" << std::endl;
 #   endif
@@ -233,7 +234,6 @@ HaruRenderer::lineTo(double x, double y)
 void
 HaruRenderer::showText(std::shared_ptr<RenderText>& text, double x, double y, TextAlign textAlign)
 {
-
     auto haruText = std::dynamic_pointer_cast<HaruText>(text);
     if (haruText) {
 #       ifdef DEBUG
@@ -246,10 +246,10 @@ HaruRenderer::showText(std::shared_ptr<RenderText>& text, double x, double y, Te
         haruText->getSize(width, height);
         switch (textAlign) {
             case TextAlign::LeftTop:
-                y -= height;    // we want to align the top, so shift
+                y += height;    // we want to align the top, so shift
                 break;
             case TextAlign::LeftBottom:
-                y -= 2.0 * height;    // here we still in positive coordinates to make this visible, shift to center
+                //y -= height;    // here we still in positive coordinates to make this visible, shift to center
                 break;
             case TextAlign::LeftMid:
                 y -= height / 2.0;
@@ -260,7 +260,8 @@ HaruRenderer::showText(std::shared_ptr<RenderText>& text, double x, double y, Te
                 break;
         }
         // use as extra offset as we use externally the top, and here we reference the baseline
-        m_page->drawText(haruText->getText(), m_font, toX(x), toY(y));
+        m_page->setFont(m_font);
+        m_page->drawText(haruText->getText(), toX(x), toY(y));
     }
     else {
         std::cout << "HaruRenderer::showText wrong instance given!" << std::endl;
