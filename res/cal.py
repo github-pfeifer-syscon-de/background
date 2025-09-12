@@ -28,7 +28,7 @@ class Cal:
                 weekday=calendar.weekday(year, month, day)
                 if ((len(self.weeknums) == 0) or (weekday == 0)):
                     self.weeknums.append(datetime.date(year, month, day).isocalendar().week)
-                if (weekday == 0):
+                if (weekday == 0 and len(cols) > 0):
                      self.rows.append(cols)
                      cols=[]
             cols.append(day)
