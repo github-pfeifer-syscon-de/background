@@ -1,6 +1,6 @@
 /* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2023 RPf 
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ public:
     double getJulianDate() const;
     // to epoch
     double toJulianDateE2000centuries() const;
-    // to epoch 
+    // to epoch
     double toJulianDateE2000day() const;
 
     constexpr static auto S_PER_JULIAN_YEAR = 86400.0;

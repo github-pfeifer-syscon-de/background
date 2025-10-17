@@ -1,6 +1,6 @@
 /* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2023 RPf
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
  * angular coordinate system, used when it is about visibility
  *   e.g. for a specific time & place on earth
  *
- * @author RPf <gpl3@pfeifer-syscon.de>
  */
 class AzimutAltitude
 {
