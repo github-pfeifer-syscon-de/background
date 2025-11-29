@@ -73,8 +73,8 @@ Moon::constrain(double d)
 Phase
 Moon::getPhase(const JulianDate& jd)
 {
+    // see https://celestialprogramming.com/meeus-illuminated_fraction_of_the_moon.html
 	const double T = jd.toJulianDateE2000centuries();
-
 	const double T2 = T * T;
 	const double T3 = T2 * T;
 	const double T4 = T3 * T;

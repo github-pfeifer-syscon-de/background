@@ -1,6 +1,6 @@
 /* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4; coding: utf-8; -*-  */
 /*
- * Copyright (C) 2023 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2023 RPf 
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "JulianDate.hpp"
 
 JulianDate::JulianDate(const Glib::DateTime&  cal)
-: JulianDate(((double)cal.to_unix() / S_PER_JULIAN_YEAR) + JULIAN_1970_OFFS)
+: JulianDate(((double)cal.to_unix() / SEC_PER_JULIAN_DAY) + JULIAN_1970_OFFS)
 {
 }
 

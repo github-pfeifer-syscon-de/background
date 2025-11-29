@@ -36,6 +36,7 @@ astro_test_LDADD =  \
 	../src/background-Phase.o \
 	../src/background-Renderer.o \
 	../src/background-HaruRenderer.o \
+	../src/background-Moon.o \
 	$(HARU_LIBS) \
 	$(GENERICIMG_LIBS)
 

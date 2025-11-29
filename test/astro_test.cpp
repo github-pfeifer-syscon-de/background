@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 RPf <gpl3@pfeifer-syscon.de>
+ * Copyright (C) 2024 RPf
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 #include <cstdlib>
 #include <cmath>
 #include <StringUtils.hpp>
+#include <psc_format.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp> // pi ???
+#include <glm/trigonometric.hpp>  //radians
 
 #include "JulianDate.hpp"
 #include "GeoPosition.hpp"
@@ -28,7 +32,8 @@
 #include "Planets.hpp"
 #include "MessierLoader.hpp"
 #include "FileLoader.hpp"
-//#include "Phase.hpp"
+#include "Moon.hpp"
+#include "Phase.hpp"
 //#include "HaruRenderer.hpp"
 
 static constexpr auto expAz = 155.96;
@@ -209,6 +214,33 @@ test_read()
     return true;
 }
 
+static bool
+test_moon()
+{
+    Moon moon;
+    auto now = Glib::DateTime::create_now_utc();
+    JulianDate jd{now};
+    auto ph = moon.getPhase(jd);
+    std::cout << psc::fmt::format("moon phase {} ilum {}"
+                , ph.getPhase(), ph.getIlluminated())
+              << std::endl;
+
+    for (double i = 0; i < 60; i += 1.0){
+        JulianDate jdt(jd.getJulianDate() + i);
+        //auto a = std::fmod(i + glm::pi<double>(), 2.0 * glm::pi<double>()) / (2.0*glm::pi<double>());
+        //auto b = (1.0 + std::sin(i)) / 2.0;
+        auto ph = moon.getPhase(jdt);
+        auto a = ph.getPhase();
+        auto b = ph.getIlluminated();
+        std::cout << psc::fmt::format("day {:8.4f} phase {:8.4f} illum {:8.4f}"
+                    , i, a, b)
+                  << std::endl;
+
+    }
+
+    return true;
+}
+
 // if you want to debug the phase display use this
 //static bool
 //test_pdf()
@@ -288,7 +320,6 @@ int main(int argc, char** argv)
     //std::locale::global(std::locale("de_DE.ISO-8859-15@euro"));
     //std::cout << "Loc " << std::setlocale(LC_ALL, nullptr) << std::endl;
     std::setlocale(LC_ALL, "");      // make locale dependent, and make glib accept u8 const !!!
-    Glib::init();
     Gio::init();
     if (!test_azAlt()) {
         return 1;
@@ -314,5 +345,8 @@ int main(int argc, char** argv)
     //if (!test_pdf()) {
     //    return 8;
     //}
+    if (!test_moon()) {
+        return 9;
+    }
     return 0;
 }
