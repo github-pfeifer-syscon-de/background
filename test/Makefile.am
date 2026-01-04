@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(GENERICIMG_CFLAGS) \
 	$(HARU_CFLAGS) \
-	-I ../src
+	-I $(top_srcdir)/src/
 
 AM_CFLAGS= \
 	-Wall -Wpedantic

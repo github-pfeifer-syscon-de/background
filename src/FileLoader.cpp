@@ -23,6 +23,8 @@
 
 #include "FileLoader.hpp"
 
+#undef FILELOADER_DEBUG 
+
 FileLoader::FileLoader(const Glib::ustring& startPath)
 : m_startPath{startPath}
 {
@@ -32,7 +34,9 @@ Glib::RefPtr<Gio::File>
 FileLoader::findFile(const Glib::ustring& name)
 {
     auto execDir = Gio::File::create_for_path(m_startPath);
-    //std::cout << "FileLoader::findFile exc " << execDir->get_path() << std::endl;
+#   ifdef FILELOADER_DEBUG
+    std::cout << "FileLoader::findFile exc " << execDir->get_path() << std::endl;
+#   endif
     auto distDir = execDir->get_parent()->get_parent();
 #   ifdef __WIN32__
     distDir = distDir->get_parent();    // windows places the file in .libs
@@ -41,13 +45,17 @@ FileLoader::findFile(const Glib::ustring& name)
     std::string uname = name;
     auto fullPath = Glib::canonicalize_filename(uname, resDir);
     auto file = Gio::File::create_for_path(fullPath);
-    //std::cout << "FileLoader::findFile check local " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
+#   ifdef FILELOADER_DEBUG
+    std::cout << "FileLoader::findFile check local " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
+#   endif
     if (file->query_exists()) {
         return file;
     }
     fullPath = Glib::canonicalize_filename(uname, PACKAGE_DATA_DIR);
     file = Gio::File::create_for_path(fullPath);
-    //std::cout << "FileLoader::findFile check global " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
+#   ifdef FILELOADER_DEBUG
+    std::cout << "FileLoader::findFile check global " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
+#   endif
     if (file->query_exists()) {
         return file;
     }

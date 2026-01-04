@@ -125,3 +125,5 @@
 /test_clip.pdf
 /test_noclip.pdf
 /src/background
+/test/.deps/
+/compile_commands.json
