@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <iostream>
-
-#include <gtkmm.h>
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <iostream>
+#include <gtkmm.h>
 #include <cstdlib>
 #include <cstdio>
 #include <cstdarg>

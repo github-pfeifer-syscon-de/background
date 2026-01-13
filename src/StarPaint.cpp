@@ -195,7 +195,7 @@ StarPaint::draw_milkyway(Renderer* renderer, const JulianDate& jd, GeoPosition& 
             azAlts.push_back(azAlt);
             anyVisible |= azAlt->isVisible();
         }
-        uint32_t skipped{};
+        //uint32_t skipped{};
         if (anyVisible) {       // do not draw if outside
             int intens = poly->getIntensity();
             double dintens = 0.1 + (double)intens / 20.0;
