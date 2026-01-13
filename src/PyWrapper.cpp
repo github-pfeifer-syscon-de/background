@@ -147,9 +147,9 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
         auto compiledModified = compiledInfo->get_modification_date_time();
         auto marshallChange = Glib::DateTime::create_from_iso8601("2026-01-12T12:00:00Z");
 #       ifdef PYTHON_DEBUG
-        std::cout << "compiledModified" << compiledModified.format_iso8601() << std::endl;
-        std::cout << "marshallChange" << marshallChange.format_iso8601() << std::endl;
-        std::cout << "m_pySoureModified" << m_pySoureModified.format_iso8601() << std::endl;
+        std::cout << "compiledModified " << sourceBasename << " " << compiledModified.format_iso8601() << "\n"
+                  << "marshallChange   " << marshallChange.format_iso8601() << "\n"
+                  << "m_pySoureModified   " << m_pySoureModified.format_iso8601() << std::endl;
 #       endif
         if (compiledModified.compare(marshallChange) > 0        // if compile before the marshall changed avoid loading
          && compiledModified.compare(m_pySoureModified ) > 0) { // compiled is newer

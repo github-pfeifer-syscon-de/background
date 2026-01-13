@@ -42,10 +42,11 @@ The image is updated by the desktop enviroment.
 As there is no common convention for this setting,
 it might help to search some suggestions on the web
 what command changes the background.
-(But be warned the image stays if the program is terminated,
-i suggest playing "i will always be in a club in 1973 ... "
-so you check a instance of the program is running before
-trusting the displayed time).
+> [!WARNING]
+> But be warned the image stays if the program is terminated,
+> i suggest playing "i will always be in a club in 1973 ... "
+> so you check a instance of the program is running before
+> trusting the displayed time.
 
 ### Find config-name for Xfce4
 
