@@ -26,6 +26,8 @@
 #include "FileLoader.hpp"
 #include "PyWrapper.hpp"
 
+#undef PYTHON_DEBUG
+
 PyClass::PyClass(const std::string& obj, const std::string& src)
 : m_obj{obj}
 , m_src{src}
@@ -143,10 +145,12 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
     if (compiledPyc->query_exists()) {
         auto compiledInfo = compiledPyc->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
         auto compiledModified = compiledInfo->get_modification_date_time();
-        std::cout << "compiledModified" << compiledModified.format_iso8601() << std::endl;
         auto marshallChange = Glib::DateTime::create_from_iso8601("2026-01-12T12:00:00Z");
+#       ifdef PYTHON_DEBUG
+        std::cout << "compiledModified" << compiledModified.format_iso8601() << std::endl;
         std::cout << "marshallChange" << marshallChange.format_iso8601() << std::endl;
         std::cout << "m_pySoureModified" << m_pySoureModified.format_iso8601() << std::endl;
+#       endif
         if (compiledModified.compare(marshallChange) > 0        // if compile before the marshall changed avoid loading
          && compiledModified.compare(m_pySoureModified ) > 0) { // compiled is newer
             auto pcyPath = compiledPyc->get_path();
@@ -229,7 +233,7 @@ PyWrapper::PyWrapper()
     // https://docs.python.org/3/c-api/init_config.html#init-from-config offers many options but not telling the intention
     // showing path taken from https://github.com/msys2/MINGW-packages/issues/18984
     Py_Initialize(); // Initialize the Python Interpreter
-#   ifdef DEBUG
+#   ifdef PYTHON_DEBUG
     PyObject *sys_module = PyImport_ImportModule("sys");
     PyObject *sys_path = PyObject_GetAttrString(sys_module, "path");
     if (PyList_Check(sys_path)) {
