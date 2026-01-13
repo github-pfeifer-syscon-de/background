@@ -82,7 +82,7 @@ PyClass::compile(const Glib::RefPtr<Gio::File>& pyFile, const Glib::RefPtr<Gio::
         // Version 2 - Uses a binary format for floating point numbers
         // Version 3 - Support for object instancing and recursion
         // Version 4 - Current Version (as we use the files locally)
-        PyMarshal_WriteObjectToFile(pCodeObj, cfile, Py_MARSHAL_VERSION);
+        PyMarshal_WriteObjectToFile(pCodeObj, cfile, 1); // was Py_MARSHAL_VERSION
         fclose(cfile);
     }
     return pCodeObj;
@@ -143,7 +143,12 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
     if (compiledPyc->query_exists()) {
         auto compiledInfo = compiledPyc->query_info(G_FILE_ATTRIBUTE_TIME_MODIFIED);
         auto compiledModified = compiledInfo->get_modification_date_time();
-        if (compiledModified.compare(m_pySoureModified ) > 0) { // compiled is newer
+        std::cout << "compiledModified" << compiledModified.format_iso8601() << std::endl;
+        auto marshallChange = Glib::DateTime::create_from_iso8601("2026-01-12T12:00:00Z");
+        std::cout << "marshallChange" << marshallChange.format_iso8601() << std::endl;
+        std::cout << "m_pySoureModified" << m_pySoureModified.format_iso8601() << std::endl;
+        if (compiledModified.compare(marshallChange) > 0        // if compile before the marshall changed avoid loading
+         && compiledModified.compare(m_pySoureModified ) > 0) { // compiled is newer
             auto pcyPath = compiledPyc->get_path();
             FILE* cfile = std::fopen(pcyPath.c_str(), "rb");
             if (cfile) {

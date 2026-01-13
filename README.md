@@ -57,7 +57,7 @@ to find the correct setting by running
 xfconf-query -c xfce4-desktop -m
 ```
 in a terminal and changing the background
-by the config dialog of the desktop enviroment,
+by the config dialog of the desktop environment,
 this will print the settings name used for this.
 So the correct settings name can be modified for
 the desktopBackground setting (after -p).
@@ -94,10 +94,10 @@ to get a "classic" clock shape.
 The .py files are localed by default in /usr/share/background-program
 a user version can be created
 by using the -> Script -> Edit option from the parameter context menu
-(expects your desktop-enviroment has some editor for python files registered).
+(expects your desktop-environment has some editor for python files registered).
 As long as the dialog is shown,
 changes will be made visible when the file is saved.
-The modified version will be placed in $USER_HOME/.local/share/background
+The modified version will be placed in `$USER_HOME/.local/share/background`
 (if you want to know where your files are).
 If you modify the display function of modules remember to also
 adapt the getHeight function, this allows
@@ -105,6 +105,12 @@ the correct layout when multiple modules will share
 one position for example.
 The python function will be precompiled
 and place alongside the user version of the sources.
+
+One error may arise from the precompiled .pyc files in case of 
+a python version change, this was tried to be avoided by a workaround.
+But still it might help to remove the .pyc files from 
+`$USER_HOME/.local/share/background`
+in case of a stacktrace that ends somewhere into python. 
 
 #### Windows/Msys2
 
