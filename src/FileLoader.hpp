@@ -37,6 +37,8 @@ public:
     Glib::RefPtr<Gio::File> findFile(const Glib::ustring& name);
     Glib::RefPtr<Gio::File> getLocalDir();
     Glib::ustring run(const std::vector<std::string>& strArgs, GPid* pid);
+protected:
+    Glib::RefPtr<Gio::File> getResSrcPath(const std::string& execPath);
 
 private:
     Glib::ustring m_startPath;

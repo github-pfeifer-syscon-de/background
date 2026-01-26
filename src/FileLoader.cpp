@@ -23,7 +23,7 @@
 
 #include "FileLoader.hpp"
 
-#define FILELOADER_DEBUG 1
+#undef FILELOADER_DEBUG
 
 FileLoader::FileLoader(const Glib::ustring& startPath)
 : m_startPath{startPath}
