@@ -23,7 +23,7 @@
 
 #include "FileLoader.hpp"
 
-#undef FILELOADER_DEBUG 
+#define FILELOADER_DEBUG 1
 
 FileLoader::FileLoader(const Glib::ustring& startPath)
 : m_startPath{startPath}
@@ -33,15 +33,13 @@ FileLoader::FileLoader(const Glib::ustring& startPath)
 Glib::RefPtr<Gio::File>
 FileLoader::findFile(const Glib::ustring& name)
 {
-    auto execDir = Gio::File::create_for_path(m_startPath);
-#   ifdef FILELOADER_DEBUG
-    std::cout << "FileLoader::findFile exc " << execDir->get_path() << std::endl;
-#   endif
-    auto distDir = execDir->get_parent()->get_parent();
-#   ifdef __WIN32__
-    distDir = distDir->get_parent();    // windows places the file in .libs
-#   endif
-    auto resDir = Glib::canonicalize_filename("res", distDir->get_path());
+    //   build absolute executable path, see also -> Unit.cpp Dimension::getResSrcPath
+    auto exec = Glib::canonicalize_filename(m_startPath.c_str(), Glib::get_current_dir());
+    auto execFile = Gio::File::create_for_path(exec);
+    //   as PACKAGE_SRC_DIR is relative to executable resolve from path
+    auto srcPath = Glib::canonicalize_filename( PACKAGE_SRC_DIR, execFile->get_parent()->get_path());
+    //   from src get sibling res
+    auto resDir = Glib::canonicalize_filename( "../res", srcPath);
     std::string uname = name;
     auto fullPath = Glib::canonicalize_filename(uname, resDir);
     auto file = Gio::File::create_for_path(fullPath);
