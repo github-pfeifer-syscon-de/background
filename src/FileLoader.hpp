@@ -26,22 +26,22 @@
 class FileLoader
 {
 public:
-    FileLoader(const Glib::ustring& startPath);
+    FileLoader(Glib::StdStringView startPath);
     explicit FileLoader(const FileLoader& orig) = delete;
     virtual ~FileLoader() = default;
 
-    Glib::ustring find(const Glib::ustring& name);
+    Glib::ustring find(Glib::StdStringView name);
     [[deprecated("heavy heap usage, see LineReader,LineReaderEnc")]]
     static std::vector<Glib::ustring> readLines(const Glib::RefPtr<Gio::File>& file, size_t expected = 16, const Glib::ustring& encoding = "UTF-8", bool useException = false);
     static bool readFile(const Glib::RefPtr<Gio::File>& file, std::vector<char>& bytes);
-    Glib::RefPtr<Gio::File> findFile(const Glib::ustring& name);
+    Glib::RefPtr<Gio::File> findFile(Glib::StdStringView name);
     Glib::RefPtr<Gio::File> getLocalDir();
     Glib::ustring run(const std::vector<std::string>& strArgs, GPid* pid);
 protected:
     Glib::RefPtr<Gio::File> getResSrcPath(const std::string& execPath);
 
 private:
-    Glib::ustring m_startPath;
+    Glib::StdStringView m_startPath;
 };
 
 // best use with Ascii/UTF-8, otherwise your get a bunch of bytes

@@ -19,29 +19,23 @@
 #include <iostream>
 #include <psc_format.hpp>
 #include <StringUtils.hpp>
+#include <psc_Files.hpp>
 #include <exception>
 
 #include "FileLoader.hpp"
 
 #undef FILELOADER_DEBUG
 
-FileLoader::FileLoader(const Glib::ustring& startPath)
+FileLoader::FileLoader(Glib::StdStringView startPath)
 : m_startPath{startPath}
 {
 }
 
 Glib::RefPtr<Gio::File>
-FileLoader::findFile(const Glib::ustring& name)
+FileLoader::findFile(Glib::StdStringView name)
 {
-    //   build absolute executable path, see also -> Unit.cpp Dimension::getResSrcPath
-    auto exec = Glib::canonicalize_filename(m_startPath.c_str(), Glib::get_current_dir());
-    auto execFile = Gio::File::create_for_path(exec);
-    //   as PACKAGE_SRC_DIR is relative to executable resolve from path
-    auto srcPath = Glib::canonicalize_filename( PACKAGE_SRC_DIR, execFile->get_parent()->get_path());
-    //   from src get sibling res
-    auto resDir = Glib::canonicalize_filename( "../res", srcPath);
-    std::string uname = name;
-    auto fullPath = Glib::canonicalize_filename(uname, resDir);
+    auto resDir = psc::util::Files::getSrcRelativeDir(m_startPath, PACKAGE_SRC_DIR);
+    auto fullPath = Glib::canonicalize_filename(name, resDir);
     auto file = Gio::File::create_for_path(fullPath);
 #   ifdef FILELOADER_DEBUG
     std::cout << "FileLoader::findFile check local " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
@@ -49,7 +43,7 @@ FileLoader::findFile(const Glib::ustring& name)
     if (file->query_exists()) {
         return file;
     }
-    fullPath = Glib::canonicalize_filename(uname, PACKAGE_DATA_DIR);
+    fullPath = Glib::canonicalize_filename(name, PACKAGE_DATA_DIR);
     file = Gio::File::create_for_path(fullPath);
 #   ifdef FILELOADER_DEBUG
     std::cout << "FileLoader::findFile check global " << fullPath << " exist " << std::boolalpha << file->query_exists() << std::endl;
@@ -75,7 +69,7 @@ FileLoader::getLocalDir()
 }
 
 Glib::ustring
-FileLoader::find(const Glib::ustring& name)
+FileLoader::find(Glib::StdStringView name)
 {
     auto file = findFile(name);
     if (file) {

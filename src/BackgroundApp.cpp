@@ -193,7 +193,7 @@ BackgroundApp::on_action_help() {
 
 }
 
-Glib::ustring
+Glib::StdStringView
 BackgroundApp::get_exec_path() const
 {
     return m_exec;

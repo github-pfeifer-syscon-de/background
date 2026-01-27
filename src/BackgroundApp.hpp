@@ -57,7 +57,7 @@ public:
     void on_startup() override;
     Glib::RefPtr<Gtk::Builder> get_menu_builder();
 
-    Glib::ustring get_exec_path() const;
+    Glib::StdStringView get_exec_path() const;
 
     void on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint) override;
     void on_action_about();
@@ -71,7 +71,7 @@ protected:
 
 private:
     StarWin* m_starAppWindow{nullptr};
-    Glib::ustring m_exec;
+    Glib::StdStringView m_exec;
     bool m_daemon{false};
     std::shared_ptr<KeyConfig> m_config;
     //Glib::RefPtr<Gtk::Builder> m_builder;
