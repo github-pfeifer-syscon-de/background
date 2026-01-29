@@ -3,37 +3,24 @@ bin_PROGRAMS = background
 
 AM_CPPFLAGS = \
 	-DPACKAGE_LOCALE_DIR=\""$(localedir)"\" \
-        -DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
-        -DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
+	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
+	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(GENERICIMG_CFLAGS) \
 	$(PYTHON_CFLAGS) \
 	$(GARCON_CFLAGS) \
 	$(HARU_CFLAGS)
 
-#	-Wpedantic -pedantic-errors -Wsign-conversion e.g. breaks resource.c, report many headers impractical to use
-#	-finput-charset=UTF-8 -fext-numeric-literals for using ° as udl ???
-background_CFLAGS = \
-	-Wall \
-	-Wshadow \
-	-Wcast-align \
-        -Wlogical-op \
-        -Wno-unused-parameter \
-	-Wconversion \
-	-Wextra
-
-#	 -Wpedantic -pedantic-errors -Weffc++ -Wsign-conversion, report many headers impractical to use
-#	-finput-charset=UTF-8 -fext-numeric-literals for using ° as udl ???
-background_CXXFLAGS = \
-	-Wall \
-	-Wshadow \
-	-Wcast-align \
-        -Wlogical-op \
-        -Wno-unused-parameter \
-	-Wconversion \
-	-Wextra
-
-
 background_LDFLAGS = @EXTRA_LDFLAGS@
+
+background_CFLAGS = $(WARN_CFLAGS)
+background_CXXFLAGS = $(WARN_CXXFLAGS)
+
+if RELEASE
+background_CXXFLAGS += $(OPTIM_CXXFLAGS)
+else
+background_CXXFLAGS += $(INSTUMENT_CXXFLAGS)
+background_LDFLAGS += $(INSTUMENT_LINKFLAGS)
+endif
 
 background_LDADD =  \
 	$(GENERICIMG_LIBS) \
