@@ -22,7 +22,7 @@
 #include <memory>
 
 #include "GeoPosition.hpp"
-#include "config.h"
+#include "background_config.h"
 
 class StarDraw;
 class BackgroundApp;

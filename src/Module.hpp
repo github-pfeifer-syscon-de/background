@@ -22,7 +22,7 @@
 #include <KeyConfig.hpp>
 
 #include "FileLoader.hpp"
-#include "config.h"
+#include "background_config.h"
 
 #ifdef USE_PYTHON
 #include "PyWrapper.hpp"

@@ -21,7 +21,7 @@
 #include "StarWin.hpp"
 #include "Math.hpp"
 #include "FileLoader.hpp"
-#include "config.h"
+#include "background_config.h"
 
 void
 Grid::put(Glib::RefPtr<Pango::Layout>& layout

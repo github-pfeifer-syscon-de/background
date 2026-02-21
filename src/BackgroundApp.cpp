@@ -22,7 +22,7 @@
 #include <exception>
 #include <KeyConfig.hpp>
 
-#include "config.h"
+#include "background_config.h"
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
 #include "StarPaint.hpp"

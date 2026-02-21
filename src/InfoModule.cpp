@@ -20,7 +20,7 @@
 
 #include "StarWin.hpp"
 #include "Math.hpp"
-#include "config.h"
+#include "background_config.h"
 
 #include "InfoModule.hpp"
 

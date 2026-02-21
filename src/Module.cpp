@@ -28,7 +28,6 @@
 #include "Math.hpp"
 #include "FileLoader.hpp"
 #include "Module.hpp"
-#include "config.h"
 
 std::string
 Module::getName()

@@ -1,4 +1,4 @@
-# StarDesk
+# Background
 a live star desktop background
 (if you expect to see pictures of neil degrasse tyson i'm sorry,
 this was not my intention).
@@ -18,7 +18,7 @@ go for a astronomy application.
 On the other hand, if you want some infos on a regular basis,
 this offers you some option with a app that does
 not take a whole bunch of resources
-(but i must admit there are more needed than i expected).
+(but i must admit there are more needed than I expected).
 And as a side effect, some insight might be easier to gain
 at a somewhat smaller scale...
 
@@ -75,7 +75,7 @@ By default for rendering the info blocks python will be used
 depending on your Linux flavor names may vary).
 If you don't like this option use
 ```
-./configure --prefix=/usr --without-python
+meson setup build -Dprefix/usr -Dpython=false
 ```
 the C++ functions for rendering will be used in this case.
 

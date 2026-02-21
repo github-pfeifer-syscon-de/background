@@ -24,7 +24,7 @@
 #include "Math.hpp"
 #include "BackgroundApp.hpp"
 #include "FileLoader.hpp"
-#include "config.h"
+#include "background_config.h"
 #include "Planets.hpp"
 #include "MessierLoader.hpp"
 #include "Module.hpp"

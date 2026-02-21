@@ -1,0 +1,2 @@
+option('python', type : 'boolean', value : true
+        , description : 'Python is the preferred method for rendering, if you want to use c++-functions use -Dpython=false ')

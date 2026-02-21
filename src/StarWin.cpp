@@ -36,9 +36,9 @@
 #endif
 #include <ImageFileChooser.hpp>
 #ifdef USE_PDF
-#include <HaruRenderer.hpp>
+#include "HaruRenderer.hpp"
 #endif
-#include <Renderer.hpp>
+#include "Renderer.hpp"
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder

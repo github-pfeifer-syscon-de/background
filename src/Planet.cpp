@@ -22,7 +22,7 @@
 #include "Planet.hpp"
 #include "Planets.hpp"
 #include "Math.hpp"
-#include "config.h"
+#include "background_config.h"
 
 Planet::Planet(const std::string& name
               , const Elements& elements

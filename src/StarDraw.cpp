@@ -24,7 +24,7 @@
 #include "ParamDlg.hpp"
 #include "TimeDlg.hpp"
 #include "StarWin.hpp"
-#include "config.h"
+#include "background_config.h"
 
 
 StarDraw::StarDraw(BaseObjectType* cobject
