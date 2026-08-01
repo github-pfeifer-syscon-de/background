@@ -20,12 +20,6 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adjustUpdate">
-    <property name="lower">1</property>
-    <property name="upper">15</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
   <object class="GtkDialog" id="PrefDlg">
     <property name="can-focus">False</property>
     <property name="type-hint">dialog</property>
@@ -89,7 +83,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Display</property>
+                    <property name="label" translatable="yes">Update rate</property>
                     <property name="xalign">1</property>
                   </object>
                   <packing>
@@ -102,7 +96,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="xpad">10</property>
-                    <property name="label" translatable="yes">Update rate</property>
+                    <property name="label" translatable="yes">Display</property>
                     <property name="xalign">1</property>
                   </object>
                   <packing>
@@ -120,7 +114,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
-                    <property name="top-attach">1</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
@@ -133,7 +127,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
-                    <property name="top-attach">1</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
@@ -143,7 +137,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
-                    <property name="top-attach">0</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
@@ -154,7 +148,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
-                    <property name="top-attach">0</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
@@ -856,5 +850,11 @@
       <action-widget response="-6">button1</action-widget>
       <action-widget response="-5">button2</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkAdjustment" id="adjustUpdate">
+    <property name="lower">1</property>
+    <property name="upper">15</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
   </object>
 </interface>

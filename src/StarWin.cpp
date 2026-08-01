@@ -250,7 +250,6 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
     if (m_backAppl->isDaemon()) {
         auto screen = Gdk::Screen::get_default();
         auto monitorNum = getDaemonDisplay();
-        std::cout << "Screen monitor " << monitorNum << std::endl;
          Gdk::Rectangle rect;
         screen->get_monitor_geometry(monitorNum, rect);
         int width = rect.get_width();
