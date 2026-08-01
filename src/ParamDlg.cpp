@@ -30,6 +30,23 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
 {
     builder->get_widget("updateInterval", m_updateInterval);
     m_updateInterval->set_value(m_starWin->getIntervalMinutes());
+    builder->get_widget("display", m_display);
+    m_display->set_sensitive(m_starWin->getBackgroundAppl()->isDaemon());
+    if (m_starWin->getBackgroundAppl()->isDaemon()) {
+        auto screen = Gdk::Screen::get_default();
+        auto monitorCnt = screen->get_n_monitors();
+        for (int i = 0; i < monitorCnt; ++i) {
+            auto n = Glib::ustring::sprintf("%d", i);
+            Gdk::Rectangle rect;
+            screen->get_monitor_geometry(i ,rect);
+            auto dispName = screen->get_monitor_plug_name(i);
+            auto d = Glib::ustring::sprintf("%d %s %d*%d",i, dispName, rect.get_width(), rect.get_height());
+            m_display->append(n, d);
+            if (i == m_starWin->getDaemonDisplay()) {
+                m_display->set_active_id(n);
+            }
+        }
+    }
 
     auto starPaint = m_starWin->getStarPaint();
     builder->get_widget("startColor", m_startColor);
@@ -80,8 +97,18 @@ ParamDlg::on_response(int response_id)
 {
     bool save = false;
     if (response_id == Gtk::RESPONSE_OK) {
-        auto starPaint = m_starWin->getStarPaint();
         m_starWin->setIntervalMinutes(m_updateInterval->get_value_as_int());
+        if (m_starWin->getBackgroundAppl()->isDaemon()) {
+            auto nMonitor = m_display->get_active_id();
+            try {
+                int i = std::stoi(nMonitor);
+                m_starWin->setDaemonDisplay(i);
+            }
+            catch (const std::exception& exc) {
+                std::cout << "Error parsing select display " << nMonitor << std::endl;
+            }
+        }
+        auto starPaint = m_starWin->getStarPaint();
         starPaint->setStartColor(m_startColor->get_rgba());
         starPaint->setStopColor(m_stopColor->get_rgba());
         Pango::FontDescription starFont{m_starFont->get_font_name()};

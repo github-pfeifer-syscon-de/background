@@ -67,6 +67,9 @@ public:
     }
     int getIntervalMinutes();
     void setIntervalMinutes(int intervalMinutes);
+    int getDaemonDisplay();
+    void setDaemonDisplay(int daemonDisplay);
+
     GeoPosition getGeoPosition();
     void setGeoPosition(const GeoPosition& geoPos);
     void update();
@@ -91,6 +94,7 @@ protected:
     static constexpr auto DESKTOP_BACKGR_IMAGE{"$img"};
     static constexpr auto DESKTOP_BACKGR_KEY{"desktopBackground"};
     static constexpr auto UPDATE_INTERVAL_KEY{"updateIntervalMinutes"};
+    static constexpr auto DAEMON_DISPLAY_KEY{"daemonDisplay"};
     static constexpr auto GRP_GLGLOBE_MAIN{"globe"};
     static constexpr auto LATITUDE_KEY{"lat"};
     static constexpr auto LONGITUDE_KEY{"lon"};

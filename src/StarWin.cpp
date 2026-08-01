@@ -249,7 +249,7 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
 {
     if (m_backAppl->isDaemon()) {
         auto screen = Gdk::Screen::get_default();
-        auto monitorNum = screen->get_primary_monitor();    // better add to config
+        auto monitorNum = getDaemonDisplay();
         std::cout << "Screen monitor " << monitorNum << std::endl;
          Gdk::Rectangle rect;
         screen->get_monitor_geometry(monitorNum, rect);
@@ -530,7 +530,19 @@ StarWin::getIntervalMinutes()
 void
 StarWin::setIntervalMinutes(int intervalMinutes)
 {
-    return m_config->setInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
+    m_config->setInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
+}
+
+int
+StarWin::getDaemonDisplay()
+{
+    return m_config->getInteger(StarPaint::MAIN_GRP, DAEMON_DISPLAY_KEY, 0);
+}
+
+void
+StarWin::setDaemonDisplay(int daemonDisplay)
+{
+    m_config->setInteger(StarPaint::MAIN_GRP, DAEMON_DISPLAY_KEY, daemonDisplay);
 }
 
 void

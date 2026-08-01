@@ -44,4 +44,5 @@ private:
     Gtk::FontButton* m_starFont;
     Gtk::CheckButton* m_showMilkyway;
     Gtk::Scale* m_messierVMag;
+    Gtk::ComboBoxText* m_display;
 };
