@@ -249,8 +249,13 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
 {
     if (m_backAppl->isDaemon()) {
         auto screen = Gdk::Screen::get_default();
-        int width = screen->get_width();
-        int height = screen->get_height();
+        auto monitorNum = screen->get_primary_monitor();    // better add to config
+        std::cout << "Screen monitor " << monitorNum << std::endl;
+         Gdk::Rectangle rect;
+        screen->get_monitor_geometry(monitorNum, rect);
+        int width = rect.get_width();
+        int height = rect.get_height();
+        std::cout << "Monitor size " << width << " x " << height << std::endl;
         auto image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
         Layout layout(width, height);
         auto ctx = Cairo::Context::create(image);
