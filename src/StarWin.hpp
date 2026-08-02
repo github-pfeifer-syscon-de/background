@@ -89,12 +89,20 @@ protected:
     void on_eject(Glib::RefPtr<Gio::AsyncResult>& result);
     void cleanUp(Glib::RefPtr<Gio::File>&dir, const std::string& keepName);
     void exportPdf();
+    void setBackgroundExec(const Glib::RefPtr<Gio::File>& file);
+    // leave this as an option as these are xfce internals
+    void setBackgroundDbus(const Glib::ustring& dbusChannel, const Glib::ustring& dbusProperty, const Glib::RefPtr<Gio::File>& file);
+    Glib::ustring getDaemonDbusProperty();
+    Glib::ustring getDaemonDbusChannel();
     static constexpr auto IMAGE_PREFIX{"starDesk_"};
     static constexpr auto CONFIG_NAME{"background.conf"};
     static constexpr auto DESKTOP_BACKGR_IMAGE{"$img"};
     static constexpr auto DESKTOP_BACKGR_KEY{"desktopBackground"};
     static constexpr auto UPDATE_INTERVAL_KEY{"updateIntervalMinutes"};
     static constexpr auto DAEMON_DISPLAY_KEY{"daemonDisplay"};
+    static constexpr auto DAEMON_GRP{"daemon"};
+    static constexpr auto DBUS_CHANNEL_KEY{"dbusChannel"};
+    static constexpr auto DBUS_PROPERTY_KEY{"dbusProperty"};
     static constexpr auto GRP_GLGLOBE_MAIN{"globe"};
     static constexpr auto LATITUDE_KEY{"lat"};
     static constexpr auto LONGITUDE_KEY{"lon"};

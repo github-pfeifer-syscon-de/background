@@ -245,6 +245,84 @@ StarWin::update()
 }
 
 void
+StarWin::setBackgroundExec(const Glib::RefPtr<Gio::File>& file)
+{
+    std::string cmd = m_config->getString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY);
+    auto cmds = StringUtils::splitConsec(cmd, ' ');
+    if (cmds.empty()) {
+        cmds.push_back("/usr/bin/xfconf-query");
+        cmds.push_back("-c");
+        cmds.push_back("xfce4-desktop");
+        cmds.push_back("-p");
+        cmds.push_back("/backdrop/screen0/monitor1/workspace0/last-image");
+        cmds.push_back("-s");
+        cmds.push_back(DESKTOP_BACKGR_IMAGE);
+        std::function<std::string(const std::string& item)> lambda =
+            [] (const std::string& item) -> auto
+            {
+                return item;
+            };
+        cmd = StringUtils::concat(cmds, std::string(" "), lambda);
+        m_config->setString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY, cmd);
+        saveConfig();
+        showMessage(Glib::ustring::sprintf("A config to change the desktop background was not found, a default for Xfce was created you need to adapt it most likely (see %s).", CONFIG_NAME));
+    }
+    for (uint32_t i = 0; i < cmds.size(); ++i) {
+        if (cmds[i] == DESKTOP_BACKGR_IMAGE) {
+            cmds[i] = file->get_path();
+        }
+    }
+    GPid pid;
+    m_fileLoader->run(cmds, &pid);
+}
+
+// leave this as an option as these are xfce internals.
+//   but maybe your bus tells you how you can jump unto it ...
+void
+StarWin::setBackgroundDbus(const Glib::ustring& dbusChannel, const Glib::ustring& dbusProperty, const Glib::RefPtr<Gio::File>& file)
+{
+    auto dbusProxy= Gio::DBus::Proxy::create_for_bus_sync(Gio::DBus::BusType::BUS_TYPE_SESSION
+        ,  "org.xfce.Xfconf"   // "org.freedesktop.DBus"
+        , "/org/xfce/Xfconf"   // "/org/freedesktop/DBus"
+        , "org.xfce.Xfconf" );  // "org.freedesktop.DBus"
+
+    //= Gio::DBus::Proxy::create_for_bus_sync(
+    //    Gio::DBus::BusType::BUS_TYPE_SESSION
+    //    , dbusChannel
+    //    , dbusProperty
+    //    , "");
+    std::cout << "proxy created" << std::endl;
+    auto cancel = Gio::Cancellable::create();
+    auto call_result = dbusProxy->call_sync("Introspect", cancel);   // 4 dbus "ListNames"
+    Glib::Variant<std::vector<Glib::ustring>> names_variant;
+    call_result.get_child(names_variant);
+
+    // Get the vector of strings.
+    auto names = names_variant.get();
+
+    std::cout << "The names on the message bus are:" << std::endl;
+
+    for (const auto& i : names) {
+        std::cout << i  << std::endl;
+    }
+
+    if (false) {
+        std::vector<std::string> vects;
+        vects.push_back(file->get_path());
+        auto param = Glib::Variant<std::vector<std::string>>::create(vects);
+        std::cout << "param " << file->get_path() << std::endl;
+        Glib::ustring method("set");
+        auto ret = dbusProxy->call_sync(method, cancel, param);
+        if (ret) {
+            std::cout << "called " << ret.print(true) << std::endl;
+        }
+        else {
+            std::cout << "called" << std::endl;
+        }
+    }
+}
+
+void
 StarWin::update(Glib::DateTime now, GeoPosition& pos)
 {
     if (m_backAppl->isDaemon()) {
@@ -266,33 +344,17 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
         auto temp = localDir->get_child(fileName);
         //std::cout << "Temp " << temp->get_path() << std::endl;
         image->write_to_png(temp->get_path());
-        std::string cmd = m_config->getString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY);
-        auto cmds = StringUtils::splitConsec(cmd, ' ');
-        if (cmds.empty()) {
-            cmds.push_back("/usr/bin/xfconf-query");
-            cmds.push_back("-c");
-            cmds.push_back("xfce4-desktop");
-            cmds.push_back("-p");
-            cmds.push_back("/backdrop/screen0/monitor1/workspace0/last-image");
-            cmds.push_back("-s");
-            cmds.push_back(DESKTOP_BACKGR_IMAGE);
-            std::function<std::string(const std::string& item)> lambda =
-                [] (const std::string& item) -> auto
-                {
-                    return item;
-                };
-            cmd = StringUtils::concat(cmds, std::string(" "), lambda);
-            m_config->setString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY, cmd);
-            saveConfig();
-            showMessage(Glib::ustring::sprintf("A config to change the desktop background was not found, a default for Xfce was created you need to adapt it most likely (see %s).", CONFIG_NAME));
+        auto dbusChannel = getDaemonDbusChannel();
+        auto dbusProperty = getDaemonDbusProperty();
+        //std::cout << "dbusChannel " << dbusChannel << " dbusProperty " << dbusProperty << std::endl;
+        if (!dbusChannel.empty()
+         && !dbusProperty.empty()) {
+            setBackgroundDbus(dbusChannel, dbusProperty, temp);
         }
-        for (uint32_t i = 0; i < cmds.size(); ++i) {
-            if (cmds[i] == DESKTOP_BACKGR_IMAGE) {
-                cmds[i] = temp->get_path();
-            }
+        else {
+        // use exec
+            setBackgroundExec(temp);
         }
-        GPid pid;
-        m_fileLoader->run(cmds, &pid);
         cleanUp(localDir, fileName);
     }
     else {
@@ -543,6 +605,19 @@ StarWin::setDaemonDisplay(int daemonDisplay)
 {
     m_config->setInteger(StarPaint::MAIN_GRP, DAEMON_DISPLAY_KEY, daemonDisplay);
 }
+
+Glib::ustring
+StarWin::getDaemonDbusChannel()
+{
+    return m_config->getString(DAEMON_GRP, DBUS_CHANNEL_KEY, "");
+}
+
+Glib::ustring
+StarWin::getDaemonDbusProperty()
+{
+    return m_config->getString(DAEMON_GRP, DBUS_PROPERTY_KEY, "");
+}
+
 
 void
 StarWin::exportPdf()
