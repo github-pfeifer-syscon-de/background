@@ -19,6 +19,7 @@ add_project_arguments('-DPACKAGE_SRC_DIR="' + pkgsrcdir + '"', language: ['cpp',
 
 compiler_add_flags = [  # limit the compiler noisiness
       '-Wno-unused-parameter'
+     ,'-Wno-overlength-strings'
     ]
 cc = meson.get_compiler('c')
 foreach ccflag : compiler_add_flags
@@ -55,6 +56,7 @@ subdir('src')
 subdir('test')
 subdir('res')
 sources += app_resources
+sources += win_res_file
 
 project_target = executable(meson.project_name()
     , sources
