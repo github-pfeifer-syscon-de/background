@@ -21,7 +21,7 @@
 #include <py3cairo.h>
 #include <cstdio>
 #include <marshal.h>
-#include <psc_format.hpp>
+#include <format>
 
 #include "FileLoader.hpp"
 #include "PyWrapper.hpp"
@@ -65,7 +65,7 @@ PyClass::compile(const Glib::RefPtr<Gio::File>& pyFile, const Glib::RefPtr<Gio::
     //    the hints from https://awasu.com/weblog/embedding-python/threads/ seem a bit heavy to implement
     std::vector<char> bytes;
     if (!FileLoader::readFile(pyFile, bytes)) {
-        setPyError(psc::fmt::format("Error loading source {}", pyFile->get_path()));
+        setPyError(std::format("Error loading source {}", pyFile->get_path()));
         return nullptr;
     }
     // to use file level includes compile is required see https://stackoverflow.com/questions/3789881/create-and-call-python-function-from-string-via-c-api @fridgerator
@@ -186,7 +186,7 @@ PyClass::load(const std::shared_ptr<FileLoader>& loader)
         m_pInstance = PyObject_CallObject(pClass, nullptr);
     }
     else {
-        setPyError(psc::fmt::format("No class {} found!", m_obj));
+        setPyError(std::format("No class {} found!", m_obj));
         return false;
     }
     if (pClass) {

@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "CalendarModule.hpp"
-#include "StarWin.hpp"
-#include "Math.hpp"
 #include "FileLoader.hpp"
+#include "Math.hpp"
+#include "StarPaint.hpp"
+#include "StarWin.hpp"
 #include "background_config.h"
 
 void
@@ -103,7 +103,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starW
     // as there seems no way to diffrentiate the locale start with monday (but it's the iso way)
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(calFont);
-    starDraw->scale(calFont, 0.6);
+    starWin->getStarPaint()->scale(calFont, 0.6);
     auto smallLayout = Pango::Layout::create(ctx);
     smallLayout->set_font_description(calFont);
     auto boldLayout = Pango::Layout::create(ctx);

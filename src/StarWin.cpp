@@ -19,7 +19,7 @@
 #include <cmath>
 #include <iostream>
 #include <StringUtils.hpp>
-#include <psc_format.hpp>
+#include <format>
 
 #include "StarWin.hpp"
 #include "StarDraw.hpp"
@@ -339,7 +339,7 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
         m_starPaint->drawImage(ctx, now, pos, layout);
         // create new
         auto dateTime = now.format("%F_%H%M%S%f");  // build a long name, as updates work only when filename changes e.g. from settings dialog
-        auto fileName = psc::fmt::format("{}{}.png", IMAGE_PREFIX, dateTime);
+        auto fileName = std::format("{}{}.png", IMAGE_PREFIX, dateTime);
         auto localDir = m_fileLoader->getLocalDir();
         auto temp = localDir->get_child(fileName);
         //std::cout << "Temp " << temp->get_path() << std::endl;

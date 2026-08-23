@@ -19,7 +19,7 @@
 
 #include "Planets.hpp"
 #include "Math.hpp"
-#include "psc_format.hpp"
+#include "format"
 
 
 Planets::Planets()
@@ -162,7 +162,7 @@ Planets::find(const char* name)
             return planet;
         }
     }
-    throw std::invalid_argument(psc::fmt::format("Planet {} was not found!", name));
+    throw std::invalid_argument(std::format("Planet {} was not found!", name));
 }
 
 

@@ -257,7 +257,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
             starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         }
 #       else
-        displayAnalog(ctx, starDraw);
+        displayAnalog(ctx, starWin);
 #       endif
     }
     if (isDisplayDigital()) {
@@ -272,7 +272,7 @@ ClockModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
             starWin->showMessage(pyClass->getError(), Gtk::MessageType::MESSAGE_ERROR);
         }
 #       else
-        displayDigital(ctx, starDraw, isDisplayAnalog());
+        displayDigital(ctx, starWin, isDisplayAnalog());
 #       endif
     }
 }

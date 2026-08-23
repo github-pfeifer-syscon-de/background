@@ -17,7 +17,7 @@
  */
 
 #include <iostream>
-#include <psc_format.hpp>
+#include <format>
 #include <StringUtils.hpp>
 #ifdef  __WIN32__
 #include <windows.h>
@@ -182,47 +182,6 @@ Module::checkPyClass(StarWin* starWin, const char* className)
 void
 Module::fileChanged(const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& changed, Gio::FileMonitorEvent event, StarWin* starWin)
 {
-    //Glib::ustring info;
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED) {
-    //    info += " attr";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
-    //    info += " done";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGED) {
-    //    info += " changed";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_DELETED) {
-    //    info += " deleted";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_MOVED) {
-    //    info += " moved";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_MOVED_IN) {
-    //    info += " in";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_MOVED_OUT) {
-    //    info += " out";
-    //}
-    //if (event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_RENAMED) {
-    //    info += " renamed";
-    //}
-    // events emacs no backup
-    //file path /home/rpf/.local/share/background/info.py changed  event  deleted
-    //file path /home/rpf/.local/share/background/info.py~ changed  event
-    //file path /home/rpf/.local/share/background/info.py~ changed  event  done
-    //file path /home/rpf/.local/share/background/info.py changed  event
-    //file path /home/rpf/.local/share/background/info.py changed  event  changed
-    //file path /home/rpf/.local/share/background/info.py changed  event  done
-    //file path /home/rpf/.local/share/background/info.py changed  event  attr
-    //file path /home/rpf/.local/share/background/info.py changed  event  changed
-    // netbeans
-    // file path /home/rpf/.local/share/background/info.py changed  event  changed
-    // file path /home/rpf/.local/share/background/info.py changed  event  done
-    //std::cout << "file path " << file->get_path()
-    //          << " changed " << (changed ? changed->get_path() : "")
-    //          << " event " << info
-    //          << std::endl;
     auto basename = file->get_basename();
     if (basename == getPyScriptName()
      && event == Gio::FileMonitorEvent::FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
@@ -257,7 +216,7 @@ Module::edit(StarWin* starWin)
     GPid pid;
     auto msg = m_fileLoader->run(args, &pid);
     if (!msg.empty()) {
-        starWin->showMessage(psc::fmt::format("Error {} opening editor", msg), Gtk::MessageType::MESSAGE_ERROR);
+        starWin->showMessage(std::format("Error {} opening editor", msg), Gtk::MessageType::MESSAGE_ERROR);
     }
 #   endif
 #   ifdef  __WIN32__

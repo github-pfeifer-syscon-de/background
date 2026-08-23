@@ -29,7 +29,7 @@ Depends on genericImg see there for build instructions.
 There are two separate modi how to run this program.
 Without any parameter the program runs in interactive mode.
 A window is opened that displays the described infos,
-changes can be made by right clicking on the content.
+changes can be made by right-clicking on the content.
 
 Alternativly this can be run in daemon mode with
 either the option -d or --daemon
@@ -45,7 +45,7 @@ what command changes the background.
 > [!WARNING]
 > But be warned the image stays if the program is terminated,
 > i suggest playing "i will always be in a club in 1973 ... "
-> so you check a instance of the program is running before
+> so you better check a instance of the program is running before
 > trusting the displayed time.
 
 ### Find config-name for Xfce4

@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <algorithm>
-#include <psc_format.hpp>
+#include <format>
 
 #include "FileLoader.hpp"
 
@@ -59,7 +59,7 @@ public:
             Py_DECREF(pValue);
         }
         if (PyErr_Occurred()) {
-            setPyError(psc::fmt::format("invoke {} on {}", method, m_obj));
+            setPyError(std::format("invoke {} on {}", method, m_obj));
         }
         return ret;
     }
