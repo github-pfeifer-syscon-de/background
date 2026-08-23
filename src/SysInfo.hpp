@@ -19,6 +19,8 @@
 #pragma once
 
 #include <string>
+#include <list>
+#include <memory>
 
 /**
  * this became mostly posix/linux specific
@@ -31,14 +33,17 @@ public:
     virtual ~SysInfo() = default;
 
     std::list<std::string> allInfos();
-    std::string nodeName();
-    std::string machine();
-    std::string osVersion();
-    std::string cpuInfo();
-    std::string memInfo();
-    std::string netInfo();
+    virtual std::string nodeName() = 0;
+    virtual std::string machine() = 0;
+    virtual std::string osVersion() = 0;
+    virtual std::string cpuInfo() = 0;
+    virtual std::string memInfo() = 0;
+    virtual std::string netInfo() = 0;
+    
+    static std::unique_ptr<SysInfo> create();
+    static constexpr unsigned long KBYTE_TO_MEGA{1024ul};
+    static constexpr unsigned long BYTE_TO_MEGA{1024ul*1024ul};
 protected:
-    std::string netConn(const std::string& netintf);
 
 private:
 };

@@ -38,7 +38,7 @@ public:
     Glib::ustring getPyScriptName() override;
     static constexpr auto pyClassName{"Info"};
 protected:
-    std::string getText(SysInfo& sysInfo);
+    std::string getText(const std::unique_ptr<SysInfo>& sysInfo);
 
 private:
 };

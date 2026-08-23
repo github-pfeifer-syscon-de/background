@@ -60,11 +60,11 @@ InfoModule::getHeight(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin
 }
 
 std::string
-InfoModule::getText(SysInfo& sysInfo)
+InfoModule::getText(const std::unique_ptr<SysInfo>& sysInfo)
 {
     std::string text;
     text.reserve(512);
-    for (auto info : sysInfo.allInfos()) {
+    for (auto info : sysInfo->allInfos()) {
         text += info + "\n";
     }
     return text;
@@ -75,8 +75,8 @@ InfoModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starWin)
 {
     getPrimaryColor(ctx);
     auto infoFont = getFont();
-    SysInfo sysInfo;
-    auto netInfo = sysInfo.netInfo();
+    auto sysInfo = SysInfo::create();
+    auto netInfo = sysInfo->netInfo();
 #   ifdef USE_PYTHON
     auto pyClass = checkPyClass(starWin, pyClassName);
     if (pyClass) {

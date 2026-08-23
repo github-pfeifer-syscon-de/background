@@ -1,0 +1,305 @@
+/* -*- Mode: c++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
+/*
+ * Copyright (C) 2023 RPf
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <iostream>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fstream>              // ifstream
+#include <bitset>
+#include <gtkmm.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <ifaddrs.h>
+#include <linux/if_link.h>
+#include <sys/utsname.h>        // uname
+
+#include "FileLoader.hpp"
+
+#include "SysInfoLinux.hpp"
+
+SysInfoLinux::SysInfoLinux() 
+{
+}
+
+std::string
+SysInfoLinux::nodeName()
+{
+    struct utsname utsname;
+    int ret = uname(&utsname);
+    if (ret == 0) {
+        return utsname.nodename;
+    }
+    return "";
+}
+
+std::string
+SysInfoLinux::machine()
+{
+    struct utsname utsname;
+    int ret = uname(&utsname);
+    if (ret == 0) {
+        return utsname.machine;
+    }
+    return "";
+}
+
+std::string
+SysInfoLinux::osVersion()
+{
+    struct utsname utsname;
+    int ret = uname(&utsname);
+    if (ret == 0) {
+        return Glib::ustring::sprintf("%s %s", utsname.sysname, utsname.release);
+    }
+    return "";
+}
+
+
+std::string
+SysInfoLinux::cpuInfo()
+{
+	std::string buf;
+	unsigned int readmask = 0;
+	const unsigned int ALL_MASK = 0x01;
+
+	std::ifstream  stat;
+	std::ios_base::iostate exceptionMask = stat.exceptions() | std::ios::failbit | std::ios::badbit;
+	stat.exceptions(exceptionMask);
+	try {
+	    stat.open("/proc/cpuinfo");
+	    while (readmask != ALL_MASK && !stat.eof()) {
+	        std::getline(stat, buf);
+	        if (buf.starts_with("model name")) {
+	            readmask |= 0x01;
+				break;
+	        }
+	    }
+	}
+	catch (std::ios_base::failure& e) {
+	    std::ostringstream oss1;
+		oss1 << "Could not open /proc/cpuinfo: " << errno << " " << strerror(errno);
+	    return oss1.str();
+	}
+	if (readmask != ALL_MASK) {
+	    std::ostringstream oss1;
+		oss1 << "Couldn't read all values from /proc/cpuinfo: readmask " << readmask;
+	    return oss1.str();
+	}
+    if (stat.is_open()) {
+	    stat.close();
+    }
+	auto value = buf.find(':');
+	if (value == buf.npos) {
+		return buf;
+	}
+	else {
+		value += 2;
+	}
+	return std::string(buf.substr(value));
+}
+
+
+std::string
+SysInfoLinux::memInfo()
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+    unsigned int readmask = 0;
+    const unsigned int ALL_MASK = 0x0f;
+    unsigned long mem_total = 0l,mem_avail = 0l,mem_buffers = 0l,mem_cached = 0l;
+    std::ifstream  stat;
+    std::ios_base::iostate exceptionMask = stat.exceptions() | std::ios::failbit | std::ios::badbit;
+    stat.exceptions(exceptionMask);
+
+    try {
+        stat.open("/proc/meminfo");
+        while (readmask != ALL_MASK && !stat.eof()) {
+            std::string buf;
+            std::getline(stat, buf);
+            auto pos = buf.find(' ');
+            if (buf.starts_with("MemTotal:") && pos != buf.npos) {
+                mem_total = std::stoi(buf.substr(pos));
+                readmask |= 0x01;
+            }
+            else if (buf.starts_with("MemAvailable:") && pos != buf.npos) {
+                mem_avail = std::stoi(buf.substr(pos));
+                readmask |= 0x02;
+            }
+            else if (buf.starts_with("Buffers:") && pos != buf.npos) {
+                mem_buffers = std::stoi(buf.substr(pos));
+                readmask |= 0x04;
+            }
+            else if (buf.starts_with("Cached:")  && pos != buf.npos) {
+                mem_cached =  std::stoi(buf.substr(pos));
+                readmask |= 0x08;
+            }
+        }
+	}
+	catch (std::ios_base::failure& e) {
+	    std::ostringstream oss1;
+	    oss1 << "Could not open /proc/meminfo: " << errno  << " " << strerror(errno);
+	    return oss1.str();
+	}
+	if (readmask != ALL_MASK) {
+	    std::ostringstream oss1;
+	    oss1 << "Couldn't read all values from /proc/meminfo: readmask " <<  readmask;
+	    return oss1.str();
+	}
+    if (stat.is_open()) {
+        stat.close();
+    }
+	std::ostringstream oss1;
+	oss1 << (mem_total - mem_avail) / KBYTE_TO_MEGA << "MB used of " <<  mem_total / KBYTE_TO_MEGA << "MB";
+	return oss1.str();
+#pragma GCC diagnostic pop
+}
+
+std::string
+SysInfoLinux::netInfo()
+{
+	DIR *dir;
+	struct dirent *ent;
+	const char *sdir = "/sys/class/net";
+	if ((dir = opendir(sdir)) != NULL) {
+		while ((ent = readdir(dir)) != NULL) {
+			if (ent->d_type == DT_LNK
+				&& strncmp(ent->d_name, "e", 1) == 0) {
+   				std::ostringstream oss1;
+				auto path = Glib::ustring::sprintf("%s/%s/operstate", sdir, ent->d_name);
+                LineReader lineReader(Gio::File::create_for_path(path));
+                std::string updown;
+                if (lineReader.hasNext()) {
+                    lineReader.next(updown);
+                }
+                if (updown == "up") {
+                    path = Glib::ustring::sprintf("%s/%s/speed", sdir, ent->d_name);
+                    LineReader lineReader2(Gio::File::create_for_path(path));
+                    unsigned int speed{};
+                    char unit = 'M';
+                    if (lineReader2.hasNext()) {
+                        std::string speedd;
+                        lineReader2.next(speedd);
+                        speed = std::stoi(speedd);
+                        if (speed >= 1000) {
+                            speed /= 1000;
+                            unit = 'G';
+                        }
+                    }
+                    path = Glib::ustring::sprintf("%s/%s/duplex", sdir, ent->d_name);
+                    LineReader lineReader3(Gio::File::create_for_path(path));
+                    std::string duplex;
+                    if (lineReader3.hasNext()) {
+                        lineReader3.next(duplex);
+                    }
+                    auto conn = netConn(ent->d_name);
+                    oss1 << ent->d_name
+                         << " " << speed << unit
+                         << " " << duplex
+                         << " " << updown
+                         << " " << conn;
+                }
+                else {      // not much infos for this case
+                    oss1 << ent->d_name
+                         << " " << updown;
+                }
+				closedir(dir);
+				return oss1.str();		// show only first adapter
+			}
+		}
+		closedir(dir);
+	}
+    return std::string("No adapter found");
+}
+
+
+std::string
+SysInfoLinux::netConn(const std::string& netintf)
+{
+    std::string netInfo;
+    struct ifaddrs *ifaddr;
+
+    if (getifaddrs(&ifaddr) == -1) {
+        return "";
+    }
+
+    /* Walk through linked list, maintaining head pointer so we
+       can free list later. */
+    for (struct ifaddrs *ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        int family = ifa->ifa_addr->sa_family;
+
+        /* Display interface name and family (including symbolic
+           form of the latter for the common families). */
+        //intf += Glib::ustring::sprintf("%-8s %s (%d)\n",
+        //        ifa->ifa_name,
+        //        (family == AF_PACKET) ? "AF_PACKET"
+        //        : (family == AF_INET) ? "AF_INET"
+        //        : (family == AF_INET6) ? "AF_INET6"
+        //        : "???", family);
+
+        /* For an AF_INET* interface address, display the address. */
+        if (strcmp(ifa->ifa_name, netintf.c_str()) == 0) {
+            if (family == AF_INET) {
+                auto sa = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask);
+                std::bitset<32>bs{sa->sin_addr.s_addr};     // this is ipv4 specific
+                char host[NI_MAXHOST];
+                int s = getnameinfo(ifa->ifa_addr,
+                                    sizeof(struct sockaddr_in),
+                                    host, NI_MAXHOST,
+                                    NULL, 0, NI_NUMERICHOST);
+                if (s == 0) {
+                    netInfo += Glib::ustring::sprintf("%s/%d ", host, bs.count());
+                }
+                else {
+                    printf("getnameinfo() failed: %s\n", gai_strerror(s));
+                }
+            }
+            // not that informative & issue getting netmask
+            //else if (family == AF_INET6) {
+            //    auto sa = reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_netmask);
+            //    std::bitset<128>bs{sa->sin6_addr.s6_addr};
+            //    char host[NI_MAXHOST];
+            //    int s = getnameinfo(ifa->ifa_addr,
+            //                        sizeof(struct sockaddr_in6),
+            //                        host, NI_MAXHOST,
+            //                        NULL, 0, NI_NUMERICHOST);
+            //    if (s == 0) {
+            //        netInfo += Glib::ustring::sprintf("%s/%d ", host, bs.count());
+            //    }
+            //    else {
+            //        printf("getnameinfo() failed: %s\n", gai_strerror(s));
+            //    }
+            //}
+            //else if (family == AF_PACKET && ifa->ifa_data != NULL) {
+            //    struct rtnl_link_stats *stats = static_cast<struct rtnl_link_stats *>(ifa->ifa_data);
+            //    printf("\t\ttx_packets = %10u; rx_packets = %10u\n"
+            //          "\t\ttx_bytes   = %10u; rx_bytes   = %10u\n",
+            //          stats->tx_packets, stats->rx_packets,
+            //          stats->tx_bytes, stats->rx_bytes);
+            //}
+        }
+    }
+    freeifaddrs(ifaddr);
+    return netInfo;
+}
+
