@@ -23,7 +23,6 @@
 #include "SysInfoLinux.hpp"
 #endif
 
-// for windows the infos are sparse
 SysInfo::SysInfo()
 {
 }

@@ -22,9 +22,6 @@
 #include <list>
 #include <memory>
 
-/**
- * this became mostly posix/linux specific
- */
 class SysInfo
 {
 public:
