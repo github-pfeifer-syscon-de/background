@@ -22,7 +22,7 @@
 
 
 class SysInfoWindows 
-: public SysInfo{
+: public SysInfo {
 public:
     SysInfoWindows();
     SysInfoWindows(const SysInfoWindows& orig);

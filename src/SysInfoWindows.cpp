@@ -22,7 +22,7 @@
 #include <iphlpapi.h>
 #include <Windows.h>
 #include <cpuid.h>
-#include <gtkmm.h>
+#include <glibmm.h>
 
 #include "SysInfoWindows.hpp"
 
@@ -250,9 +250,10 @@ SysInfoWindows::memInfo()
     statex.dwLength = sizeof(statex);
     GlobalMemoryStatusEx(&statex);        
         
-    std::ostringstream oss1;
-    oss1 << (statex.ullTotalPhys -  statex.ullAvailPhys) / BYTE_TO_MEGA << "MB used of " <<  statex.ullTotalPhys / BYTE_TO_MEGA << "MB";
-    return oss1.str();
+    const auto usedMb = static_cast<uint32_t>((statex.ullTotalPhys -  statex.ullAvailPhys) / BYTE_TO_MEGA);
+    const auto totalMb = static_cast<uint32_t>(statex.ullTotalPhys / BYTE_TO_MEGA);
+    const double percent = static_cast<double>(usedMb) * 100.0 / static_cast<double>(totalMb);
+    return Glib::ustring::sprintf("%ld MB used of %ld is %.1lf%%", usedMb, totalMb, percent);
 }
 
 #define WORKING_BUFFER_SIZE 15000
@@ -264,162 +265,149 @@ SysInfoWindows::memInfo()
 std::string
 SysInfoWindows::netInfo()
 {
-    // Link with Iphlpapi.lib
-#   ifdef Iphlpapi_lib
-    // see https://learn.microsoft.com/en-us/windows/win32/api/iphlpapi/nf-iphlpapi-getadaptersaddresses
+    
+    std::string info;
+// It is possible for an adapter to have multiple
+// IPv4 addresses, gateways, and secondary WINS servers
+// assigned to the adapter. 
+//
+// Note that this sample code only prints out the 
+// first entry for the IP address/mask, and gateway, and
+// the primary and secondary WINS server for each adapter. 
+
+    PIP_ADAPTER_INFO pAdapterInfo;
+    PIP_ADAPTER_INFO pAdapter = NULL;
     DWORD dwRetVal = 0;
 
-    unsigned int i = 0;
+/* variables used to print DHCP time info */
+    //struct tm newtime;
+    //char buffer[32];
+    //errno_t error;
 
-    // Set the flags to pass to GetAdaptersAddresses
-    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
-    LPVOID lpMsgBuf = NULL;
-
-    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
-    ULONG outBufLen = 0;
-    ULONG Iterations = 0;
-
-    PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
-    PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
-    PIP_ADAPTER_ANYCAST_ADDRESS pAnycast = NULL;
-    PIP_ADAPTER_MULTICAST_ADDRESS pMulticast = NULL;
-    IP_ADAPTER_DNS_SERVER_ADDRESS *pDnServer = NULL;
-    IP_ADAPTER_PREFIX *pPrefix = NULL;
-    
-    ULONG family = AF_INET;   // look for ip4, all = AF_UNSPEC, ipv6 = AF_INET6 
-    
-   // Allocate a 15 KB buffer to start with.
-    outBufLen = WORKING_BUFFER_SIZE;
-
-    do {
-
-        pAddresses = (IP_ADAPTER_ADDRESSES *) MALLOC(outBufLen);
-        if (pAddresses == NULL) {
-            printf("Memory allocation failed for IP_ADAPTER_ADDRESSES struct\n");
+    ULONG ulOutBufLen = sizeof (IP_ADAPTER_INFO);
+    pAdapterInfo = (IP_ADAPTER_INFO *) MALLOC(sizeof (IP_ADAPTER_INFO));
+    if (pAdapterInfo == NULL) {
+        printf("Error allocating memory needed to call GetAdaptersinfo\n");
+        return "";
+    }
+// Make an initial call to GetAdaptersInfo to get
+// the necessary size into the ulOutBufLen variable
+    if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+        FREE(pAdapterInfo);
+        pAdapterInfo = (IP_ADAPTER_INFO *) MALLOC(ulOutBufLen);
+        if (pAdapterInfo == NULL) {
+            printf("Error allocating memory needed to call GetAdaptersinfo\n");
             return "";
         }
+    }
 
-        dwRetVal =
-            GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+    if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
+        pAdapter = pAdapterInfo;
+        while (pAdapter) {
+            //printf("\tComboIndex: \t%lu\n", pAdapter->ComboIndex);
+            //printf("\tAdapter Name: \t%s\n", pAdapter->AdapterName);
+            //printf("\tAdapter Desc: \t%s\n", pAdapter->Description);
+            //printf("\tAdapter Addr: \t"); // MAC
+            //for (i = 0; i < pAdapter->AddressLength; i++) {
+            //    if (i == (pAdapter->AddressLength - 1))
+            //        printf("%.2X\n", (int) pAdapter->Address[i]);
+            //    else
+            //        printf("%.2X-", (int) pAdapter->Address[i]);
+            //}
+            //printf("\tIndex: \t%lu\n", pAdapter->Index);
+            //printf("\tType: \t");
+            //switch (pAdapter->Type) {
+            //case MIB_IF_TYPE_OTHER:
+            //    printf("Other\n");
+            //    break;
+            //case MIB_IF_TYPE_ETHERNET:
+            //    printf("Ethernet\n");
+            //    break;
+            //case MIB_IF_TYPE_TOKENRING:
+            //    printf("Token Ring\n");
+            //    break;
+            //case MIB_IF_TYPE_FDDI:
+            //    printf("FDDI\n");
+            //    break;
+            //case MIB_IF_TYPE_PPP:
+            //    printf("PPP\n");
+            //    break;
+            //case MIB_IF_TYPE_LOOPBACK:
+            //    printf("Loopback\n");
+            //    break;
+            //case MIB_IF_TYPE_SLIP:
+            //    printf("Slip\n");
+            //    break;
+            //default:
+            //    printf("Unknown type %u\n", pAdapter->Type);
+            //    break;
+            //}
 
-        if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
-            FREE(pAddresses);
-            pAddresses = NULL;
-        } else {
-            break;
-        }
+            info = Glib::ustring::sprintf("%s/%s", pAdapter->IpAddressList.IpAddress.String, pAdapter->IpAddressList.IpMask.String);
+            //printf("\tIP Address: \t%s Ctx %lx\n",
+            //       pAdapter->IpAddressList.IpAddress.String, pAdapter->IpAddressList.Context);
+            //printf("\tIP Mask: \t%s\n", pAdapter->IpAddressList.IpMask.String);
 
-        Iterations++;
+            //printf("\tGateway: \t%s\n", pAdapter->GatewayList.IpAddress.String);
+            //printf("\t***\n");
 
-    } while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+            if (pAdapter->DhcpEnabled) {
+                //printf("\tDHCP Enabled: Yes\n");
+                //printf("\t  DHCP Server: \t%s\n",
+                //       pAdapter->DhcpServer.IpAddress.String);
 
-    if (dwRetVal == NO_ERROR) {
-        // If successful, output some information from the data we received
-        pCurrAddresses = pAddresses;
-        while (pCurrAddresses) {
-            printf("\tLength of the IP_ADAPTER_ADDRESS struct: %ld\n",
-                   pCurrAddresses->Length);
-            printf("\tIfIndex (IPv4 interface): %u\n", pCurrAddresses->IfIndex);
-            printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
+                //printf("\t  Lease Obtained: ");
+                /* Display local time */
+                //error = _localtime32_s(&newtime, (__time32_t*) &pAdapter->LeaseObtained);
+                //if (error)
+                //    printf("Invalid Argument to _localtime32_s\n");
+                //else {
+                //    // Convert to an ASCII representation 
+                //    error = asctime_s(buffer, 32, &newtime);
+                //    if (error)
+                //        printf("Invalid Argument to asctime_s\n");
+                //    else
+                //        /* asctime_s returns the string terminated by \n\0 */
+                //        printf("%s", buffer);
+                //}
 
-            pUnicast = pCurrAddresses->FirstUnicastAddress;
-            if (pUnicast != NULL) {
-                for (i = 0; pUnicast != NULL; i++)
-                    pUnicast = pUnicast->Next;
-                printf("\tNumber of Unicast Addresses: %d\n", i);
-            } else
-                printf("\tNo Unicast Addresses\n");
-
-            pAnycast = pCurrAddresses->FirstAnycastAddress;
-            if (pAnycast) {
-                for (i = 0; pAnycast != NULL; i++)
-                    pAnycast = pAnycast->Next;
-                printf("\tNumber of Anycast Addresses: %d\n", i);
-            } else
-                printf("\tNo Anycast Addresses\n");
-
-            pMulticast = pCurrAddresses->FirstMulticastAddress;
-            if (pMulticast) {
-                for (i = 0; pMulticast != NULL; i++)
-                    pMulticast = pMulticast->Next;
-                printf("\tNumber of Multicast Addresses: %d\n", i);
-            } else
-                printf("\tNo Multicast Addresses\n");
-
-            pDnServer = pCurrAddresses->FirstDnsServerAddress;
-            if (pDnServer) {
-                for (i = 0; pDnServer != NULL; i++)
-                    pDnServer = pDnServer->Next;
-                printf("\tNumber of DNS Server Addresses: %d\n", i);
-            } else
-                printf("\tNo DNS Server Addresses\n");
-
-            printf("\tDNS Suffix: %wS\n", pCurrAddresses->DnsSuffix);
-            printf("\tDescription: %wS\n", pCurrAddresses->Description);
-            printf("\tFriendly name: %wS\n", pCurrAddresses->FriendlyName);
-
-            if (pCurrAddresses->PhysicalAddressLength != 0) {
-                printf("\tPhysical address: ");
-                for (i = 0; i < (int) pCurrAddresses->PhysicalAddressLength;
-                     i++) {
-                    if (i == (pCurrAddresses->PhysicalAddressLength - 1))
-                        printf("%.2X\n",
-                               (int) pCurrAddresses->PhysicalAddress[i]);
-                    else
-                        printf("%.2X-",
-                               (int) pCurrAddresses->PhysicalAddress[i]);
-                }
+                //printf("\t  Lease Expires:  ");
+                //error = _localtime32_s(&newtime, (__time32_t*) &pAdapter->LeaseExpires);
+                //if (error)
+                //    printf("Invalid Argument to _localtime32_s\n");
+                //else {
+                //    // Convert to an ASCII representation 
+                //    error = asctime_s(buffer, 32, &newtime);
+                //    if (error)
+                //        printf("Invalid Argument to asctime_s\n");
+                //    else
+                //        /* asctime_s returns the string terminated by \n\0 */
+                //        printf("%s", buffer);
+                //}
+            } 
+            else {
+                //printf("\tDHCP Enabled: No\n");
             }
-            printf("\tFlags: %ld\n", pCurrAddresses->Flags);
-            printf("\tMtu: %lu\n", pCurrAddresses->Mtu);
-            printf("\tIfType: %ld\n", pCurrAddresses->IfType);
-            printf("\tOperStatus: %ld\n", pCurrAddresses->OperStatus);
-            printf("\tIpv6IfIndex (IPv6 interface): %u\n",
-                   pCurrAddresses->Ipv6IfIndex);
-            printf("\tZoneIndices (hex): ");
-            for (i = 0; i < 16; i++)
-                printf("%lx ", pCurrAddresses->ZoneIndices[i]);
-            printf("\n");
 
-            printf("\tTransmit link speed: %I64u\n", pCurrAddresses->TransmitLinkSpeed);
-            printf("\tReceive link speed: %I64u\n", pCurrAddresses->ReceiveLinkSpeed);
-
-            pPrefix = pCurrAddresses->FirstPrefix;
-            if (pPrefix) {
-                for (i = 0; pPrefix != NULL; i++)
-                    pPrefix = pPrefix->Next;
-                printf("\tNumber of IP Adapter Prefix entries: %d\n", i);
-            } else
-                printf("\tNumber of IP Adapter Prefix entries: 0\n");
-
-            printf("\n");
-
-            pCurrAddresses = pCurrAddresses->Next;
+            if (pAdapter->HaveWins) {
+                //printf("\tHave Wins: Yes\n");
+                //printf("\t  Primary Wins Server:    %s\n",
+                //       pAdapter->PrimaryWinsServer.IpAddress.String);
+                //printf("\t  Secondary Wins Server:  %s\n",
+                //       pAdapter->SecondaryWinsServer.IpAddress.String);
+            } 
+            else {
+                //printf("\tHave Wins: No\n");
+            }
+            pAdapter = pAdapter->Next;
+            //printf("\n");
+            break;  // only show one (info may repeat)
         }
     } else {
-        printf("Call to GetAdaptersAddresses failed with error: %d\n",
-               dwRetVal);
-        if (dwRetVal == ERROR_NO_DATA)
-            printf("\tNo addresses were found for the requested parameters\n");
-        else {
-
-            if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                    FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
-                    NULL, dwRetVal, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),   
-                    // Default language
-                    (LPTSTR) & lpMsgBuf, 0, NULL)) {
-                printf("\tError: %s", lpMsgBuf);
-                LocalFree(lpMsgBuf);
-                if (pAddresses)
-                    FREE(pAddresses);
-                return "";
-            }
-        }
+        info = Glib::ustring::sprintf("GetAdaptersInfo failed with error: %lu\n", dwRetVal);
     }
-    if (pAddresses) {
-        FREE(pAddresses);
-    }
-#   endif    
-    
-    return "";   
+    if (pAdapterInfo)
+        FREE(pAdapterInfo);
+        
+    return info;   
 }

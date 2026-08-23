@@ -51,8 +51,8 @@ sources += files(
 	)
 endif
 
-if (cc.has_define('__WIN32__'))
+if target_machine.system() == 'windows'
   sources += files('SysInfoWindows.cpp')
 else
-  sources += files('SysInfoLinux.cpp') # may need adaptions 
+  sources += files('SysInfoLinux.cpp') # may need adaptions if != linux
 endif

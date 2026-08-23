@@ -47,10 +47,15 @@ thread_deps     = dependency('threads')
 if get_option('python')
    python_deps    = dependency('python3-embed py3cairo pygobject-3.0')
 endif
+win_deps     = declare_dependency()
+if target_machine.system() == 'windows'
+    win_deps     = cc.find_library('IPHLPAPI')
+endif
 deps = [
       thread_deps
     , genericimg_deps
     , python_deps
+    , win_deps
     ]
 subdir('src')
 subdir('test')
