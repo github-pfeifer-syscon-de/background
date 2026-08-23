@@ -191,6 +191,83 @@ SysInfo::osVersion()
         return Glib::ustring::sprintf("%s %s", utsname.sysname, utsname.release);
     }
 #   endif
+#   ifdef __WIN32__
+    OSVERSIONINFOA osvi;
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFOA));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+    GetVersionEx(&osvi);
+    const char* osName = Glib::ustring::sprintf("maj %d min %d bld %d ver %s",
+            osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber, osvi.szCSDVersion);
+    // https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa
+    if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT) {
+        if (osvi.dwMajorVersion >= 10) {
+            if (osvi.dwBuildNumber >= 22000) {
+                osName = "11";
+            }
+            else {
+                osName = "10";
+            }            
+        }
+        else if (osvi.dwMajorVersion >= 6) {
+            if (osvi.dwMinorVersion >= 3) {
+                osName = "8.1";
+            }
+            else if (osvi.dwMinorVersion >= 2) {
+                osName = "8";
+            }
+            else if (osvi.dwMinorVersion >= 1) { 
+                osName = "7";
+            }
+            else {
+                osName = "Vista";
+            }
+        }
+        else if (osvi.dwMajorVersion >= 5) {
+            if (osvi.dwMinorVersion >= 1) {
+                osName = "XP";
+            }        
+            else {
+                osName = "2000";
+            }            
+        }
+    }
+    else {
+        if (osvi.dwMajorVersion >= 10) {
+            osName = "Server 2016";
+        }
+        else if (osvi.dwMajorVersion >= 6) {
+            if (osvi.dwMinorVersion >= 3) {
+                osName = "Server 2012 R2";
+            }
+            else if (osvi.dwMinorVersion >= 2) {
+                osName = "Server 2012";
+            }
+            else if (osvi.dwMinorVersion >= 1) {
+                osName = "Server 2008 R2";
+            }
+            else {
+                osName = "Server 2008";
+            }
+        }
+        else if (osvi.dwMajorVersion >= 5) {
+            if (osvi.dwMinorVersion >= 2) {
+                if (GetSystemMetrics(SM_SERVERR2) != 0) {
+                    osName = "Server 2003 R2";
+                }
+                else {
+                    osName = "Server 2003";
+                }
+            }        
+            else if (osvi.dwMinorVersion >= 1) {
+                osName = "XP";
+            }
+            else {
+                osName = "2000";
+            }            
+        }
+    }
+    return Glib::ustring::sprintf("Windows %s %s", osName, osvi.szCSDVersion);
+#   endif
     return "";
 }
 
