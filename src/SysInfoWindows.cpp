@@ -22,6 +22,7 @@
 #include <iphlpapi.h>
 #include <Windows.h>
 #include <cpuid.h>
+#include <StringUtils.hpp>
 #include <glibmm.h>
 
 #include "SysInfoWindows.hpp"
@@ -253,7 +254,7 @@ SysInfoWindows::memInfo()
     const auto usedMb = static_cast<uint32_t>((statex.ullTotalPhys -  statex.ullAvailPhys) / BYTE_TO_MEGA);
     const auto totalMb = static_cast<uint32_t>(statex.ullTotalPhys / BYTE_TO_MEGA);
     const double percent = static_cast<double>(usedMb) * 100.0 / static_cast<double>(totalMb);
-    return Glib::ustring::sprintf("%ld MB used of %ld is %.1lf%%", usedMb, totalMb, percent);
+    return Glib::ustring::sprintf("%ldMiB used of %ldMiB is %.1lf%%", usedMb, totalMb, percent);
 }
 
 #define WORKING_BUFFER_SIZE 15000
@@ -262,10 +263,241 @@ SysInfoWindows::memInfo()
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"    
+// this is questionable ...
+static std::string 
+decodeAddr(const SOCKET_ADDRESS* sockAdr) 
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"    
+    std::string info;
+    if (sockAdr->lpSockaddr != nullptr) {
+        auto start = info.length();
+        // as we see a offset of the adress this seems to be a inaddr struct
+        LPSOCKADDR_IN sockAddress = reinterpret_cast<LPSOCKADDR_IN>(sockAdr->lpSockaddr);
+        if (sockAddress->sin_family == AF_INET) {
+            info.reserve(32);
+            for (int32_t i = 0; i < 4; ++i) {
+                if (info.length() > start) {
+                    info += '.';
+                }
+                info += Glib::ustring::sprintf("%u", *(reinterpret_cast<uint8_t*>(&sockAddress->sin_addr) + i));
+            }
+            // unsupported maybe try #define _WS2IPDEF_ #include <Mstcpip.h> #include <ip2string.h> .. 
+            //RtlIpv4AddressToString(&sockAddress->sin_addr, reinterpret_cast<PSTR>(&info[0]));
+        }
+        else if(sockAddress->sin_family == AF_INET6) {
+            info.reserve(64);
+            for (int32_t i = 0; i < 8; ++i) {
+                if (info.length() > start) {
+                    info += ':';
+                }
+                info += Glib::ustring::sprintf("%04ux", *(reinterpret_cast<uint16_t*>(&sockAddress->sin_addr) + i));
+            }            
+            //RtlIpv6AddressToString(reinterpret_cast<const in6_addr*>(&sockAddress->sin_addr), reinterpret_cast<PSTR>(&info[0]));             
+        }        
+        else {
+            info = Glib::ustring::sprintf("family 0x%x unknown", sockAddress->sin_family);
+        }
+    }
+    return info;
+#pragma GCC diagnostic pop    
+}
+#pragma GCC diagnostic pop    
+
+std::string
+SysInfoWindows::netAdapterInfo(uint64_t adapterIndex) 
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"    
+    std::string info;
+   // see https://learn.microsoft.com/en-us/windows/win32/api/iphlpapi/nf-iphlpapi-getadaptersaddresses
+    DWORD dwRetVal = 0;
+
+    unsigned int i = 0;
+
+    // Set the flags to pass to GetAdaptersAddresses
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+    LPVOID lpMsgBuf = NULL;
+
+    PIP_ADAPTER_ADDRESSES pAddresses{};
+    ULONG outBufLen = 0;
+    ULONG Iterations = 0;
+
+    PIP_ADAPTER_ADDRESSES pCurrAddresses = nullptr;
+    PIP_ADAPTER_UNICAST_ADDRESS pUnicast = nullptr;
+    PIP_ADAPTER_ANYCAST_ADDRESS pAnycast = nullptr;
+    PIP_ADAPTER_MULTICAST_ADDRESS pMulticast = nullptr;
+    IP_ADAPTER_DNS_SERVER_ADDRESS *pDnServer = nullptr;
+    IP_ADAPTER_PREFIX *pPrefix = nullptr;
+    
+    ULONG family = AF_INET;   // look for ip4, all = AF_UNSPEC, ipv6 = AF_INET6 
+    
+    // Allocate a 15 KB buffer to start with.
+    outBufLen = WORKING_BUFFER_SIZE;
+    do {
+        pAddresses = (IP_ADAPTER_ADDRESSES *) MALLOC(outBufLen);
+        if (pAddresses == NULL) {
+            return "Memory allocation failed for IP_ADAPTER_ADDRESSES struct";
+        }
+        dwRetVal = GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+        if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+            FREE(pAddresses);
+            pAddresses = NULL;
+        } 
+        else {
+            break;
+        }
+        Iterations++;
+    } while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+
+    if (dwRetVal == NO_ERROR) {
+        // If successful, output some information from the data we received
+        pCurrAddresses = pAddresses;
+        while (pCurrAddresses) {
+            if (adapterIndex == pCurrAddresses->IfIndex) {
+                //info += Glib::ustring::sprintf("\tLength of the IP_ADAPTER_ADDRESS struct: %ld\n", pCurrAddresses->Length);
+                //info += Glib::ustring::sprintf("\tIfIndex (IPv4 interface): %lu\n", pCurrAddresses->IfIndex);
+                //info += Glib::ustring::sprintf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
+                //pUnicast = pCurrAddresses->FirstUnicastAddress;
+                info.reserve(64);
+                //if (pUnicast != NULL) {
+                //    for (i = 0; pUnicast != nullptr; ++i) {
+                //        info += decodeAddr(&pUnicast->Address); 
+                //        pUnicast = pUnicast->Next;
+                //    }
+                //    info += Glib::ustring::sprintf("\tNumber of Unicast Addresses: %d\n", i);
+                //} 
+                //else {
+                //    info += "\tNo Unicast Addresses\n";
+                //}
+                //pAnycast = pCurrAddresses->FirstAnycastAddress;
+                //if (pAnycast) {
+                //    for (i = 0; pAnycast != NULL; ++i) {
+                //        info += "\tAny " + decodeAddr(&pAnycast->Address) + "\n"; 
+                //        pAnycast = pAnycast->Next;
+                //    }
+                //    info += Glib::ustring::sprintf("\tNumber of Anycast Addresses: %d\n", i);
+                //} else {
+                //    info += Glib::ustring::sprintf("\tNo Anycast Addresses\n");
+                //}
+
+                //pMulticast = pCurrAddresses->FirstMulticastAddress;
+                //if (pMulticast) {
+                //    for (i = 0; pMulticast != NULL; ++i) {
+                //        info += "\tMulti " + decodeAddr(&pMulticast->Address) + "\n"; 
+                //        pMulticast = pMulticast->Next;
+                //    }
+                //    info += Glib::ustring::sprintf("\tNumber of Multicast Addresses: %d\n", i);
+                //} else {
+                //    info += "\tNo Multicast Addresses\n";
+                //}
+
+                pDnServer = pCurrAddresses->FirstDnsServerAddress;
+                //if (pDnServer) {
+                //    for (i = 0; pDnServer != NULL; i++)
+                //        pDnServer = pDnServer->Next;
+                //    info += Glib::ustring::sprintf("\tNumber of DNS Server Addresses: %d\n", i);
+                //} else {
+                //    info += Glib::ustring::sprintf("\tNo DNS Server Addresses\n");
+                //}
+
+                //info += Glib::ustring::sprintf("\tDNS Suffix: %s\n", StringUtils::utf8_encode(pCurrAddresses->DnsSuffix));                
+                //info += Glib::ustring::sprintf("\tDescription: %s\n", StringUtils::utf8_encode(pCurrAddresses->Description));
+                //info += Glib::ustring::sprintf("\FriendlyName: %s\n", StringUtils::utf8_encode(pCurrAddresses->FriendlyName));
+                info += StringUtils::utf8_encode(pCurrAddresses->Description);
+
+                //if (pCurrAddresses->PhysicalAddressLength != 0) {
+                //    info += "\tPhysical address: ";
+                //    for (i = 0; i < pCurrAddresses->PhysicalAddressLength;
+                //         i++) {
+                //        if (i == (pCurrAddresses->PhysicalAddressLength - 1))
+                //            info += Glib::ustring::sprintf("%.2X\n",
+                //                   (int) pCurrAddresses->PhysicalAddress[i]);
+                //        else
+                //            info += Glib::ustring::sprintf("%.2X-",
+                //                   (int) pCurrAddresses->PhysicalAddress[i]);
+                //    }
+                //}
+                //info += Glib::ustring::sprintf("\tFlags: %ld\n", pCurrAddresses->Flags);
+                //info += Glib::ustring::sprintf("\tMtu: %lu\n", pCurrAddresses->Mtu);
+                //info += Glib::ustring::sprintf("\tIfType: %ld\n", pCurrAddresses->IfType);
+                //info += Glib::ustring::sprintf("\tOperStatus: %d\n", pCurrAddresses->OperStatus);
+                if (pCurrAddresses->OperStatus >= 1) {
+                    info += " up ";
+                    double speed = pCurrAddresses->TransmitLinkSpeed;
+                    std::string unit;
+                    if (speed >= 1.0e9) {
+                        speed /= 1.0e9;
+                        unit = "G";
+                    }
+                    else if (speed >= 1.0e6) {
+                        speed /= 1.0e6;
+                        unit = "M";
+                    }
+                    else if (speed >= 1.0e3) {
+                        speed /= 1.0e3;
+                        unit = "k";
+                    }
+                    info += Glib::ustring::sprintf(" %.1lf%sBit/s", speed, unit);
+                    //info += Glib::ustring::sprintf("\tTransmit link speed: %llu\n", pCurrAddresses->TransmitLinkSpeed);
+                    //info += Glib::ustring::sprintf("\tReceive link speed: %llu\n", pCurrAddresses->ReceiveLinkSpeed);
+                }
+                else {
+                    info += " down ";
+                }
+                //info += Glib::ustring::sprintf("\tIpv6IfIndex (IPv6 interface): %lu\n",
+                //       pCurrAddresses->Ipv6IfIndex);
+                //info += Glib::ustring::sprintf("\tZoneIndices (hex): ");
+                //for (i = 0; i < 16; i++) {
+                //    info += Glib::ustring::sprintf("%lx ", pCurrAddresses->ZoneIndices[i]);
+                //}
+                //info += "\n";
+
+
+                //pPrefix = pCurrAddresses->FirstPrefix;
+                //if (pPrefix) {
+                //    for (i = 0; pPrefix != NULL; i++)
+                //        pPrefix = pPrefix->Next;
+                //    info += Glib::ustring::sprintf("\tNumber of IP Adapter Prefix entries: %d\n", i);
+                //} 
+                //else {
+                //    info += Glib::ustring::sprintf("\tNumber of IP Adapter Prefix entries: 0\n");
+                //}
+                //info += "\n";
+
+                pCurrAddresses = pCurrAddresses->Next;
+
+                break;  // stop after found
+            }
+        }
+    } 
+    else {
+        info += Glib::ustring::sprintf("Call to GetAdaptersAddresses failed with error: %lu", dwRetVal);
+        if (dwRetVal == ERROR_NO_DATA)
+            info += " No addresses were found for the requested parameters";
+        else {
+            if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                    FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
+                    NULL, dwRetVal, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),   
+                    // Default language
+                    (LPTSTR) & lpMsgBuf, 0, NULL)) {
+                info += Glib::ustring::sprintf(" Error: %s", (char *)lpMsgBuf);
+                LocalFree(lpMsgBuf);
+            }
+        }
+    }
+    if (pAddresses) {
+        FREE(pAddresses);
+    }    
+    return info;
+#pragma GCC diagnostic pop
+}
+
 std::string
 SysInfoWindows::netInfo()
-{
-    
+{    
     std::string info;
 // It is possible for an adapter to have multiple
 // IPv4 addresses, gateways, and secondary WINS servers
@@ -287,8 +519,7 @@ SysInfoWindows::netInfo()
     ULONG ulOutBufLen = sizeof (IP_ADAPTER_INFO);
     pAdapterInfo = (IP_ADAPTER_INFO *) MALLOC(sizeof (IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        printf("Error allocating memory needed to call GetAdaptersinfo\n");
-        return "";
+        return "Error allocating memory needed to call GetAdaptersinfo";
     }
 // Make an initial call to GetAdaptersInfo to get
 // the necessary size into the ulOutBufLen variable
@@ -296,13 +527,13 @@ SysInfoWindows::netInfo()
         FREE(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *) MALLOC(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            printf("Error allocating memory needed to call GetAdaptersinfo\n");
-            return "";
+            return "Error allocating memory needed to call GetAdaptersinfo";
         }
     }
 
     if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
         pAdapter = pAdapterInfo;
+        info.reserve(64);
         while (pAdapter) {
             //printf("\tComboIndex: \t%lu\n", pAdapter->ComboIndex);
             //printf("\tAdapter Name: \t%s\n", pAdapter->AdapterName);
@@ -342,8 +573,11 @@ SysInfoWindows::netInfo()
             //    printf("Unknown type %u\n", pAdapter->Type);
             //    break;
             //}
-
-            info = Glib::ustring::sprintf("%s/%s", pAdapter->IpAddressList.IpAddress.String, pAdapter->IpAddressList.IpMask.String);
+            info += netAdapterInfo(pAdapter->Index);
+            info += "\n";
+            info += pAdapter->IpAddressList.IpAddress.String;
+            info += "/";
+            info += pAdapter->IpAddressList.IpMask.String;
             //printf("\tIP Address: \t%s Ctx %lx\n",
             //       pAdapter->IpAddressList.IpAddress.String, pAdapter->IpAddressList.Context);
             //printf("\tIP Mask: \t%s\n", pAdapter->IpAddressList.IpMask.String);
@@ -403,11 +637,13 @@ SysInfoWindows::netInfo()
             //printf("\n");
             break;  // only show one (info may repeat)
         }
-    } else {
-        info = Glib::ustring::sprintf("GetAdaptersInfo failed with error: %lu\n", dwRetVal);
+    } 
+    else {
+        info += Glib::ustring::sprintf("GetAdaptersInfo failed with error: %lu\n", dwRetVal);
     }
-    if (pAdapterInfo)
+    if (pAdapterInfo) {
         FREE(pAdapterInfo);
-        
+    }
+    
     return info;   
 }

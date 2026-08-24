@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "SysInfo.hpp"
+#include <cstdint>
 
+#include "SysInfo.hpp"
 
 class SysInfoWindows 
 : public SysInfo {
@@ -34,7 +35,9 @@ public:
     std::string cpuInfo() override;
     std::string memInfo() override;
     std::string netInfo() override;
-    
+protected:
+    std::string netAdapterInfo(uint64_t adapterIndex);
+        
 private:
 
 };

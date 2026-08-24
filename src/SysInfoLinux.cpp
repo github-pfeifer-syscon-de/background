@@ -167,7 +167,7 @@ SysInfoLinux::memInfo()
         stat.close();
     }
 	std::ostringstream oss1;
-	oss1 << (mem_total - mem_avail) / KBYTE_TO_MEGA << "MB used of " <<  mem_total / KBYTE_TO_MEGA << "MB";
+	oss1 << (mem_total - mem_avail) / KBYTE_TO_MEGA << "MiB used of " <<  mem_total / KBYTE_TO_MEGA << "MiB";
 	return oss1.str();
 #pragma GCC diagnostic pop
 }
