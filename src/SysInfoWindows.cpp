@@ -425,7 +425,7 @@ SysInfoWindows::netAdapterInfo(uint64_t adapterIndex)
                 //info += Glib::ustring::sprintf("\tIfType: %ld\n", pCurrAddresses->IfType);
                 //info += Glib::ustring::sprintf("\tOperStatus: %d\n", pCurrAddresses->OperStatus);
                 if (pCurrAddresses->OperStatus >= 1) {
-                    info += " up ";
+                    info += " " + StringUtils::u8str(UP_SYMBOL) + " ";
                     double speed = pCurrAddresses->TransmitLinkSpeed;
                     std::string unit;
                     if (speed >= 1.0e9) {
@@ -445,7 +445,7 @@ SysInfoWindows::netAdapterInfo(uint64_t adapterIndex)
                     //info += Glib::ustring::sprintf("\tReceive link speed: %llu\n", pCurrAddresses->ReceiveLinkSpeed);
                 }
                 else {
-                    info += " down ";
+                    info += " " + StringUtils::u8str(DOWN_SYMBOL) + " ";
                 }
                 //info += Glib::ustring::sprintf("\tIpv6IfIndex (IPv6 interface): %lu\n",
                 //       pCurrAddresses->Ipv6IfIndex);

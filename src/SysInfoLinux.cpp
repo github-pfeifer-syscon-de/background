@@ -30,6 +30,7 @@
 #include <ifaddrs.h>
 #include <linux/if_link.h>
 #include <sys/utsname.h>        // uname
+#include <StringUtils.hpp>
 
 #include "FileLoader.hpp"
 
@@ -190,6 +191,7 @@ SysInfoLinux::netInfo()
                     lineReader.next(updown);
                 }
                 if (updown == "up") {
+                    updown = StringUtils::u8str(UP_SYMBOL);
                     path = Glib::ustring::sprintf("%s/%s/speed", sdir, ent->d_name);
                     LineReader lineReader2(Gio::File::create_for_path(path));
                     unsigned int speed{};
@@ -208,15 +210,24 @@ SysInfoLinux::netInfo()
                     std::string duplex;
                     if (lineReader3.hasNext()) {
                         lineReader3.next(duplex);
+                        if (duplex == "full") {
+                            duplex = StringUtils::u8str(FULL_SYMBOL);
+                        }
+                        else if (duplex =="half") {
+                            duplex = StringUtils::u8str(HALF_SYMBOL);
+                        }
                     }
                     auto conn = netConn(ent->d_name);
                     oss1 << ent->d_name
+                         << " " << updown
                          << " " << speed << unit
                          << " " << duplex
-                         << " " << updown
                          << " " << conn;
                 }
                 else {      // not much infos for this case
+                    if (updown == "down") {
+                        updown = StringUtils::u8str(DOWN_SYMBOL);
+                    }
                     oss1 << ent->d_name
                          << " " << updown;
                 }

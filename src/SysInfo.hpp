@@ -22,8 +22,7 @@
 #include <list>
 #include <memory>
 
-class SysInfo
-{
+class SysInfo {
 public:
     SysInfo();
     explicit SysInfo(const SysInfo& orig) = delete;
@@ -40,6 +39,10 @@ public:
     static std::unique_ptr<SysInfo> create();
     static constexpr unsigned long KBYTE_TO_MEGA{1024ul};
     static constexpr unsigned long BYTE_TO_MEGA{1024ul*1024ul};
+    static constexpr auto UP_SYMBOL{u8"\u2b06"};
+    static constexpr auto DOWN_SYMBOL{u8"\u2b07"};
+    static constexpr auto FULL_SYMBOL{u8"\u21c4"};
+    static constexpr auto HALF_SYMBOL{u8"\u21e0"};
 protected:
 
 private:
