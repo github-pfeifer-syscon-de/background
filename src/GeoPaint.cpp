@@ -184,6 +184,9 @@ GeoPaint::findGeoMinMax()
     }
     m_min = min.floor() - GeoCoord(GEO_BORDER);
     m_max = max.ceil() + GeoCoord(GEO_BORDER);
+    auto diff = m_max - m_min;
+    auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
+    m_max = m_min + GeoCoord{shortest};   // shape long/lat equaliy
 }
 
 void
@@ -200,20 +203,20 @@ GeoPaint::drawImage(
     ctx->set_source_rgb(0.1, 0.1,  0.1);
     ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
     ctx->fill();
-    ctx->translate((layout.getWidth() - min) / 2, (layout.getHeight() - min) / 2);
-    ctx->arc(min / 2, min / 2, min / 2, 0.0, Math::TWO_PI);
-    ctx->clip();    // as we draw some lines beyond the horizon
 
     //std::cout << "GeoPaint::update"
     //          << " width " << width<< " min " << m_min.longitude << " max " << m_max.longitude << "\n"
     //          << " height " << height << " min " << m_min.latitude << " max " << m_max.latitude << std::endl;
-    const auto diff = m_max - m_min;
+    auto diff = m_max - m_min;
     if (std::abs(diff.getLongitude()) < 0.001
       ||std::abs(diff.getLatitude()) < 0.001) {
         return;
     }
-    double xFact = static_cast<double>(width) / diff.getLongitude();
-    double yFact = static_cast<double>(height) / diff.getLatitude();
+    ctx->translate((layout.getWidth() - min) / 2, (layout.getHeight() - min) / 2);
+    ctx->arc(min / 2, min / 2, min / 2, 0.0, Math::TWO_PI);
+    ctx->clip();    // make it a round shape
+    // since the result is quadratic adjust the difference as well
+    auto fact = static_cast<double>(width) / diff.getLongitude(); // since we use same long/latitude this should work
     if (m_imagePix) {
         GeoCoord geoCoord{m_min.getLongitude(), m_min.getLatitude()};
         auto coord = m_geoConversion->fromDisplay(geoCoord);
@@ -226,11 +229,8 @@ GeoPaint::drawImage(
     }
     if (m_weatherService && !m_weatherRequested) {
         auto prod = m_weatherService->find_product(m_weatherProductId);
-        if (prod) {
-            auto now = Glib::DateTime::create_now_local();
-            if (!prod->latest(now) ) {
-                request_weather_product();
-            }
+        if (prod && !prod->is_latest()) {
+            request_weather_product();
         }
     }
     if (m_weatherPix) {
@@ -268,8 +268,8 @@ GeoPaint::drawImage(
             geoCoord.set(firstPnt, pnt);
             if (!firstPnt) {
                 auto coord = m_geoConversion->toDisplay(geoCoord);
-                auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * xFact;
-                auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * yFact;    //  invert y as graphic coords are from top
+                auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
+                auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
                 //std::cout << "x = " << x << " y = " << y
                 //          << " xDraw = " << xDraw << " yDraw = " << yDraw << std::endl;
                 if (firstInSegm) {

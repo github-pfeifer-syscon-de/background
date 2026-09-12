@@ -48,7 +48,7 @@ thread_deps     = dependency('threads')
 if get_option('python')
    python_deps    = dependency('python3-embed py3cairo pygobject-3.0')
 endif
-geodata_deps = dependency('geodata', version :'>= 0.1.5')
+geodata_deps = dependency('geodata', version :'>= 0.1.6')
 win_deps     = declare_dependency()
 if target_machine.system() == 'windows'
     win_deps     = cc.find_library('IPHLPAPI')
