@@ -33,14 +33,12 @@ StarDraw::StarDraw(BaseObjectType* cobject
 : Gtk::DrawingArea(cobject)
 , m_starWin{starWin}
 {
-    m_starPaint = m_starWin->getStarPaint();
-	add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
+    add_events(Gdk::EventMask::BUTTON_PRESS_MASK);
 }
 
 void
 StarDraw::update()
 {
-
     auto now = Glib::DateTime::create_now_utc();
     auto pos = m_starWin->getGeoPosition();
     update(now, pos);
@@ -66,7 +64,10 @@ StarDraw::update(Glib::DateTime now, GeoPosition& pos)
     }
     Layout layout(width, height);
     auto ctx = Cairo::Context::create(m_image);
-    m_starPaint->drawImage(ctx, now, pos, layout);
+    auto backPaint =m_starWin->getBackPaint();
+    backPaint->drawImage(ctx, now, pos, layout);
+    backPaint->drawModules(ctx, layout);
+
     //std::cout << "draw " << w << " h " << h << "\n";
     queue_draw();
 }
@@ -96,26 +97,26 @@ bool
 StarDraw::on_button_press_event(GdkEventButton* event)
 {
     if (event->button == GDK_BUTTON_SECONDARY) {
-		Gtk::Menu* popupMenu = build_popup();
-		// deactivate prevent item signals to get generated ...
-		// signal_unrealize will never get generated
-		popupMenu->attach_to_widget(*this); // this does the trick and calls the destructor
-		popupMenu->popup(event->button, event->time);
+	Gtk::Menu* popupMenu = build_popup();
+	// deactivate prevent item signals to get generated ...
+	// signal_unrealize will never get generated
+	popupMenu->attach_to_widget(*this); // this does the trick and calls the destructor
+	popupMenu->popup(event->button, event->time);
 
-		return true; // It has been handled.
-	}
-	return false;
+	return true; // It has been handled.
+    }
+    return false;
 }
 
 Gtk::Menu *
 StarDraw::build_popup()
 {
-	// managed works when used with attach ...
-	auto pMenuPopup = Gtk::make_managed<Gtk::Menu>();
+    // managed works when used with attach ...
+    auto pMenuPopup = Gtk::make_managed<Gtk::Menu>();
     m_starWin->addMenuItems(pMenuPopup);
 
-	pMenuPopup->show_all();
-	return pMenuPopup;
+    pMenuPopup->show_all();
+    return pMenuPopup;
 }
 
 void

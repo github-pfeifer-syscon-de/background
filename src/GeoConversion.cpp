@@ -1,6 +1,6 @@
 /* -*- Mode: c++; c-basic-offset: 4; tab-width: 4; coding: utf-8; -*-  */
 /*
- * Copyright (C) 2018 rpf
+ * Copyright (C) 2026 RPf
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "GeoConversion.hpp"
 
-#pragma once
 
-#include <gtkmm.h>
-
-class StarDraw;
-class GeoPosition;
-
-class ParamDlg
-: public Gtk::Dialog
+GeoCoord
+GeoConvLinear::toDisplay(const GeoCoord& coord)
 {
-public:
-    ParamDlg(BaseObjectType* cobject
-            , const Glib::RefPtr<Gtk::Builder>& builder
-            , StarWin* starWin);
-    virtual ~ParamDlg() = default;
+    return GeoCoord{coord};
+}
 
-    static void show(StarWin* starWin);
 
-protected:
-    void on_response(int response_id) override;
-
-private:
-    StarWin* m_starWin;
-    Gtk::SpinButton* m_updateInterval;
-    Gtk::ColorButton* m_startColor;
-    Gtk::ColorButton* m_stopColor;
-    Gtk::FontButton* m_starFont;
-    Gtk::CheckButton* m_showMilkyway;
-    Gtk::Scale* m_messierVMag;
-    Gtk::ComboBoxText* m_display;
-};
+GeoCoord
+GeoConvLinear::fromDisplay(const GeoCoord& coord)
+{
+    return GeoCoord{coord};
+}

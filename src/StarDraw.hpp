@@ -53,5 +53,4 @@ private:
     Cairo::RefPtr<Cairo::ImageSurface> m_image;
     Glib::DateTime m_displayTimeUtc;
     StarWin* m_starWin;
-    PtrStarPaint m_starPaint;
 };

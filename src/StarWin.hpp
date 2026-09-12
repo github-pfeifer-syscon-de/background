@@ -23,6 +23,7 @@
 
 #include "GeoPosition.hpp"
 #include "background_config.h"
+#include "BackPaint.hpp"
 
 class StarDraw;
 class BackgroundApp;
@@ -57,10 +58,7 @@ public:
     {
         return m_config;
     }
-    std::shared_ptr<StarPaint> getStarPaint()
-    {
-        return m_starPaint;
-    }
+    PtrBackPaint getBackPaint();
     std::shared_ptr<FileLoader> getFileLoader()
     {
         return m_fileLoader;
@@ -121,9 +119,10 @@ private:
     Glib::RefPtr<StarMountOp> m_starMountOp;
     Glib::RefPtr<Gio::Volume> m_activeVolume;   // e.g. the volume we are currently working on opening, ejecting...
     GPid m_pid;
-    std::shared_ptr<StarPaint> m_starPaint;
+    PtrBackPaint m_backPaint;
     bool m_updateBlocked{false};
-
+    static constexpr auto DAYLIGHT_START_HOUR{6};   // simple daylight rule
+    static constexpr auto DAYLIGHT_END_HOUR{18};
 #   ifdef USE_APPMENU
     std::shared_ptr<AppMenu> m_appMenu;
 #   endif

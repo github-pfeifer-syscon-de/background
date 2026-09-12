@@ -20,6 +20,7 @@ add_project_arguments('-DPACKAGE_SRC_DIR="' + pkgsrcdir + '"', language: ['cpp',
 compiler_add_flags = [  # limit the compiler noisiness
       '-Wno-unused-parameter'
      ,'-Wno-overlength-strings'
+     ,'-Wconversion'                 # these can be helpful
     ]
 cc = meson.get_compiler('c')
 foreach ccflag : compiler_add_flags
@@ -47,6 +48,7 @@ thread_deps     = dependency('threads')
 if get_option('python')
    python_deps    = dependency('python3-embed py3cairo pygobject-3.0')
 endif
+geodata_deps = dependency('geodata', version :'>= 0.1.5')
 win_deps     = declare_dependency()
 if target_machine.system() == 'windows'
     win_deps     = cc.find_library('IPHLPAPI')
@@ -54,6 +56,7 @@ endif
 deps = [
       thread_deps
     , genericimg_deps
+    , geodata_deps
     , python_deps
     , win_deps
     ]

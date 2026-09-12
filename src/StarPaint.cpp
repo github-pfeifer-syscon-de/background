@@ -23,29 +23,21 @@
 #include "Sun.hpp"
 #include "Math.hpp"
 #include "BackgroundApp.hpp"
-#include "FileLoader.hpp"
 #include "background_config.h"
 #include "Planets.hpp"
 #include "MessierLoader.hpp"
-#include "Module.hpp"
-#include "ClockModule.hpp"
-#include "InfoModule.hpp"
-#include "CalendarModule.hpp"
 #include "StarWin.hpp"
 #include "Renderer.hpp"
 
 #include "StarPaint.hpp"
 
 StarPaint::StarPaint(StarWin* starWin)
-: m_starWin{starWin}
+: BackPaint(starWin)
 {
-    m_config = m_starWin->getConfig();
-    m_fileLoader = starWin->getFileLoader();
     m_starFormat = std::make_shared<HipparcosFormat>(m_fileLoader);
     m_constlFormat = std::make_shared<ConstellationFormat>(m_fileLoader);
     m_milkyway = std::make_shared<Milkyway>(m_fileLoader);
     m_messier =  std::make_shared<MessierLoader>(m_fileLoader);
-    m_modules = createModules();
 }
 
 
@@ -404,89 +396,6 @@ StarPaint::drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos
 
 
 
-std::vector<PtrModule>
-StarPaint::findModules(const char* pos)
-{
-    std::vector<PtrModule> mods;
-    mods.reserve(m_modules.size());
-    for (auto& mod : m_modules) {
-        if (mod->getPosition() == pos) {
-            mods.push_back(mod);
-        }
-    }
-    return mods;
-}
-
-void
-StarPaint::drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
-{
-    Point2D pos(40.0, 20.0);
-    for (auto& mod : modules) {
-        ctx->save();
-        ctx->translate(pos.getX(), pos.getY());
-        mod->display(ctx, m_starWin);
-        ctx->restore();
-        Point2D p(0.0, mod->getHeight(ctx, m_starWin));
-        pos.add(p);
-    }
-}
-
-void
-StarPaint::drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
-{
-    int sumHeight{};
-    for (auto& mod : modules) {
-        sumHeight += mod->getHeight(ctx, m_starWin);
-    }
-    Point2D pos(40.0, (layout.getHeight() - sumHeight) / 2.0);
-    for (auto& mod : modules) {
-        ctx->save();
-        ctx->translate(pos.getX(), pos.getY());
-        mod->display(ctx, m_starWin);
-        ctx->restore();
-        Point2D p(0.0, mod->getHeight(ctx, m_starWin));
-        pos.add(p);
-    }
-}
-
-void
-StarPaint::drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules)
-{
-    int sumHeight{0};
-    for (auto& mod : modules) {
-        sumHeight += mod->getHeight(ctx, m_starWin);
-    }
-    Point2D pos(40.0, layout.getHeight() - sumHeight - 20.0);
-    for (auto& mod : modules) {
-        ctx->save();
-        ctx->translate(pos.getX(), pos.getY());
-        mod->display(ctx, m_starWin);
-        ctx->restore();
-        Point2D p(0.0, mod->getHeight(ctx, m_starWin));
-        pos.add(p);
-    }
-}
-
-void
-StarPaint::scale(Pango::FontDescription& starFont, double scale)
-{
-    starFont.set_size(static_cast<int>(starFont.get_size() * scale));
-}
-
-void
-StarPaint::brighten(Gdk::RGBA& color, double factor)
-{
-    color.set_red(color.get_red() * factor);
-    color.set_green(color.get_green() * factor);
-    color.set_blue(color.get_blue() * factor);
-}
-
-std::shared_ptr<KeyConfig>
-StarPaint::getConfig()
-{
-    return m_config;
-}
-
 bool
 StarPaint::isShowMilkyway()
 {
@@ -550,34 +459,6 @@ StarPaint::setStopColor(const Gdk::RGBA& stopColor)
     m_config->setColor(MAIN_GRP, STOP_COLOR_KEY, stopColor);
 }
 
-std::vector<PtrModule>
-StarPaint::createModules()
-{
-#   ifdef USE_PYTHON
-    auto pyWrapper = std::make_shared<PyWrapper>();
-#   else
-    auto pyWrapper = std::shared_ptr<PyWrapper>();
-#   endif
-    std::vector<PtrModule> mods;
-    mods.reserve(4);
-    mods.emplace_back(
-        std::move(
-            std::make_shared<InfoModule>(m_config, pyWrapper)));
-    mods.emplace_back(
-        std::move(
-            std::make_shared<ClockModule>(m_config, pyWrapper)));
-    mods.emplace_back(
-        std::move(
-            std::make_shared<CalendarModule>(m_config, pyWrapper)));
-    return mods;
-}
-
-std::vector<PtrModule>
-StarPaint::getModules()
-{
-    return m_modules;
-}
-
 void
 StarPaint::drawImage(Cairo::RefPtr<Cairo::Context>& ctx
             , const Glib::DateTime& now
@@ -590,8 +471,4 @@ StarPaint::drawImage(Cairo::RefPtr<Cairo::Context>& ctx
     CairoRenderer cairoRenderer(ctx);
     drawSky(&cairoRenderer, jd, pos, layout);
     ctx->restore();
-
-    drawTop(ctx, layout, findModules(Module::POS_TOP));
-    drawMiddle(ctx, layout, findModules(Module::POS_MIDDLE));
-    drawBottom(ctx, layout, findModules(Module::POS_BOTTOM));
 }

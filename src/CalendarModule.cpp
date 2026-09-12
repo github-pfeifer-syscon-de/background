@@ -103,7 +103,7 @@ CalendarModule::display(const Cairo::RefPtr<Cairo::Context>& ctx, StarWin* starW
     // as there seems no way to diffrentiate the locale start with monday (but it's the iso way)
     auto pangoLayout = Pango::Layout::create(ctx);
     pangoLayout->set_font_description(calFont);
-    starWin->getStarPaint()->scale(calFont, 0.6);
+    starWin->getBackPaint()->scale(calFont, 0.6);
     auto smallLayout = Pango::Layout::create(ctx);
     smallLayout->set_font_description(calFont);
     auto boldLayout = Pango::Layout::create(ctx);

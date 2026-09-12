@@ -24,9 +24,8 @@
 #include "Layout.hpp"
 #include "GeoPosition.hpp"
 #include "JulianDate.hpp"
-#include "SysInfo.hpp"
 #include "Milkyway.hpp"
-#include "Module.hpp"
+#include "BackPaint.hpp"
 
 class HipparcosFormat;
 class ConstellationFormat;
@@ -36,6 +35,7 @@ class StarWin;
 class Renderer;
 
 class StarPaint
+: public BackPaint
 {
 public:
     StarPaint(StarWin* starWin);
@@ -63,7 +63,6 @@ public:
     static constexpr auto SHOW_MILKYWAY_KEY{"showMilkyway"};
     static constexpr auto MESSIER_VMAGMIN_KEY{"messierVMagMin"};
 
-    std::shared_ptr<KeyConfig> getConfig();
     Pango::FontDescription getStarFont();
     void setStarFont(const Pango::FontDescription& descr);
     Gdk::RGBA getStartColor();
@@ -74,10 +73,6 @@ public:
     void setShowMilkyway(bool showMilkyway);
     double getMessierVMagMin();
     void setMessierVMagMin(double showMessier);
-    void scale(Pango::FontDescription& starFont, double scale);
-    void brighten(Gdk::RGBA& calColor, double factor);
-    std::vector<PtrModule> createModules();
-    std::vector<PtrModule> getModules();
     std::shared_ptr<FileLoader> getFileLoader()
     {
         return m_fileLoader;
@@ -99,23 +94,15 @@ protected:
     void draw_messier(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout);
     std::vector<NamedPoint> cluster(const std::vector<NamedPoint>& points, double distance = 20.0);
 
-    std::vector<PtrModule> findModules(const char* pos);
-    void drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
-    void drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
-    void drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
     double getLineWidth(const Layout& layout);
     double getSunMoonRadius(const Layout& layout);
 
 
 private:
-    StarWin* m_starWin;
     std::shared_ptr<HipparcosFormat> m_starFormat;
     std::shared_ptr<ConstellationFormat> m_constlFormat;
-    std::shared_ptr<KeyConfig> m_config;
     std::shared_ptr<Milkyway> m_milkyway;
     std::shared_ptr<MessierLoader> m_messier;
-    std::vector<PtrModule> m_modules;
-    std::shared_ptr<FileLoader> m_fileLoader;
 };
 
 using PtrStarPaint = std::shared_ptr<StarPaint>;

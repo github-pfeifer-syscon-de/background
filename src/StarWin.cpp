@@ -39,6 +39,9 @@
 #include "HaruRenderer.hpp"
 #endif
 #include "Renderer.hpp"
+#include "GeoPaint.hpp"
+#include "StarPaint.hpp"
+
 
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
@@ -56,7 +59,6 @@ StarWin::StarWin(BaseObjectType* cobject
 
     setupConfig();
     m_fileLoader = std::make_shared<FileLoader>(backAppl->get_exec_path());
-    m_starPaint = std::make_shared<StarPaint>(this);
     if (m_backAppl->isDaemon()) {
         iconify();
         add_action("preferences", sigc::mem_fun(*this, &StarWin::on_menu_param));
@@ -336,7 +338,9 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
         auto image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
         Layout layout(width, height);
         auto ctx = Cairo::Context::create(image);
-        m_starPaint->drawImage(ctx, now, pos, layout);
+        auto backPaint = getBackPaint();
+        backPaint->drawImage(ctx, now, pos, layout);
+        backPaint->drawModules(ctx, layout);
         // create new
         auto dateTime = now.format("%F_%H%M%S%f");  // build a long name, as updates work only when filename changes e.g. from settings dialog
         auto fileName = std::format("{}{}.png", IMAGE_PREFIX, dateTime);
@@ -403,7 +407,7 @@ StarWin::on_mount(Glib::RefPtr<Gio::AsyncResult>& result)
                 std::vector<std::string> args;
                 args.push_back(arg0);
                 args.push_back(mount->get_root()->get_uri());
-                auto msg = m_starPaint->getFileLoader()->run(args, &m_pid);
+                auto msg = /*m_starPaint->getFileLoader()*/m_fileLoader->run(args, &m_pid);
                 if (!msg.empty()) {
                     showMessage(
                           Glib::ustring::sprintf("Open %s failed with %s", arg0, msg)
@@ -562,6 +566,27 @@ StarWin::do_close()
     hide(); // terminates app as well
 }
 
+PtrBackPaint
+StarWin::getBackPaint()
+{
+    auto geoJson = getConfig()->getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOJSON);
+    auto now = Glib::DateTime::create_now_utc();
+    if (geoJson.empty() || now.get_hour() <= DAYLIGHT_START_HOUR || now.get_hour() >= DAYLIGHT_END_HOUR) {
+        auto starPaint = std::dynamic_pointer_cast<StarPaint>(m_backPaint);
+        m_backPaint = starPaint == nullptr
+                      ? std::make_shared<StarPaint>(this)
+                      : starPaint;
+    }
+    else {
+        auto geoPaint = std::dynamic_pointer_cast<GeoPaint>(m_backPaint);
+        m_backPaint = geoPaint == nullptr
+                        ? std::make_shared<GeoPaint>(this)
+                        : geoPaint;
+    }
+    return m_backPaint;
+}
+
+
 void
 StarWin::showMessage(const Glib::ustring& msg, Gtk::MessageType msgType)
 {
@@ -636,18 +661,24 @@ StarWin::exportPdf()
         auto ref = std::min(screen->get_height(), screen->get_width());
         // this is just a guess, since the display may appear somewhere else, but we can't tell
         haruRenderer.setReference(ref);
-        auto starFont = m_starPaint->getStarFont();
-        m_starPaint->scale(starFont, 1.5);
-        auto infoTxt = haruRenderer.createText(starFont);
-        infoTxt->setText(info);
-        //std::cout << "layout " << layout.getWidth() << " height " << layout.getHeight() << std::endl;
-        //std::cout << "info " << info << " xOffs " << layout.getXOffs() << " height " << layout.getHeight() - layout.getYOffs() << std::endl;
-        haruRenderer.showText(infoTxt, layout.getXOffs(), layout.getYOffs() + (layout.getHeight() -  layout.getMin()) / 2.0, TextAlign::LeftBottom);
-        haruRenderer.setInvertY(true);      // as we work with cairo coordinates from here on
-        m_starPaint->drawSky(&haruRenderer, jd, pos, layout);
-        ImageFileChooser file_chooser(*this, true, {"pdf"});
-        if (file_chooser.run() == Gtk::ResponseType::RESPONSE_ACCEPT) {
-            haruRenderer.save(file_chooser.get_file()->get_path());
+        auto starPaint = std::dynamic_pointer_cast<StarPaint>(getBackPaint());
+        if (starPaint) {
+            auto starFont = starPaint->getStarFont();
+            starPaint->scale(starFont, 1.5);
+            auto infoTxt = haruRenderer.createText(starFont);
+            infoTxt->setText(info);
+            //std::cout << "layout " << layout.getWidth() << " height " << layout.getHeight() << std::endl;
+            //std::cout << "info " << info << " xOffs " << layout.getXOffs() << " height " << layout.getHeight() - layout.getYOffs() << std::endl;
+            haruRenderer.showText(infoTxt, layout.getXOffs(), layout.getYOffs() + (layout.getHeight() -  layout.getMin()) / 2.0, TextAlign::LeftBottom);
+            haruRenderer.setInvertY(true);      // as we work with cairo coordinates from here on
+            starPaint->drawSky(&haruRenderer, jd, pos, layout);
+            ImageFileChooser file_chooser(*this, true, {"pdf"});
+            if (file_chooser.run() == Gtk::ResponseType::RESPONSE_ACCEPT) {
+                haruRenderer.save(file_chooser.get_file()->get_path());
+            }
+        }
+        else {
+            showMessage("Export only works while stars are visible (for now)!");
         }
     }
     catch (const std::exception& ex) {

@@ -124,4 +124,31 @@ By using a mingw shell and setting:
 ```
  export PYTHONPATH="C:/msys64/mingw64/lib/python312.zip;C:/msys64/mingw64/lib/python3.12;C:/msys64/mingw64/lib/python3.12/lib-dynload;C:/msys64/mingw64/lib/python3.12/site-packages"
 ```
-things started to look better.
+things started to look better. 
+If you are into python on windows you may have to fix some issues,
+otherwise use:
+ `meson setup ... -Dpython=false`. 
+
+### Daylight/Geo view
+
+To show a alternative (experimental) picture for daylight 6-18h
+add the following settings in `glglobe.conf`:
+
+```
+[geo]
+geoJson=GEO_JSON_FILE
+image=IMAGE_EG_SOLARSYSTEMSCOPE_EARTH_2K
+weatherProduct=msg_fes:h60b
+
+[weather0]
+weatherAddress=https://view.eumetsat.int/geoserver/wms
+weatherName=EumetSat
+weatherDelay=1800
+weatherLocalTime=false
+weatherType=WMS
+```
+
+the GEO_JSON_FILE defines the viewed bounds with some 
+rounding & addition (avoid crossing equator/0 meridian,
+no projection like mercator will be used). 
+Best copy from glglobe as it has some gui for preferences.

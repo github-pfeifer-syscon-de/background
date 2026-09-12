@@ -1,3 +1,4 @@
+/* -*- Mode: c++; c-basic-offset: 4; tab-width: 4; coding: utf-8; -*-  */
 /*
  * Copyright (C) 2018 rpf
  *
@@ -48,44 +49,69 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
         }
     }
 
-    auto starPaint = m_starWin->getStarPaint();
+    auto starPaint = std::dynamic_pointer_cast<StarPaint>(m_starWin->getBackPaint());
     builder->get_widget("startColor", m_startColor);
-    m_startColor->set_rgba(starPaint->getStartColor());
-    m_startColor->signal_color_set().connect([this, starPaint] {
-        starPaint->setStartColor(m_startColor->get_rgba());
-        m_starWin->update();
-    });
+    if (starPaint) {
+        m_startColor->set_rgba(starPaint->getStartColor());
+        m_startColor->signal_color_set().connect([this, starPaint] {
+            starPaint->setStartColor(m_startColor->get_rgba());
+            m_starWin->update();
+        });
+    }
+    else {
+        m_startColor->set_sensitive(false);
+    }
 
     builder->get_widget("stopColor", m_stopColor);
-    m_stopColor->set_rgba(starPaint->getStopColor());
-    m_stopColor->signal_color_set().connect([this, starPaint] {
-        starPaint->setStopColor(m_stopColor->get_rgba());
-        m_starWin->update();
-    });
+    if (starPaint) {
+        m_stopColor->set_rgba(starPaint->getStopColor());
+        m_stopColor->signal_color_set().connect([this, starPaint] {
+            starPaint->setStopColor(m_stopColor->get_rgba());
+            m_starWin->update();
+        });
+    }
+    else {
+        m_stopColor->set_sensitive(false);
+    }
 
     builder->get_widget("starFont", m_starFont);
-    m_starFont->set_font_name(m_starWin->getStarPaint()->getStarFont().to_string());
-    m_starFont->signal_font_set().connect([this, starPaint] {
-        Pango::FontDescription starFont{m_starFont->get_font_name()};
-        starPaint->setStarFont(starFont);
-        m_starWin->update();
-    });
+    if (starPaint) {
+        m_starFont->set_font_name(starPaint->getStarFont().to_string());
+        m_starFont->signal_font_set().connect([this, starPaint] {
+            Pango::FontDescription starFont{m_starFont->get_font_name()};
+            starPaint->setStarFont(starFont);
+            m_starWin->update();
+        });
+    }
+    else {
+        m_starFont->set_sensitive(false);
+    }
 
     builder->get_widget("showMilkyway", m_showMilkyway);
-    m_showMilkyway->set_active(m_starWin->getStarPaint()->isShowMilkyway());
-    m_showMilkyway->signal_clicked().connect([this,starPaint] {
-        starPaint->setShowMilkyway(m_showMilkyway->get_active());
-        m_starWin->update();
-    });
+    if (starPaint) {
+        m_showMilkyway->set_active(starPaint->isShowMilkyway());
+        m_showMilkyway->signal_clicked().connect([this,starPaint] {
+            starPaint->setShowMilkyway(m_showMilkyway->get_active());
+            m_starWin->update();
+        });
+    }
+    else {
+        m_showMilkyway->set_sensitive(false);
+    }
 
     builder->get_widget("messierVMag", m_messierVMag);
-    m_messierVMag->set_value(m_starWin->getStarPaint()->getMessierVMagMin());
-    m_messierVMag->signal_value_changed().connect([this,starPaint] {
-        starPaint->setMessierVMagMin(m_messierVMag->get_value());
-        m_starWin->update();
-    });
+    if (starPaint) {
+        m_messierVMag->set_value(starPaint->getMessierVMagMin());
+        m_messierVMag->signal_value_changed().connect([this,starPaint] {
+            starPaint->setMessierVMagMin(m_messierVMag->get_value());
+            m_starWin->update();
+        });
+    }
+    else {
+        m_messierVMag->set_sensitive(false);
+    }
 
-    for (auto& mod : m_starWin->getStarPaint()->getModules()) {
+    for (auto& mod : m_starWin->getBackPaint()->getModules()) {
         mod->setupParam(builder, starWin);
     }
 	show_all_children();
@@ -108,16 +134,18 @@ ParamDlg::on_response(int response_id)
                 std::cout << "Error parsing select display " << nMonitor << std::endl;
             }
         }
-        auto starPaint = m_starWin->getStarPaint();
-        starPaint->setStartColor(m_startColor->get_rgba());
-        starPaint->setStopColor(m_stopColor->get_rgba());
-        Pango::FontDescription starFont{m_starFont->get_font_name()};
-        starPaint->setStarFont(starFont);
-        starPaint->setShowMilkyway(m_showMilkyway->get_active());
-        starPaint->setMessierVMagMin(m_messierVMag->get_value());
+        auto starPaint = std::dynamic_pointer_cast<StarPaint>(m_starWin->getBackPaint());
+        if (starPaint) {
+            starPaint->setStartColor(m_startColor->get_rgba());
+            starPaint->setStopColor(m_stopColor->get_rgba());
+            Pango::FontDescription starFont{m_starFont->get_font_name()};
+            starPaint->setStarFont(starFont);
+            starPaint->setShowMilkyway(m_showMilkyway->get_active());
+            starPaint->setMessierVMagMin(m_messierVMag->get_value());
+        }
         save = true;
     }
-    for (auto& mod : m_starWin->getStarPaint()->getModules()) {
+    for (auto& mod : m_starWin->getBackPaint()->getModules()) {
         mod->saveParam(save);
     }
 }

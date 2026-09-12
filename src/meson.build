@@ -37,6 +37,10 @@ sources = files(
 	, 'ParamDlg.cpp'
 	, 'Renderer.cpp'
 	, 'TimeDlg.cpp'
+	, 'BackPaint.cpp'
+	, 'GeoPaint.cpp'
+	, 'GeoBitmap.cpp'
+	, 'GeoConversion.cpp'
     )
 
 if get_option('python')
