@@ -93,7 +93,7 @@ std::shared_ptr<Weather>
 GeoPaint::refresh_weather_service()
 {
     auto conf =  m_config->getActiveWebMapServiceConf();
-    m_weatherService = std::make_shared<WebMapService>(this, conf, 300);    // period sec
+    m_weatherService = m_config->getService(this, conf);
     m_weatherService->setLog(m_starWin->getLog());
     //m_weatherService->setLog(m_log);
     m_weatherService->signal_products_completed().connect(

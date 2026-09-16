@@ -149,8 +149,10 @@ By default a solarsystem-scope example is downloaded
 and added (if you don't like this see res/meson.build
 and place your prefered in image).
 
-#### A list of services
+#### Map-services
 
-use the WMS variants, but I had not much luck finding something nicely working...
+Sry: The Real-earth-service does not work on this side...   
+
+Use the WMS variants, but I had not much luck finding something nicely working...
 
 https://geodocs.io/en/blog/list-of-free-wms-and-wmts-basemap-urls-2026
