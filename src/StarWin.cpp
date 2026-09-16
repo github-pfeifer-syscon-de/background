@@ -16,18 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.hpp>
 #include <cmath>
 #include <iostream>
 #include <StringUtils.hpp>
 #include <format>
 
+#include "BackConfig.hpp"
+#include "WeatherConfigGrid.hpp"
 #include "StarWin.hpp"
 #include "StarDraw.hpp"
 #include "BackgroundApp.hpp"
 #include "StarMountOperation.hpp"
 #include "FileLoader.hpp"
 #include "StarPaint.hpp"
-#include "KeyConfig.hpp"
 #include "ParamDlg.hpp"
 #include "TimeDlg.hpp"
 #include "FileLoader.hpp"
@@ -46,12 +48,13 @@
 StarWin::StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
         , BackgroundApp* backAppl
-        , std::shared_ptr<KeyConfig> config)
+        , std::shared_ptr<BackConfig> config)
 : Gtk::ApplicationWindow(cobject)
 , m_backAppl{backAppl}
 , m_config{config}
 , m_volumeMonitor{Gio::VolumeMonitor::get()}
 , m_cancelable{Gio::Cancellable::create()}
+, m_log{psc::log::Log::create("background")}
 {
     set_title("Stars");
     auto pix = Gdk::Pixbuf::create_from_resource(m_backAppl->get_resource_base_path() + "/background.png");
@@ -61,7 +64,7 @@ StarWin::StarWin(BaseObjectType* cobject
     m_fileLoader = std::make_shared<FileLoader>(backAppl->get_exec_path());
     if (m_backAppl->isDaemon()) {
         iconify();
-        add_action("preferences", sigc::mem_fun(*this, &StarWin::on_menu_param));
+        add_action("preferences", sigc::mem_fun(*this, &StarWin::onMenuConfig));
         add_action("time", sigc::mem_fun(*this, &StarWin::on_menu_time));
 #       ifdef USE_PDF
         add_action("export", sigc::mem_fun(*this, &StarWin::exportPdf));
@@ -76,6 +79,9 @@ StarWin::StarWin(BaseObjectType* cobject
         m_appMenu = std::make_shared<AppMenu>();
 #       endif
     }
+    m_log->setLevel(
+            psc::log::Log::getLevel(
+                    m_config->getString(StarPaint::MAIN_GRP, LOG_LEVEL, "info")));
     updateTimer();
     signal_hide().connect([this] {
         if (m_timer.connected()) {
@@ -85,23 +91,23 @@ StarWin::StarWin(BaseObjectType* cobject
 }
 
 
-std::shared_ptr<KeyConfig>
+StarWin::~StarWin()
+{
+    m_log->close();
+}
+
+std::shared_ptr<BackConfig>
 StarWin::createConfig()
 {
-    auto config = std::make_shared<KeyConfig>(CONFIG_NAME);
+    auto config = std::make_shared<BackConfig>(CONFIG_NAME);
     loadThisConfig(config);
     return config;
 }
 
 void
-StarWin::loadThisConfig(const std::shared_ptr<KeyConfig>& config)
+StarWin::loadThisConfig(const std::shared_ptr<BackConfig>& config)
 {
-    try {
-        config->getConfig()->load_from_file(config->getConfigName());
-    }
-    catch (const Glib::FileError& exc) {
-        std::cerr << "Cound not read " << exc.what() << " config " << CONFIG_NAME << " (it may not yet exist and will be created)." << std::endl;
-    }
+    config->read();     // since we tried to unify some structures loadConfig isn't working
 }
 
 void
@@ -153,7 +159,7 @@ void
 StarWin::saveConfig()
 {
     try {
-        m_config->saveConfig();
+        m_config->save();
     }
     catch (const Glib::Error &ex) {
         auto msg = Glib::ustring::sprintf("Error %s saving config", ex.what());
@@ -183,17 +189,46 @@ StarWin::savePosition()
 }
 
 void
-StarWin::on_menu_param()
+StarWin::onMenuConfig()
 {
-	ParamDlg::show(this);
+    auto builder = Gtk::Builder::create();
+    try {
+        saveConfig(); // for a new state (first startup) the settings are not yet saved as we may want to restore them, save now
+        auto appl = getBackgroundAppl();
+        builder->add_from_resource(appl->get_resource_base_path() + "/pref-dlg.ui");
+        builder->get_widget_derived("PrefDlg", m_paramDialog, this);
+        //auto icon = Gdk::Pixbuf::create_from_resource(appl->get_resource_base_path() + "/background.png");
+        //paramDialog->set_logo(icon);
+        m_paramDialog->set_transient_for(*this);
+        if (m_paramDialog->run() == Gtk::RESPONSE_OK) {
+            saveConfig();
+            // compute is called from starDraw
+        }
+        else {
+            loadConfig();
+        }
+        closeConfigDlg();    // we may return here after we forcibly closed the dialog
+    }
+    catch (const Glib::Error &ex) {
+        std::cerr << "Unable to load pref-dialog: " << ex.what() << std::endl;
+    }
     update();
+}
+
+void StarWin::closeConfigDlg()
+{
+    if (m_paramDialog != nullptr) {
+        m_paramDialog->hide();
+        delete m_paramDialog;
+        m_paramDialog = nullptr;
+    }
 }
 
 void
 StarWin::on_menu_time()
 {
     m_updateBlocked = true;
-	TimeDlg::show(this);
+    TimeDlg::show(this);
     m_updateBlocked = false;
     update();      // reset to default view
 }
@@ -334,7 +369,7 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
         screen->get_monitor_geometry(monitorNum, rect);
         int width = rect.get_width();
         int height = rect.get_height();
-        std::cout << "Monitor size " << width << " x " << height << std::endl;
+        //std::cout << "Monitor size " << width << " x " << height << std::endl;
         auto image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
         Layout layout(width, height);
         auto ctx = Cairo::Context::create(image);
@@ -415,7 +450,9 @@ StarWin::on_mount(Glib::RefPtr<Gio::AsyncResult>& result)
                 }
             }
 #           endif
-            //showMessage(Glib::ustring::sprintf("Mount succeeded %s at %s", m_activeVolume->get_name(), mountPoint));
+            psc::log::Log::logAdd(psc::log::Level::Info, [&]  {
+                return std::format("Mount succeeded {} at {}", m_activeVolume->get_name(), mount->get_root()->get_path());
+            });
         }
         else {
             showMessage(Glib::ustring::sprintf("Mount %s failed", m_activeVolume->get_name()), Gtk::MessageType::MESSAGE_ERROR);
@@ -522,7 +559,7 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
     }
 
 	auto mparam = Gtk::make_managed<Gtk::MenuItem>("_Parameter", true);
-	mparam->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_param));
+	mparam->signal_activate().connect(sigc::mem_fun(*this, &StarWin::onMenuConfig));
 	pMenuPopup->append(*mparam);
 
 	auto mtime = Gtk::make_managed<Gtk::MenuItem>("_Timeshift&Position", true);
@@ -566,22 +603,36 @@ StarWin::do_close()
     hide(); // terminates app as well
 }
 
+std::shared_ptr<StarPaint>
+StarWin::getStarPaint()
+{
+    if (!m_starPaint) {
+        m_starPaint = std::make_shared<StarPaint>(this);
+    }
+    return m_starPaint;
+}
+
+std::shared_ptr<GeoPaint>
+StarWin::getGeoPaint()
+{
+    if (!m_geoPaint) {
+        m_geoPaint = std::make_shared<GeoPaint>(this);
+    }
+    return m_geoPaint;
+}
+
 PtrBackPaint
 StarWin::getBackPaint()
 {
     auto geoJson = getConfig()->getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOJSON);
-    auto now = Glib::DateTime::create_now_utc();
-    if (geoJson.empty() || now.get_hour() <= DAYLIGHT_START_HOUR || now.get_hour() >= DAYLIGHT_END_HOUR) {
-        auto starPaint = std::dynamic_pointer_cast<StarPaint>(m_backPaint);
-        m_backPaint = starPaint == nullptr
-                      ? std::make_shared<StarPaint>(this)
-                      : starPaint;
+    auto now = Glib::DateTime::create_now_local();
+    if (geoJson.empty()
+     || now.get_hour() <= DAYLIGHT_START_HOUR
+     || now.get_hour() >= DAYLIGHT_END_HOUR) {
+        m_backPaint = getStarPaint();
     }
     else {
-        auto geoPaint = std::dynamic_pointer_cast<GeoPaint>(m_backPaint);
-        m_backPaint = geoPaint == nullptr
-                        ? std::make_shared<GeoPaint>(this)
-                        : geoPaint;
+        m_backPaint = getGeoPaint();
     }
     return m_backPaint;
 }
@@ -634,13 +685,13 @@ StarWin::setDaemonDisplay(int daemonDisplay)
 Glib::ustring
 StarWin::getDaemonDbusChannel()
 {
-    return m_config->getString(DAEMON_GRP, DBUS_CHANNEL_KEY, "");
+    return m_config->getString(DAEMON_GRP, DBUS_CHANNEL_KEY);
 }
 
 Glib::ustring
 StarWin::getDaemonDbusProperty()
 {
-    return m_config->getString(DAEMON_GRP, DBUS_PROPERTY_KEY, "");
+    return m_config->getString(DAEMON_GRP, DBUS_PROPERTY_KEY);
 }
 
 
@@ -682,10 +733,10 @@ StarWin::exportPdf()
         }
     }
     catch (const std::exception& ex) {
-        std::cout << "Error exporting " << ex.what() << std::endl;
+        showMessage(Glib::ustring::format("Error %s exporting", ex.what()));
     }
     catch (...) {
-        std::cout << "Any error when exporting!" << std::endl;
+        showMessage("Unknown error when exporting!");
     }
 
 #   endif

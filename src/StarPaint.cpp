@@ -18,6 +18,7 @@
 
 
 #include "HipparcosFormat.hpp"
+#include "BackConfig.hpp"
 #include "ConstellationFormat.hpp"
 #include "Moon.hpp"
 #include "Sun.hpp"

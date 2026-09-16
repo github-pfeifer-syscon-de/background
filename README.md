@@ -117,7 +117,7 @@ in case of a stacktrace that ends somewhere into python.
 
 The simple init does not work with Msys2/Windows as it seems (at least for me).
 If you want to look into the issue there is a #ifdef section in PyWrapper
-that outputs the used path. This should allows to idententify where things go wrong
+that outputs the used path. This should allow to identify where things go wrong
 (look for directory components with a weired location,
 the included .zip entry seems to be optional).
 By using a mingw shell and setting:
@@ -132,23 +132,25 @@ otherwise use:
 ### Daylight/Geo view
 
 To show a alternative (experimental) picture for daylight 6-18h
-add the following settings in `glglobe.conf`:
+use the weather section in preferences. The geoJson file
+activates the feature and must be added by hand for now.
 
 ```
 [geo]
 geoJson=GEO_JSON_FILE
-image=IMAGE_EG_SOLARSYSTEMSCOPE_EARTH_2K
-weatherProduct=msg_fes:h60b
-
-[weather0]
-weatherAddress=https://view.eumetsat.int/geoserver/wms
-weatherName=EumetSat
-weatherDelay=1800
-weatherLocalTime=false
-weatherType=WMS
 ```
 
-the GEO_JSON_FILE defines the viewed bounds with some 
+The GEO_JSON_FILE defines the viewed bounds with some
 rounding & addition (avoid crossing equator/0 meridian,
-no projection like mercator will be used). 
-Best copy from glglobe as it has some gui for preferences.
+no projection like mercator will be used).
+There is also a option to set a image file with:
+[geo] ... image=IMAGE_EG_SOLARSYSTEMSCOPE_EARTH_2K
+By default a solarsystem-scope example is downloaded
+and added (if you don't like this see res/meson.build
+and place your prefered in image).
+
+#### A list of services
+
+use the WMS variants, but I had not much luck finding something nicely working...
+
+https://geodocs.io/en/blog/list-of-free-wms-and-wmts-basemap-urls-2026

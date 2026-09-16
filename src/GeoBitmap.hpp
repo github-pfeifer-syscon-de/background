@@ -27,10 +27,10 @@ public:
     GeoBitmap() = default;
     explicit GeoBitmap(const GeoBitmap& other) = delete;
     virtual ~GeoBitmap() = default;
-    void setMinimum(const GeoCoord& min) {
+    void setMinimum(const GeoCoordinate& min) {
         m_min = min;
     }
-    void setMaximum(const GeoCoord& max) {
+    void setMaximum(const GeoCoordinate& max) {
         m_max = max;
     }
     void setPixmap(const Glib::RefPtr<Gdk::Pixbuf>& pixmap) {
@@ -44,15 +44,15 @@ public:
      * Get a slice for coord & size from a bigger pixelmap.
      * warn: no handling for partial overlap.
      **/
-    [[nodiscard]] auto getSlice(const GeoCoord& coord, const GeoCoord& size)
+    [[nodiscard]] auto getSlice(const GeoCoordinate& coord, const GeoCoordinate& size)
     ->Glib::RefPtr<Gdk::Pixbuf>;
 protected:
     double getPixelPerLongitude();
     double getPixelPerLatitude();
 
 private:
-    GeoCoord m_min;
-    GeoCoord m_max;
+    GeoCoordinate m_min;
+    GeoCoordinate m_max;
     Glib::RefPtr<Gdk::Pixbuf> m_pixmap;
     double m_pixelPerLongitude{};
     double m_pixelPerLatitude{};

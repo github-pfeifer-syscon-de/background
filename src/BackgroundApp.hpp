@@ -22,7 +22,7 @@
 
 #include <glibmm.h>
 
-class KeyConfig;
+class BackConfig;
 
 class StarOptionGroup
 : public Glib::OptionGroup
@@ -73,8 +73,7 @@ private:
     StarWin* m_starAppWindow{nullptr};
     Glib::StdStringView m_exec;
     bool m_daemon{false};
-    std::shared_ptr<KeyConfig> m_config;
-    //Glib::RefPtr<Gtk::Builder> m_builder;
+    std::shared_ptr<BackConfig> m_config;
     void on_action_quit();
     void on_action_help();
 };

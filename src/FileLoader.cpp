@@ -31,10 +31,11 @@ FileLoader::FileLoader(Glib::StdStringView startPath)
 {
 }
 
+
 Glib::RefPtr<Gio::File>
-FileLoader::findFile(Glib::StdStringView name)
+FileLoader::findFile(Glib::StdStringView name, Glib::StdStringView src)
 {
-    auto resDir = psc::util::Files::getSrcRelativeDir(m_startPath, PACKAGE_SRC_DIR);
+    auto resDir = psc::util::Files::getSrcRelativeDir(m_startPath, src);
     auto fullPath = Glib::canonicalize_filename(name, resDir);
     auto file = Gio::File::create_for_path(fullPath);
 #   ifdef FILELOADER_DEBUG

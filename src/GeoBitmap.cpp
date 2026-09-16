@@ -40,7 +40,7 @@ GeoBitmap::getPixelPerLatitude()
 }
 
 [[nodiscard]] auto
-GeoBitmap::getSlice(const GeoCoord& coord, const GeoCoord& size)
+GeoBitmap::getSlice(const GeoCoordinate& coord, const GeoCoordinate& size)
 ->Glib::RefPtr<Gdk::Pixbuf>
 {
     int xImg = static_cast<int>((coord.getLongitude() - m_min.getLongitude()) * getPixelPerLongitude());

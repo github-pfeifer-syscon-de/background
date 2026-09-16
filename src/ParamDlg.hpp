@@ -22,6 +22,7 @@
 
 class StarDraw;
 class GeoPosition;
+class ConfigWeatherGrid;
 
 class ParamDlg
 : public Gtk::Dialog
@@ -32,7 +33,6 @@ public:
             , StarWin* starWin);
     virtual ~ParamDlg() = default;
 
-    static void show(StarWin* starWin);
 
 protected:
     void on_response(int response_id) override;
@@ -46,4 +46,5 @@ private:
     Gtk::CheckButton* m_showMilkyway;
     Gtk::Scale* m_messierVMag;
     Gtk::ComboBoxText* m_display;
+    ConfigWeatherGrid* m_configWeatherGrid;
 };

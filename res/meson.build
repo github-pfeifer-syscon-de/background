@@ -21,6 +21,21 @@ install_data(
       meson.project_name() + '.desktop'
     , install_dir: join_paths(dataDir, 'applications'))
 
+curl_exec = find_program('curl', required: true)
+texture_files = [
+    '2k_earth_daymap.jpg'
+]
+foreach texture_file : texture_files
+    url = 'https://www.solarsystemscope.com/textures/download/' + texture_file
+    custom_target(
+          command          : [curl_exec, url, '-o', '@OUTPUT@']
+        , output           : texture_file
+#        , build_by_default : true      # this may result in always rebuild with install ???
+        , install          : true
+        , install_dir      : pkgdatadir)
+endforeach
+
+
 # Data-files
 install_data(
     ['hipparcos.json'

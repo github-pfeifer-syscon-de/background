@@ -18,6 +18,7 @@
 
 
 #include "StarWin.hpp"
+#include "BackConfig.hpp"
 #include "background_config.h"
 #include "BackPaint.hpp"
 #include "ClockModule.hpp"

@@ -312,6 +312,66 @@ test_moon()
 //    return true;
 //}
 
+static bool
+test_dbus_list()
+{
+    auto dbusProxy= Gio::DBus::Proxy::create_for_bus_sync(Gio::DBus::BusType::BUS_TYPE_SESSION
+          , "org.freedesktop.DBus"
+          , "/org/freedesktop/DBus"
+          , "org.freedesktop.DBus");
+
+    std::cout << "proxy created" << std::endl;
+    auto cancel = Gio::Cancellable::create();
+    auto call_result = dbusProxy->call_sync("ListNames", cancel);   // 4 dbus "ListNames" "Introspect"
+    Glib::Variant<std::vector<Glib::ustring>> names_variant;
+    call_result.get_child(names_variant);
+
+    // Get the vector of strings.
+    auto names = names_variant.get();
+
+    std::cout << "The names on the message bus are:" << std::endl;
+
+    for (const auto& i : names) {
+        std::cout << i  << std::endl;
+    }
+    return true;
+}
+
+static bool
+test_dbus_xfconf()
+{
+    auto dbusProxy= Gio::DBus::Proxy::create_for_bus_sync(Gio::DBus::BusType::BUS_TYPE_SESSION
+      , "org.xfce.Xfconf"
+      , "/org/xfce/Xfconf"
+      , "org.xfce.Xfconf");
+
+    std::cout << "proxy created" << std::endl;
+    auto cancel = Gio::Cancellable::create();
+    auto channel = Glib::Variant<Glib::ustring>::create("xfce4-desktop");
+    auto property = Glib::Variant<Glib::ustring>::create("/backdrop/screen0/monitor1/workspace0/last-image");
+    std::vector<Glib::Variant<Glib::ustring>> vec;
+    vec.push_back(channel);
+    vec.push_back(property);
+    auto param = Glib::Variant<std::vector<Glib::Variant<Glib::ustring>>>::create(vec);
+    auto call_result = dbusProxy->call_sync("GetProperty", cancel, param);   // 4 dbus "ListNames" "Introspect"
+    Glib::Variant<Glib::ustring> value_variant;
+    //call_result.get_child(value_variant);
+    std::cout << "count " << call_result.get_n_children() << std::endl;
+    if (call_result.get_maybe(value_variant)){
+        value_variant.print();
+    }
+    else {
+        std::cout << "No value!" << std::endl;
+    }
+
+    //if (value_variant) {
+    //    std::cout << value_variant.get() << std::endl;
+    //}
+    //else {
+    //    std::cout << "No value!" << std::endl;
+    //}
+    return true;
+}
 /*
  *
  */
@@ -348,5 +408,8 @@ int main(int argc, char** argv)
     if (!test_moon()) {
         return 9;
     }
+    //if (!test_dbus_xfconf()) {
+    //    return 10;
+    //}
     return 0;
 }

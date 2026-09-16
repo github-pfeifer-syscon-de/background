@@ -22,6 +22,7 @@
 #include <GeoJson.hpp>
 #include <WebMapService.hpp>
 #include <memory>
+#include <WeatherConfigGrid.hpp>
 
 #include "GeoConversion.hpp"
 #include "GeoBitmap.hpp"
@@ -32,6 +33,7 @@ class StarWin;
 class GeoPaint
 : public BackPaint
 , public WeatherConsumer
+, public BaseConfigListener
 {
 public:
     GeoPaint(StarWin* starWin);
@@ -40,9 +42,6 @@ public:
 
     void setGeoJson(const std::string& geoJson);
     void setImage(const std::string& image);
-    void setWeatherService(
-          const std::shared_ptr<WebMapServiceConf>& conf
-        , const std::string& WeatherService);
      void weather_image_notify(WeatherImageRequest& request) override;
      int get_weather_image_size() override;
      void drawImage(Cairo::RefPtr<Cairo::Context>&, const Glib::DateTime&, GeoPosition&, Layout&) override;
@@ -50,25 +49,30 @@ public:
     static constexpr auto GROUP_GEO{"geo"};
     static constexpr auto KEY_GEOJSON{"geoJson"};
     static constexpr auto KEY_IMAGE{"image"};
-    static constexpr auto KEY_WEATHER_PRODUCT{"weatherProduct"};
-    static constexpr auto GROUP_WEATHER0{"weather0"};
-    static constexpr auto KEY_WEATHER_ADDRESS{"weatherAddress"};
-    static constexpr auto KEY_WEATHER_NAME{"weatherName"};
-    static constexpr auto KEY_WEATHER_DELAY{"weatherDelay"};
-    static constexpr auto KEY_WEATHER_LOCALTIME{"weatherLocalTime"};
-    static constexpr auto KEY_WEATHER_TYPE{"weatherType"};
+    static constexpr auto DEFAULT_IMAGE{"2k_earth_daymap.jpg"};
+    static constexpr auto SRC_DIR{"src"};
+    std::string  findFile(const std::string& name) override;
+    std::shared_ptr<WeatherConfig> get_config() override;
+    void weather_transparency_changed(Gtk::Scale *scale) override;
+    std::shared_ptr<Weather> get_weather() override;
+    std::shared_ptr<Weather> refresh_weather_service() override;
+    void closeConfigDlg() override;
+    void save_config() override;
+    void on_action_preferences() override;
 
+    // since we do no conversions at the moment use fixed reference system
+    static constexpr auto COORD_REF{CoordRefSystem(CoordRefSystem::Value::EPSG_4326)};
 protected:
     void findGeoMinMax();
     void request_weather_product();
 private:
-    GeoCoord m_min{};
-    GeoCoord m_max{};
+    GeoCoordinate m_min{};
+    GeoCoordinate m_max{};
     GeoPath m_geoVector;
     std::shared_ptr<GeoBitmap> m_imagePix;
     std::shared_ptr<GeoConversion> m_geoConversion;
     std::shared_ptr<GeoBitmap> m_weatherPix;
     std::shared_ptr<Weather> m_weatherService;
-    Glib::ustring m_weatherProductId;
     bool m_weatherRequested{};
+    double m_weatherTransparence;
 };

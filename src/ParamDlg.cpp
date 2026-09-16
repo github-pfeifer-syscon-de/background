@@ -17,7 +17,9 @@
  */
 
 #include <iostream>
+#include <WeatherConfigGrid.hpp>
 
+#include "GeoPaint.hpp"
 #include "StarDraw.hpp"
 #include "ParamDlg.hpp"
 #include "StarWin.hpp"
@@ -111,10 +113,11 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
         m_messierVMag->set_sensitive(false);
     }
 
+    builder->get_widget_derived("configWeatherGrid", m_configWeatherGrid, dynamic_cast<BaseConfigListener*>(starWin->getGeoPaint().get()));
     for (auto& mod : m_starWin->getBackPaint()->getModules()) {
         mod->setupParam(builder, starWin);
     }
-	show_all_children();
+    show_all_children();
 }
 
 
@@ -150,31 +153,4 @@ ParamDlg::on_response(int response_id)
     }
 }
 
-void
-ParamDlg::show(StarWin* starWin)
-{
-    auto builder = Gtk::Builder::create();
-    try {
-        starWin->saveConfig(); // for a new state (first startup) the settings are not yet saved as we may want to restore them, save now
-        auto appl = starWin->getBackgroundAppl();
-        builder->add_from_resource(appl->get_resource_base_path() + "/pref-dlg.ui");
-        ParamDlg* paramDialog;
-        builder->get_widget_derived("PrefDlg", paramDialog, starWin);
-        //auto icon = Gdk::Pixbuf::create_from_resource(appl->get_resource_base_path() + "/background.png");
-        //paramDialog->set_logo(icon);
-        paramDialog->set_transient_for(*starWin);
-        if (paramDialog->run() == Gtk::RESPONSE_OK) {
-            starWin->saveConfig();
-            // compute is called from starDraw
-        }
-        else {
-            starWin->loadConfig();
-        }
-        paramDialog->hide();
-        delete paramDialog;
-    }
-    catch (const Glib::Error &ex) {
-        std::cerr << "Unable to load pref-dialog: " << ex.what() << std::endl;
-    }
-}
 

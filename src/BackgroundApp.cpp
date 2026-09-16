@@ -26,7 +26,7 @@
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
 #include "StarPaint.hpp"
-
+#include "BackConfig.hpp"
 
 
 StarOptionGroup::StarOptionGroup()

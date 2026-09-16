@@ -14,7 +14,7 @@ pkglocaledir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pkgsrcdir = fs.relative_to( meson.global_source_root(), meson.current_build_dir()) + '/src'
 add_project_arguments('-DPACKAGE_DATA_DIR="' + pkgdatadir + '"', language: ['cpp','c'])
 add_project_arguments('-DPACKAGE="' + meson.project_name() + '"', language: ['cpp','c'])
-# this is to recreate the conventions from autotools
+# this is to recreate the conventions from autotools, but is only relative to build which might not be very helpful...
 add_project_arguments('-DPACKAGE_SRC_DIR="' + pkgsrcdir + '"', language: ['cpp','c'])
 
 compiler_add_flags = [  # limit the compiler noisiness
@@ -48,7 +48,7 @@ thread_deps     = dependency('threads')
 if get_option('python')
    python_deps    = dependency('python3-embed py3cairo pygobject-3.0')
 endif
-geodata_deps = dependency('geodata', version :'>= 0.1.6')
+geodata_deps = dependency('geodata', version :'>= 0.2.0')
 win_deps     = declare_dependency()
 if target_machine.system() == 'windows'
     win_deps     = cc.find_library('IPHLPAPI')

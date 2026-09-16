@@ -41,6 +41,7 @@ sources = files(
 	, 'GeoPaint.cpp'
 	, 'GeoBitmap.cpp'
 	, 'GeoConversion.cpp'
+	, 'BackConfig.cpp'
     )
 
 if get_option('python')

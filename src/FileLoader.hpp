@@ -34,7 +34,7 @@ public:
     [[deprecated("heavy heap usage, see LineReader,LineReaderEnc")]]
     static std::vector<Glib::ustring> readLines(const Glib::RefPtr<Gio::File>& file, size_t expected = 16, const Glib::ustring& encoding = "UTF-8", bool useException = false);
     static bool readFile(const Glib::RefPtr<Gio::File>& file, std::vector<char>& bytes);
-    Glib::RefPtr<Gio::File> findFile(Glib::StdStringView name);
+    Glib::RefPtr<Gio::File> findFile(Glib::StdStringView name, Glib::StdStringView src = PACKAGE_SRC_DIR);  // default is find from distributed files, but use "src" to find from build
     Glib::RefPtr<Gio::File> getLocalDir();
     Glib::ustring run(const std::vector<std::string>& strArgs, GPid* pid);
 protected:

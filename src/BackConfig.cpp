@@ -15,18 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "GeoConversion.hpp"
 
 
-GeoCoordinate
-GeoConvLinear::toDisplay(const GeoCoordinate& coord)
+#include "GeoPaint.hpp"
+#include "BackConfig.hpp"
+
+BackConfig::BackConfig(const char* confName)
+: WeatherConfig(confName)
 {
-    return GeoCoordinate{coord};
 }
 
-
-GeoCoordinate
-GeoConvLinear::fromDisplay(const GeoCoordinate& coord)
+std::string
+BackConfig::get_main_config_group()
 {
-    return GeoCoordinate{coord};
+    return GeoPaint::GROUP_GEO;
 }

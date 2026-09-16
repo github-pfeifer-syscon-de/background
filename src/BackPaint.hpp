@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <KeyConfig.hpp>
+#include <WeatherConfigGrid.hpp>
 
 #include "GeoPosition.hpp"
 #include "Layout.hpp"
@@ -27,8 +28,10 @@
 
 
 class StarWin;
+class BackConfig;
 
-class BackPaint {
+class BackPaint
+{
 public:
     BackPaint(StarWin* starWin);
     virtual ~BackPaint() = default;
@@ -54,7 +57,7 @@ protected:
 
 
     StarWin* m_starWin;
-    std::shared_ptr<KeyConfig> m_config;
+    std::shared_ptr<BackConfig> m_config;
     std::vector<PtrModule> m_modules;
     std::shared_ptr<FileLoader> m_fileLoader;
 };

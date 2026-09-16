@@ -20,6 +20,7 @@
 
 #include <gtkmm.h>
 #include <memory>
+#include <Log.hpp>
 
 #include "GeoPosition.hpp"
 #include "background_config.h"
@@ -32,6 +33,9 @@ class AppMenu;
 class StarPaint;
 class KeyConfig;
 class FileLoader;
+class GeoPaint;
+class BackConfig;
+class ParamDlg;
 
 class StarWin
 : public Gtk::ApplicationWindow
@@ -40,9 +44,9 @@ public:
     StarWin(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
         , BackgroundApp* backAppl
-        , std::shared_ptr<KeyConfig> config);
+        , std::shared_ptr<BackConfig> config);
     explicit StarWin(const StarWin& orig) = delete;
-    virtual ~StarWin() = default;
+    virtual ~StarWin();
 
     BackgroundApp* getBackgroundAppl();
     void showMessage(const Glib::ustring& msg, Gtk::MessageType msgType = Gtk::MessageType::MESSAGE_INFO);
@@ -53,8 +57,9 @@ public:
     void do_close();
     void loadConfig();
     void saveConfig();
+    void closeConfigDlg();
     void savePosition();
-    std::shared_ptr<KeyConfig> getConfig()
+    std::shared_ptr<BackConfig> getConfig()
     {
         return m_config;
     }
@@ -72,10 +77,15 @@ public:
     void setGeoPosition(const GeoPosition& geoPos);
     void update();
     void update(Glib::DateTime dateTime, GeoPosition& pos);
-    void on_menu_param();
+    void onMenuConfig();
     void on_menu_time();
-    static std::shared_ptr<KeyConfig> createConfig();
-    static void loadThisConfig(const std::shared_ptr<KeyConfig>& config);
+    static std::shared_ptr<BackConfig> createConfig();
+    static void loadThisConfig(const std::shared_ptr<BackConfig>& config);
+     std::shared_ptr<psc::log::Log> getLog() {
+         return m_log;
+     }
+    std::shared_ptr<GeoPaint> getGeoPaint();
+    std::shared_ptr<StarPaint> getStarPaint();
 
 protected:
     std::string getGlobeConfigName();
@@ -104,6 +114,7 @@ protected:
     static constexpr auto GRP_GLGLOBE_MAIN{"globe"};
     static constexpr auto LATITUDE_KEY{"lat"};
     static constexpr auto LONGITUDE_KEY{"lon"};
+    static constexpr auto LOG_LEVEL{"logLevel"};
 
 private:
     StarDraw* m_drawingArea{nullptr};
@@ -111,7 +122,7 @@ private:
     sigc::connection m_timer;
     sigc::connection m_timerUpdate;
     BackgroundApp* m_backAppl;
-    std::shared_ptr<KeyConfig> m_config;
+    std::shared_ptr<BackConfig> m_config;
     GeoPosition m_geoPos;
 
     Glib::RefPtr<Gio::VolumeMonitor> m_volumeMonitor;
@@ -123,6 +134,10 @@ private:
     bool m_updateBlocked{false};
     static constexpr auto DAYLIGHT_START_HOUR{6};   // simple daylight rule
     static constexpr auto DAYLIGHT_END_HOUR{18};
+    std::shared_ptr<psc::log::Log> m_log;
+    std::shared_ptr<StarPaint> m_starPaint;
+    std::shared_ptr<GeoPaint> m_geoPaint;
+    ParamDlg* m_paramDialog{};
 #   ifdef USE_APPMENU
     std::shared_ptr<AppMenu> m_appMenu;
 #   endif

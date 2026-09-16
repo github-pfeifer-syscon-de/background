@@ -17,7 +17,10 @@
  */
 
 #include <iostream>
+#include <Log.hpp>
+#include <WeatherConfig.hpp>
 
+#include "BackConfig.hpp"
 #include "GeoPaint.hpp"
 #include "StarWin.hpp"
 #include "Math.hpp"
@@ -30,20 +33,76 @@ GeoPaint::GeoPaint(StarWin* starWin)
     setGeoJson(geoJson);
 
     auto image = m_config->getString(GROUP_GEO, KEY_IMAGE);
+    if (image.empty()) {    // set some default
+        image = Glib::canonicalize_filename(DEFAULT_IMAGE , PACKAGE_DATA_DIR);
+        m_config->setString(GROUP_GEO, KEY_IMAGE, image);
+        m_config->save();
+    }
     setImage(image);
 
-    auto weatherProduct = m_config->getString(GROUP_GEO, KEY_WEATHER_PRODUCT);
-    auto weatherAdress = m_config->getString(GROUP_WEATHER0, KEY_WEATHER_ADDRESS);
-    auto weatherName = m_config->getString(GROUP_WEATHER0, KEY_WEATHER_NAME);
-    auto weatherDelay =  m_config->getInteger(GROUP_WEATHER0, KEY_WEATHER_DELAY, 1800);
-    auto weatherLocaltime = m_config->getBoolean(GROUP_WEATHER0, KEY_WEATHER_LOCALTIME, false);
-    auto weatherType = m_config->getString(GROUP_WEATHER0, KEY_WEATHER_TYPE);
-    auto conf = std::make_shared<WebMapServiceConf>(weatherName
-        , weatherAdress
-        , weatherDelay
-        , weatherType
-        , weatherLocaltime);
-    setWeatherService(conf, weatherProduct);
+    m_weatherTransparence = m_config->getWeatherTransparency();
+    refresh_weather_service();
+}
+
+std::string
+GeoPaint::findFile(const std::string& name)
+{
+    auto file = m_starWin->getFileLoader()->findFile(name, SRC_DIR);;
+    if (file) {
+        return file->get_path();
+    }
+    // // try use given image config
+    // if (m_config->hasKey(GROUP_GEO, KEY_IMAGE)) {
+    //     auto image = Gio::File::create_for_path(m_config->getString(GROUP_GEO, KEY_IMAGE));
+    //     auto imageDir = image->get_parent();
+    //     auto file = imageDir->get_child(name);
+    //     if (file->query_exists()) {
+    //         return file->get_path();
+    //     }
+    //     return image->get_path();
+    // }
+    // // this will most likely fail
+    // auto file = m_starWin->getFileLoader()->findFile(name);
+    // if (file) {
+    //     return file->get_path();
+    // }
+    std::cout << "GeoPaint::findFile name " << name << " was not found!" << std::endl;
+    return "";
+}
+
+std::shared_ptr<WeatherConfig>
+GeoPaint::get_config()
+{
+    return std::dynamic_pointer_cast<WeatherConfig>(m_starWin->getConfig());
+}
+
+void
+GeoPaint::weather_transparency_changed(Gtk::Scale *scale)
+{
+    m_weatherTransparence = scale->get_value();
+    m_starWin->update();
+}
+
+std::shared_ptr<Weather>
+GeoPaint::get_weather()
+{
+    return m_weatherService;
+}
+
+std::shared_ptr<Weather>
+GeoPaint::refresh_weather_service()
+{
+    auto conf =  m_config->getActiveWebMapServiceConf();
+    m_weatherService = std::make_shared<WebMapService>(this, conf, 300);    // period sec
+    m_weatherService->setLog(m_starWin->getLog());
+    //m_weatherService->setLog(m_log);
+    m_weatherService->signal_products_completed().connect(
+        sigc::mem_fun(*this, &GeoPaint::request_weather_product));
+    m_weatherService->capabilities();
+    psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
+         return std::format("requested weather capabilites {} ", conf->getName());
+    });
+    return m_weatherService;
 }
 
 void
@@ -63,12 +122,19 @@ void
 GeoPaint::setImage(const std::string& image)
 {
     m_imagePix.reset();
+    auto imagePath = image;
     if (!image.empty()) {
-        auto pixmap = Gdk::Pixbuf::create_from_file(image);
+        auto imageFile = Gio::File::create_for_path(image);
+        if (!imageFile->query_exists()) {     // not yet installed?
+            // try lookup
+            imageFile = m_starWin->getFileLoader()->findFile(imageFile->get_basename(), SRC_DIR);;
+            imagePath = imageFile->get_path();
+        }
+        auto pixmap = Gdk::Pixbuf::create_from_file(imagePath);
         m_imagePix = std::make_shared<GeoBitmap>();
         m_imagePix->setPixmap(pixmap);
-        m_imagePix->setMinimum(GeoCoord{-180.0, -90.0});
-        m_imagePix->setMaximum(GeoCoord{180.0, 90.0});
+        m_imagePix->setMinimum(GeoCoordinate{-180.0, -90.0, COORD_REF});
+        m_imagePix->setMaximum(GeoCoordinate{180.0, 90.0, COORD_REF});
     }
 }
 
@@ -81,9 +147,13 @@ GeoPaint::weather_image_notify(WeatherImageRequest& request)
         if (!m_weatherPix) {
             m_weatherPix = std::make_shared<GeoBitmap>();
             //std::cout << "Requested weather capabilites weatherPix " << std::endl;
-            m_weatherPix->setMinimum(GeoCoord{m_min});
-            m_weatherPix->setMaximum(GeoCoord{m_max});
+            m_weatherPix->setMinimum(m_min);
+            m_weatherPix->setMaximum(m_max);
         }
+        psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
+            return std::format("weather_image_notify bytes {} width {} height {}"
+                , requestPixbuf->get_byte_length(), requestPixbuf->get_width(), requestPixbuf->get_height());;
+        });
         //std::cout << "GeoPaint::weather_image_notify weather "
         //          << requestPixbuf->get_width() << "x" << requestPixbuf->get_height() << std::endl;
         //auto weatherPixmap = m_weatherPix->getPixmap();
@@ -95,6 +165,7 @@ GeoPaint::weather_image_notify(WeatherImageRequest& request)
         //    m_weatherPix->setPixmap(weatherPixmap);
         //}
         // since we requested the correct area use it
+        // but maybe we should consider pix coords
         m_weatherPix->setPixmap(requestPixbuf);
         //request.mapping(requestPixbuf, weatherPixmap);
         m_starWin->update();
@@ -109,7 +180,7 @@ GeoPaint::weather_image_notify(WeatherImageRequest& request)
 int
 GeoPaint::get_weather_image_size()
 {
-    return 1024;
+    return  m_config->getWeatherImageSize();
 }
 
 void
@@ -121,11 +192,12 @@ GeoPaint::request_weather_product()
     //});
     //m_weather_pix->fill(0x0);    // indicate something is going on by setting transp. black
     //update_weather_tex();
-    if (!m_weatherProductId.empty() && m_weatherService) {
+    auto weatherProductId = m_config->getWeatherProductId();
+    if (!weatherProductId.empty() && m_weatherService) {
         m_weatherRequested = true;
         auto coordMin = m_geoConversion->fromDisplay(m_min);
         auto coordMax = m_geoConversion->fromDisplay(m_max);
-        auto product = m_weatherService->find_product(m_weatherProductId);
+        auto product = m_weatherService->find_product(weatherProductId);
         auto webMapProd = std::dynamic_pointer_cast<WebMapProduct>(product);
         if (webMapProd) {
             auto webMap = std::dynamic_pointer_cast<WebMapService>(m_weatherService);
@@ -142,37 +214,25 @@ GeoPaint::request_weather_product()
                 , webMapProd);
 
             m_weatherService->requestImage(request);
+            psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
+                return std::format("request_weather_product {} min {} max {}", weatherProductId
+                , coordMin.toString(), coordMax.toString());;
+            });
         }
         else {
-            std::cout << "GeoPaint::request_weather_product not expected product type !" << std::endl;
+            psc::log::Log::logAdd(psc::log::Level::Warn,
+                "request_weather_product not expected product type");
         }
-    }
-}
-
-void
-GeoPaint::setWeatherService(const std::shared_ptr<WebMapServiceConf>& conf, const std::string& weatherService)
-{
-    std::cout << "GeoPaint::setWeatherService" << std::endl;
-    m_weatherProductId = weatherService;
-    //m_weatherPix.reset();
-    if (!weatherService.empty()) {
-        m_weatherService = std::make_shared<WebMapService>(this, conf, 300);    // period sec
-        //m_weatherService->setLog(m_log);
-        m_weatherService->signal_products_completed().connect(
-            sigc::mem_fun(*this, &GeoPaint::request_weather_product));
-        m_weatherService->capabilities();
-        std::cout << "GeoPaint::setWeatherService requested weather capabilites" << std::endl;
-        // call as default request_weather_product
     }
 }
 
 void
 GeoPaint::findGeoMinMax()
 {
-    GeoCoord min{180.0,90.0}, max{-180.0,-90.0};
+    GeoCoordinate min{180.0,90.0, COORD_REF}, max{-180.0,-90.0, COORD_REF};
     for (const auto& segm : m_geoVector) {
         bool firstPnt{true};
-        GeoCoord geoCoord;
+        GeoCoordinate geoCoord;
         for (auto& pnt : *segm) {
             geoCoord.set(firstPnt, pnt);
             if (!firstPnt) {
@@ -182,11 +242,15 @@ GeoPaint::findGeoMinMax()
             firstPnt = !firstPnt;
         }
     }
-    m_min = min.floor() - GeoCoord(GEO_BORDER);
-    m_max = max.ceil() + GeoCoord(GEO_BORDER);
+    m_min = min.floor() - GeoCoordinate(GEO_BORDER, GEO_BORDER, COORD_REF);
+    m_max = max.ceil() + GeoCoordinate(GEO_BORDER, GEO_BORDER, COORD_REF);
     auto diff = m_max - m_min;
     auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
-    m_max = m_min + GeoCoord{shortest};   // shape long/lat equaliy
+    m_max = m_min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaliy
+    psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
+        return std::format("findGeoMinMax min {} max {}"
+            , m_min.toString(), m_max.toString());;
+    });
 }
 
 void
@@ -218,7 +282,7 @@ GeoPaint::drawImage(
     // since the result is quadratic adjust the difference as well
     auto fact = static_cast<double>(width) / diff.getLongitude(); // since we use same long/latitude this should work
     if (m_imagePix) {
-        GeoCoord geoCoord{m_min.getLongitude(), m_min.getLatitude()};
+        GeoCoordinate geoCoord{m_min.getLongitude(), m_min.getLatitude(), COORD_REF};
         auto coord = m_geoConversion->fromDisplay(geoCoord);
         auto target = m_imagePix->getSlice(coord, diff);
         auto scaled = target->scale_simple(width, height, Gdk::INTERP_BILINEAR);
@@ -228,9 +292,12 @@ GeoPaint::drawImage(
         ctx->paint();
     }
     if (m_weatherService && !m_weatherRequested) {
-        auto prod = m_weatherService->find_product(m_weatherProductId);
-        if (prod && !prod->is_latest()) {
-            request_weather_product();
+        auto weatherProductId = m_config->getWeatherProductId();
+        if (!weatherProductId.empty()) {
+            auto prod = m_weatherService->find_product(weatherProductId);
+            if (prod && !prod->is_latest()) {
+                request_weather_product();
+            }
         }
     }
     if (m_weatherPix) {
@@ -239,7 +306,7 @@ GeoPaint::drawImage(
         Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
         //ctx->rectangle(0, 0, width, height);
         //ctx->fill();
-        ctx->paint_with_alpha(0.6);
+        ctx->paint_with_alpha(m_weatherTransparence);
     }
     bool activePath{false};
     double red{1.0};
@@ -263,7 +330,8 @@ GeoPaint::drawImage(
         ctx->set_source_rgb(red, green, blue);
         bool firstInSegm{true};
         bool firstPnt{true};
-        GeoCoord geoCoord;
+        GeoCoordinate geoCoord;
+        geoCoord.setCoordRefSystem(COORD_REF);
         for (auto& pnt : *segm) {
             geoCoord.set(firstPnt, pnt);
             if (!firstPnt) {
@@ -293,3 +361,20 @@ GeoPaint::drawImage(
     //queue_draw();
 }
 
+void
+GeoPaint::closeConfigDlg()
+{
+    m_starWin->closeConfigDlg();
+}
+
+void
+GeoPaint::save_config()
+{
+    m_starWin->saveConfig();
+}
+
+void
+GeoPaint::on_action_preferences()   // reopen config
+{
+    m_starWin->onMenuConfig();
+}
