@@ -93,6 +93,7 @@ std::shared_ptr<Weather>
 GeoPaint::refresh_weather_service()
 {
     auto conf =  m_config->getActiveWebMapServiceConf();
+    if (conf) {
     m_weatherService = m_config->getService(this, conf);
     m_weatherService->setLog(m_starWin->getLog());
     //m_weatherService->setLog(m_log);
@@ -102,6 +103,7 @@ GeoPaint::refresh_weather_service()
     psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
          return std::format("requested weather capabilites {} ", conf->getName());
     });
+    }
     return m_weatherService;
 }
 

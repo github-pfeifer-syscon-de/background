@@ -449,10 +449,10 @@ StarWin::on_mount(Glib::RefPtr<Gio::AsyncResult>& result)
                         , Gtk::MessageType::MESSAGE_ERROR);
                 }
             }
-#           endif
             psc::log::Log::logAdd(psc::log::Level::Info, [&]  {
                 return std::format("Mount succeeded {} at {}", m_activeVolume->get_name(), mount->get_root()->get_path());
             });
+#           endif
         }
         else {
             showMessage(Glib::ustring::sprintf("Mount %s failed", m_activeVolume->get_name()), Gtk::MessageType::MESSAGE_ERROR);
