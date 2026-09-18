@@ -27,7 +27,8 @@ public:
     explicit BackConfig(const BackConfig& other) = delete;
     virtual ~BackConfig() = default;
 
-
+    std::string getGeoJsonFile();
+    void setGeoJsonFile(const std::string& geoJsonFile);
 protected:
     std::string get_main_config_group() override;
 };

@@ -624,7 +624,7 @@ StarWin::getGeoPaint()
 PtrBackPaint
 StarWin::getBackPaint()
 {
-    auto geoJson = getConfig()->getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOJSON);
+    auto geoJson = getConfig()->getGeoJsonFile();
     auto now = Glib::DateTime::create_now_local();
     if (geoJson.empty()
      || now.get_hour() <= DAYLIGHT_START_HOUR

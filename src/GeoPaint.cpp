@@ -30,7 +30,7 @@ GeoPaint::GeoPaint(StarWin* starWin)
 , m_geoConversion{std::make_shared<GeoConvLinear>()}
 {
     auto geoJson = m_config->getString(GROUP_GEO, KEY_GEOJSON);
-    setGeoJson(geoJson);
+    setGeoJsonFile(geoJson);
 
     auto image = m_config->getString(GROUP_GEO, KEY_IMAGE);
     if (image.empty()) {    // set some default
@@ -107,8 +107,8 @@ GeoPaint::refresh_weather_service()
     return m_weatherService;
 }
 
-void
-GeoPaint::setGeoJson(const std::string& geoJson)
+bool
+GeoPaint::setGeoJsonFile(const std::string& geoJson)
 {
     m_geoVector.clear();
     if (!geoJson.empty()) {
@@ -116,8 +116,9 @@ GeoPaint::setGeoJson(const std::string& geoJson)
         GeoJson geoJsonParse;
         geoJsonParse.read(geoJson, &geoJsonVectorHandler);
         m_geoVector = geoJsonVectorHandler.getPath();
-        findGeoMinMax();
+        return findGeoMinMax();
     }
+    return true;
 }
 
 void
@@ -228,7 +229,7 @@ GeoPaint::request_weather_product()
     }
 }
 
-void
+bool
 GeoPaint::findGeoMinMax()
 {
     GeoCoordinate min{180.0,90.0, COORD_REF}, max{-180.0,-90.0, COORD_REF};
@@ -253,6 +254,7 @@ GeoPaint::findGeoMinMax()
         return std::format("findGeoMinMax min {} max {}"
             , m_min.toString(), m_max.toString());;
     });
+    return diff.getLatitude() > 0.0 && diff.getLongitude() > 0.0;
 }
 
 void

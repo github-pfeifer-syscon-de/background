@@ -113,10 +113,13 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
         m_messierVMag->set_sensitive(false);
     }
 
-    builder->get_widget_derived("configWeatherGrid", m_configWeatherGrid, dynamic_cast<BaseConfigListener*>(starWin->getGeoPaint().get()));
     for (auto& mod : m_starWin->getBackPaint()->getModules()) {
         mod->setupParam(builder, starWin);
     }
+
+    builder->get_widget_derived("configWeatherGrid", m_configWeatherGrid, dynamic_cast<BaseConfigListener*>(starWin->getGeoPaint().get()));
+    builder->get_widget_derived("configGeoJsonGrid", m_configGeoJson, dynamic_cast<BaseConfigListener*>(starWin->getGeoPaint().get()));
+
     show_all_children();
 }
 

@@ -42,6 +42,7 @@ sources = files(
 	, 'GeoBitmap.cpp'
 	, 'GeoConversion.cpp'
 	, 'BackConfig.cpp'
+	, 'ConfigGeoJsonGrid.cpp'
     )
 
 if get_option('python')

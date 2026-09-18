@@ -20,6 +20,7 @@
 #include "GeoPaint.hpp"
 #include "BackConfig.hpp"
 
+
 BackConfig::BackConfig(const char* confName)
 : WeatherConfig(confName)
 {
@@ -29,4 +30,17 @@ std::string
 BackConfig::get_main_config_group()
 {
     return GeoPaint::GROUP_GEO;
+}
+
+std::string
+BackConfig::getGeoJsonFile()
+{
+    return getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOJSON);
+}
+
+void
+BackConfig::setGeoJsonFile(const std::string& geoJsonFile)
+{
+    return setString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOJSON, geoJsonFile);
+
 }

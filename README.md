@@ -131,27 +131,20 @@ otherwise use:
 
 ### Daylight/Geo view
 
-To show a alternative (experimental) picture for daylight 6-18h
-use the weather section in preferences. The geoJson file
-activates the feature and must be added by hand for now.
-
-```
-[geo]
-geoJson=GEO_JSON_FILE
-```
-
-The GEO_JSON_FILE defines the viewed bounds with some
+To show a alternative picture for daylight 6-18h
+use the Geo.json section in preferences. 
+The File defines the viewed bounds with some
 rounding & addition (avoid crossing equator/0 meridian,
 no projection like mercator will be used).
 There is also a option to set a image file with:
 [geo] ... image=IMAGE_EG_SOLARSYSTEMSCOPE_EARTH_2K
 By default a solarsystem-scope example is downloaded
 and added (if you don't like this see res/meson.build
-and place your prefered in image).
+and place your preferred file as image).
 
 #### Map-services
 
-Sry: The Real-earth-service does not work on this side...   
+Sry.: The Real-earth-service does not work on this side...   
 
 Use the WMS variants, but I had not much luck finding something nicely working...
 

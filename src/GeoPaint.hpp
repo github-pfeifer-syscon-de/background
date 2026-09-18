@@ -40,7 +40,7 @@ public:
     explicit GeoPaint(const GeoPaint& other) = delete;
     virtual ~GeoPaint() = default;
 
-    void setGeoJson(const std::string& geoJson);
+    bool setGeoJsonFile(const std::string& geoJson);
     void setImage(const std::string& image);
      void weather_image_notify(WeatherImageRequest& request) override;
      int get_weather_image_size() override;
@@ -63,7 +63,7 @@ public:
     // since we do no conversions at the moment use fixed reference system
     static constexpr auto COORD_REF{CoordRefSystem(CoordRefSystem::Value::EPSG_4326)};
 protected:
-    void findGeoMinMax();
+    bool findGeoMinMax();
     void request_weather_product();
 private:
     GeoCoordinate m_min{};

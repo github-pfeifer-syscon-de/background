@@ -1,6 +1,6 @@
 /* -*- Mode: c++; c-basic-offset: 4; tab-width: 4; coding: utf-8; -*-  */
 /*
- * Copyright (C) 2018 rpf
+ * Copyright (C) 2026 RPf
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,39 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 
-#include <gtkmm.h>
+#include <glibmm.h>
 
-#include "ConfigGeoJsonGrid.hpp"
+#include <WeatherConfigGrid.hpp>
 
-class StarDraw;
-class GeoPosition;
-class ConfigWeatherGrid;
-
-class ParamDlg
-: public Gtk::Dialog
+class ConfigGeoJsonGrid
+: public BaseConfigGrid
 {
 public:
-    ParamDlg(BaseObjectType* cobject
-            , const Glib::RefPtr<Gtk::Builder>& builder
-            , StarWin* starWin);
-    virtual ~ParamDlg() = default;
-
-
+    ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& refBuilder, BaseConfigListener* baseConfigListener);
+    virtual ~ConfigGeoJsonGrid() = default;
 protected:
-    void on_response(int response_id) override;
-
+    BaseConfigListener* getSphereView();
+    void geojsonfile_changed();
+    void clearGeoFile();
 private:
-    StarWin* m_starWin;
-    Gtk::SpinButton* m_updateInterval;
-    Gtk::ColorButton* m_startColor;
-    Gtk::ColorButton* m_stopColor;
-    Gtk::FontButton* m_starFont;
-    Gtk::CheckButton* m_showMilkyway;
-    Gtk::Scale* m_messierVMag;
-    Gtk::ComboBoxText* m_display;
-    ConfigWeatherGrid* m_configWeatherGrid;
-    ConfigGeoJsonGrid* m_configGeoJson;
+    Gtk::FileChooserButton* m_geoJsonButton{nullptr};
+
 };
