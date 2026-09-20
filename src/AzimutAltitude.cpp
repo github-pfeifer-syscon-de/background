@@ -42,7 +42,8 @@ AzimutAltitude::isVisible()
 }
 
 Point2D
-AzimutAltitude::toScreen(const Layout& layout) {
+AzimutAltitude::toScreen(const Layout& layout) const
+{
 	// using https://astronomy.stackexchange.com/questions/35882/how-to-make-projection-from-altitude-and-azimuth-to-screen-with-screen-coordinat
 	//double theta = altitude + (std::PI / 2.0); //Convert range to 0deg to 180deg
 	double x = std::cos(altitude) * std::sin(azimut);
@@ -58,25 +59,25 @@ AzimutAltitude::toScreen(const Layout& layout) {
 }
 
 double
-AzimutAltitude::getAzimut()
+AzimutAltitude::getAzimut() const
 {
 	return azimut;
 }
 
 double
-AzimutAltitude::getAltitude()
+AzimutAltitude::getAltitude() const
 {
     return altitude;
 }
 
 double
-AzimutAltitude::getAzimutDegrees()
+AzimutAltitude::getAzimutDegrees() const
 {
     return Math::toDegrees(azimut);
 }
 
 double
-AzimutAltitude::getAltitudeDegrees()
+AzimutAltitude::getAltitudeDegrees() const
 {
     return Math::toDegrees(altitude);
 }

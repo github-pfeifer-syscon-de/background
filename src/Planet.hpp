@@ -24,6 +24,7 @@
 
 #include "RaDecPlanet.hpp"
 #include "JulianDate.hpp"
+#include "Math.hpp"
 
 struct Elements
 {
@@ -33,6 +34,36 @@ struct Elements
     double L;
     double w;
     double O;
+};
+
+struct CarthesianCoord
+{
+    double x{};
+    double y{};
+    double z{};
+
+    CarthesianCoord operator-(const CarthesianCoord& oth)
+    {
+        return CarthesianCoord {
+            .x = x -  oth.x,
+            .y = y - oth.y,
+            .z = z - oth.z,};
+    }
+    std::shared_ptr<RaDecPlanet> toRaDecPlanet() const
+    {
+        // convert from Cartesian to polar coordinates
+        const double r = std::sqrt(x * x + y * y + z * z);
+        double ra = std::atan2(y, x);
+        double dec = std::acos(z / r);
+
+        // Make sure ra is positive
+        if (ra < 0.0) {
+            ra += Math::TWO_PI;
+        }
+        // Make dec is in range +/-90deg
+        dec = Math::HALF_PI - dec;
+        return std::make_shared<RaDecPlanet>(ra, dec, r);
+    }
 };
 
 class Planet
@@ -46,9 +77,9 @@ public:
 
     std::shared_ptr<RaDecPlanet> getRaDecPositon(const JulianDate& jd);
 protected:
-    std::array<double,3> computePlanetPosition(const JulianDate& jd);
-    std::array<double,3> posToEarth(const JulianDate& jd);
-    std::shared_ptr<RaDecPlanet> rectToPolar(const std::array<double,3>& xyz);
+    CarthesianCoord computePlanetPosition(const JulianDate& jd);
+    CarthesianCoord posToEarth(const JulianDate& jd);
+    std::shared_ptr<RaDecPlanet> rectToPolar(const CarthesianCoord& xyz);
 
     //https://ssd.jpl.nasa.gov/planets/approx_pos.html
     // at the moment using "short" term values (1850-2050)
@@ -59,7 +90,6 @@ protected:
     std::array<double,4> getExtraTerms();	// these will be used for long method
 private:
     double solveKepler(double M, double e, double E);
-    std::array<double,3> sub(const std::array<double,3>& xyz1, const std::array<double,3>& xyz2);
 
     std::string m_name;
     const Elements m_elements;

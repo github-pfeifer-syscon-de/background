@@ -25,10 +25,10 @@ class RaDecPlanet
 {
 public:
     RaDecPlanet(double ra, double dec, double distanceAU);
-    explicit RaDecPlanet(const RaDecPlanet& orig) = delete;
+    RaDecPlanet(const RaDecPlanet& orig) = default;
     virtual ~RaDecPlanet() = default;
 
-    double getDistanceAU();
+    double getDistanceAU() const;
 private:
     double distanceAU{0.0};
 };

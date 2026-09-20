@@ -19,6 +19,7 @@
 #pragma once
 
 #include <cmath>
+#include <numbers>
 
 // decorator, astronomic unit (distance earth to sun)
 consteval double operator ""_AU(const long double dist)
@@ -40,16 +41,7 @@ public:
     explicit Math(const Math& orig) = delete;
     virtual ~Math() = default;
 
-    // why this is eliminating the conversion warning?
-    template<typename T>
-        using _Enable_if_floating = std::enable_if_t<std::is_floating_point_v<T>, T>;
-
-    // can be replaced by std::numbers<pi> with c++20
-    template<typename T>
-        static constexpr T PI_V
-            = _Enable_if_floating<T>(3.141592653589793238462643383279502884L);
-
-    static constexpr double PI = PI_V<double>;
+    static constexpr double PI{std::numbers::pi};
     static constexpr auto DEGREE2RADIANS{PI / 180.0};
     static constexpr auto HOURS2RADIANS{PI / 12.0};
     static constexpr auto HALF_PI{PI * 0.5};

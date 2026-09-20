@@ -26,7 +26,7 @@
 class RaDec
 {
 public:
-    RaDec();
+    RaDec() = default;
     RaDec(double ra, double dec);
     RaDec(const RaDec& orig) = default;
     virtual ~RaDec() = default;
@@ -36,14 +36,14 @@ public:
     void setDecRad(double dec);
     double getDecRad() const;
     void setRaDegrees(double raDeg);
-    double getRaDegrees();
+    double getRaDegrees() const;
     void setRaHours(double raHours);
-    double getRaHours();
+    double getRaHours() const;
     void setDecDegrees(double decDeg);
     void setDecDegreesPolar(double decDegPolar);
-    double getDecDegrees();
+    double getDecDegrees() const;
 
-    bool operator==(const RaDec& rhs);
+    bool operator==(const RaDec& rhs) const;
 
 private:
     double ra{}; // values in radians

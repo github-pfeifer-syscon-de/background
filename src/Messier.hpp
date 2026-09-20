@@ -27,7 +27,7 @@ class Messier
 : public Star
 {
 public:
-    Messier();
+    Messier() = default;
     explicit Messier(const Messier& orig) = delete;
     virtual ~Messier() = default;
 

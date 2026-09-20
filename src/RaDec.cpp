@@ -21,11 +21,6 @@
 
 #include "Math.hpp"
 
-RaDec::RaDec()
-{
-}
-
-
 RaDec::RaDec(double _ra, double _dec)
 : ra{_ra}
 , dec{_dec}
@@ -63,9 +58,9 @@ RaDec::setRaDegrees(double raDeg)
 }
 
 double
-RaDec::getRaDegrees()
+RaDec::getRaDegrees() const
 {
-return Math::toDegrees(ra);
+    return Math::toDegrees(ra);
 }
 
 void
@@ -75,7 +70,7 @@ RaDec::setRaHours(double raHours)
 }
 
 double
-RaDec::getRaHours()
+RaDec::getRaHours() const
 {
     return Math::toHoursRadian(ra);
 }
@@ -93,13 +88,13 @@ RaDec::setDecDegreesPolar(double decDegPolar)
 }
 
 double
-RaDec::getDecDegrees()
+RaDec::getDecDegrees() const
 {
     return Math::toDegrees(dec);
 }
 
 bool
-RaDec::operator==(const RaDec& rhs)
+RaDec::operator==(const RaDec& rhs) const
 {
     return dec == rhs.dec && ra == rhs.ra;
 }

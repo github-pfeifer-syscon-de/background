@@ -20,38 +20,35 @@
 
 #include "Messier.hpp"
 
-Messier::Messier()
-{
-}
 
 std::shared_ptr<RaDec>
 Messier::getRaDec()
 {
-	return raDec;
+    return raDec;
 }
 
 void
 Messier::setRaDec(const std::shared_ptr<RaDec>& _raDec)
 {
-	raDec = _raDec;
+    raDec = _raDec;
 }
 
 double
 Messier::getVmagnitude() const
 {
-	return m_vmagnitude;
+    return m_vmagnitude;
 }
 
 void
 Messier::setVmagnitude(double _vmagnitude)
 {
-	m_vmagnitude = _vmagnitude;
+    m_vmagnitude = _vmagnitude;
 }
 
 void
 Messier::setName(const Glib::ustring& _ident)
 {
-	m_name = _ident;
+    m_name = _ident;
 }
 
 Glib::ustring 

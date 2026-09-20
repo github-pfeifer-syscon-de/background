@@ -36,7 +36,7 @@ Planet::Planet(const std::string& name
 }
 
 // will give value relative to sun
-std::array<double,3>
+CarthesianCoord
 Planet::computePlanetPosition(const JulianDate& jd)
 {
 	//Algorithm from Explanatory Supplement to the Astronomical Almanac ch8 P340
@@ -94,13 +94,13 @@ Planet::computePlanetPosition(const JulianDate& jd)
 	double zecl = (std::sin(ww) * std::sin(I)) * xp + (std::cos(ww) * std::sin(I)) * yp;
 
 	//Step 6:
-	double eps = Math::toRadians(23.43928);
-
-	const double x = xecl;
-	const double y = std::cos(eps) * yecl - std::sin(eps) * zecl;
-	const double z = std::sin(eps) * yecl + std::cos(eps) * zecl;
-
-	return std::array<double,3> {x,y,z};
+	const double eps = Math::toRadians(23.43928);
+        const double sinEps{std::sin(eps)};
+        const double cosEps{std::cos(eps)};
+	return CarthesianCoord {
+	    .x = xecl,
+	    .y = cosEps * yecl - sinEps * zecl,
+	    .z = sinEps * yecl + cosEps * zecl,};
 }
 
 double
@@ -111,52 +111,34 @@ Planet::solveKepler(double M, double e, double E)
 	return dE;
 }
 
-std::array<double,3>
-Planet::sub(const std::array<double,3>& xyz1, const std::array<double,3>& xyz2) {
-	std::array<double,3> xyz;
-	for (uint32_t i = 0; i < xyz.size(); ++i) {
-	    xyz[i] = xyz1[i] - xyz2[i];
-	}
-	return xyz;
-}
 
-std::array<double,3>
+
+CarthesianCoord
 Planet::posToEarth(const JulianDate& jd)
 {
 	auto xyzPlanet = computePlanetPosition(jd);
     //std::cout << getName() << xyzPlanet[0] << "," << xyzPlanet[1] << "," << xyzPlanet[2] << std::endl;
     Planets planets;
-	auto earth = planets.getEarth();
+    auto earth = planets.getEarth();
     //Earth earth;
     auto xyzEarth = earth->computePlanetPosition(jd);
     //std::cout << "earth " << xyzEarth[0] << "," << xyzEarth[1] << "," << xyzEarth[2] << std::endl;
-    auto xyz = sub(xyzPlanet, xyzEarth);
-    //std::cout << getName() << " xyz " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
-	return xyz;
+    auto xyz = xyzPlanet - xyzEarth;
+    //std::cout << getName() << " xyz " << xyz.x << "," << xyz.y << "," << xyz.z << std::endl;
+    return xyz;
 }
 
 std::shared_ptr<RaDecPlanet>
 Planet::getRaDecPositon(const JulianDate& jd)
 {
-	std::array<double,3> xyzRel = posToEarth(jd);
-	return rectToPolar(xyzRel);
+    CarthesianCoord xyzRel = posToEarth(jd);
+    return rectToPolar(xyzRel);
 }
 
 std::shared_ptr<RaDecPlanet>
-Planet::rectToPolar(const std::array<double,3>& xyz)
+Planet::rectToPolar(const CarthesianCoord& xyz)
 {
-    // convert from Cartesian to polar coordinates
-	const double r = std::sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1] + xyz[2] * xyz[2]);
-	double ra = std::atan2(xyz[1], xyz[0]);
-	double dec = std::acos(xyz[2] / r);
-
-	// Make sure ra is positive
-	if (ra < 0.0) {
-	    ra += Math::TWO_PI;
-	}
-	// Make dec is in range +/-90deg
-	dec = Math::HALF_PI - dec;
-	return std::make_shared<RaDecPlanet>(ra, dec, r);
+    return xyz.toRaDecPlanet();
 }
 
 std::string

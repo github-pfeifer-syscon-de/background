@@ -49,12 +49,12 @@ public:
     //
     //Rectangular:
     //x is left/right, y is forward/backward, z is up/down
-    Point2D toScreen(const Layout& layout);
+    Point2D toScreen(const Layout& layout) const;
 
-    double getAzimut();
-    double getAltitude();
-    double getAzimutDegrees();
-    double getAltitudeDegrees();
+    double getAzimut() const;
+    double getAltitude() const;
+    double getAzimutDegrees() const;
+    double getAltitudeDegrees() const;
 
 
 

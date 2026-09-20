@@ -27,7 +27,7 @@ RaDecPlanet::RaDecPlanet(double _ra, double _dec, double _distAU)
 }
 
 double
-RaDecPlanet::getDistanceAU()
+RaDecPlanet::getDistanceAU() const
 {
     return distanceAU;
 }
