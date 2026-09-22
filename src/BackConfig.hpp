@@ -26,9 +26,14 @@ public:
     BackConfig(const char* confName);
     explicit BackConfig(const BackConfig& other) = delete;
     virtual ~BackConfig() = default;
+    static constexpr auto DEFAULT_GEO_MARGIN{5.0};
 
     std::string getGeoJsonFile();
     void setGeoJsonFile(const std::string& geoJsonFile);
+    std::string getImageFile();
+    void setImageFile(const std::string& imageFile);
+    double getGeoMargin();
+    void setGeoMargin(double geoMargin);
 protected:
     std::string get_main_config_group() override;
 };

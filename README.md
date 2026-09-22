@@ -134,18 +134,25 @@ otherwise use:
 To show a alternative picture for daylight 6-18h
 use the Geo.json section in preferences. 
 The File defines the viewed bounds with some
-rounding & addition (avoid crossing equator/0 meridian,
-no projection like mercator will be used).
-There is also a option to set a image file with:
-[geo] ... image=IMAGE_EG_SOLARSYSTEMSCOPE_EARTH_2K
+rounding & addition
+> [!WARNING]  
+> avoid crossing equator/0 meridian for some services/products
+> no projection like mercator will be used
+There is also a option to set a image file with preferences
+the lon/lat's bounds -180/-90 to 180/+90 will be presumed
+(the sat image will adapt delayed as continuously querying
+a WMS will block it).
 By default a solarsystem-scope example is downloaded
-and added (if you don't like this see res/meson.build
-and place your preferred file as image).
+and added 
+> [!NOTE] 
+> if you want to avoid the download see res/meson.build and place your preferred file as image
 
 #### Map-services
 
-Sry.: The Real-earth-service does not work on this side...   
+> [!WARNING]
+> Sry.: The Real-earth-service does not work on this side...   
 
-Use the WMS variants, but I had not much luck finding something nicely working...
+> [!NOTE]
+> The link supplies some WMS variants, but I had not much luck finding something nicely working...
 
 https://geodocs.io/en/blog/list-of-free-wms-and-wmts-basemap-urls-2026

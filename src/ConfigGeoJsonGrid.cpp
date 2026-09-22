@@ -24,30 +24,48 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
 {
     auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
     refBuilder->get_widget("geoFileButton", m_geoJsonButton);
-    if (m_geoJsonButton) {
+    if (m_geoJsonButton != nullptr) {
         m_geoJsonButton->set_filename(config->getGeoJsonFile());
         m_geoJsonButton->signal_file_set()
                 .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::geojsonfile_changed));
     }
-    Gtk::Button* geoClearFile{nullptr};
+    Gtk::Button* geoClearFile{};
     refBuilder->get_widget("geoClearFile", geoClearFile);
-    if (geoClearFile) {
+    if (geoClearFile != nullptr) {
         geoClearFile->signal_clicked()
                 .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::clearGeoFile));
     }
+    refBuilder->get_widget("imageFileButton", m_imageButton);
+    if (m_imageButton != nullptr) {
+        m_imageButton->set_filename(config->getImageFile());
+        m_imageButton->signal_file_set()
+                .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::imagefile_changed));
+    }
+    Gtk::Button* imageClearFile{};
+    refBuilder->get_widget("imageClearFile",  imageClearFile);
+    if (imageClearFile != nullptr) {
+        imageClearFile->signal_clicked()
+                .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::clearImageFile));
+    }
+    refBuilder->get_widget("geoMargin", m_spinGeoMargin);
+    if (m_spinGeoMargin != nullptr) {
+        m_spinGeoMargin->signal_value_changed()
+                .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::borderChanged));
+    }
+    m_spinGeoMargin->set_value(config->getGeoMargin());
 }
-
-
 
 void
 ConfigGeoJsonGrid::geojsonfile_changed()
 {
     Glib::ustring file = m_geoJsonButton->get_filename();
     auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
-    bool success = dynamic_cast<GeoPaint*>(m_sphereView)->setGeoJsonFile(file);
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    bool success = geoPaint->setGeoJsonFile(file);
     if (!success) {
         file = "";
     }
+    geoPaint->refresh();
     m_geoJsonButton->set_filename(file);
     config->setGeoJsonFile(file);
 }
@@ -58,5 +76,44 @@ ConfigGeoJsonGrid::clearGeoFile()
     auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
     config->setGeoJsonFile("");
     m_geoJsonButton->set_filename("");
-    dynamic_cast<GeoPaint*>(m_sphereView)->setGeoJsonFile("");
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    geoPaint->setGeoJsonFile("");
+    geoPaint->refresh();
+}
+
+void
+ConfigGeoJsonGrid::imagefile_changed()
+{
+    Glib::ustring file = m_imageButton->get_filename();
+    auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    bool success = geoPaint->setImage(file);
+    if (!success) {
+        file = "";
+    }
+    geoPaint->refresh();
+    m_imageButton->set_filename(file);
+    config->setImageFile(file);
+}
+
+void
+ConfigGeoJsonGrid::clearImageFile()
+{
+    auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
+    config->setImageFile("");
+    m_imageButton->set_filename("");
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    geoPaint->setImage("");
+    geoPaint->refresh();
+}
+
+void
+ConfigGeoJsonGrid::borderChanged()
+{
+    double margin = m_spinGeoMargin->get_value();
+    auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    geoPaint->setGeoMargin(margin);
+    geoPaint->refresh();
+    config->setGeoMargin(margin);
 }

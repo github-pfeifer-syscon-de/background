@@ -30,8 +30,12 @@ public:
 protected:
     BaseConfigListener* getSphereView();
     void geojsonfile_changed();
+    void imagefile_changed();
     void clearGeoFile();
+    void clearImageFile();
+    void borderChanged();
 private:
-    Gtk::FileChooserButton* m_geoJsonButton{nullptr};
-
+    Gtk::FileChooserButton* m_geoJsonButton{};
+    Gtk::FileChooserButton* m_imageButton{};
+    Gtk::SpinButton* m_spinGeoMargin{};
 };

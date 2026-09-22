@@ -28,18 +28,18 @@
 GeoPaint::GeoPaint(StarWin* starWin)
 : BackPaint(starWin)
 , m_geoConversion{std::make_shared<GeoConvLinear>()}
+, m_geoMargin{m_config->getGeoMargin()}
 {
-    auto geoJson = m_config->getString(GROUP_GEO, KEY_GEOJSON);
+    auto geoJson = m_config->getGeoJsonFile();
     setGeoJsonFile(geoJson);
 
-    auto image = m_config->getString(GROUP_GEO, KEY_IMAGE);
+    auto image = m_config->getImageFile();
     if (image.empty()) {    // set some default
         image = Glib::canonicalize_filename(DEFAULT_IMAGE , PACKAGE_DATA_DIR);
-        m_config->setString(GROUP_GEO, KEY_IMAGE, image);
+        m_config->setImageFile(image);
         m_config->save();
     }
     setImage(image);
-
     m_weatherTransparence = m_config->getWeatherTransparency();
     refresh_weather_service();
 }
@@ -121,7 +121,7 @@ GeoPaint::setGeoJsonFile(const std::string& geoJson)
     return true;
 }
 
-void
+bool
 GeoPaint::setImage(const std::string& image)
 {
     m_imagePix.reset();
@@ -139,6 +139,13 @@ GeoPaint::setImage(const std::string& image)
         m_imagePix->setMinimum(GeoCoordinate{-180.0, -90.0, COORD_REF});
         m_imagePix->setMaximum(GeoCoordinate{180.0, 90.0, COORD_REF});
     }
+    return true;
+}
+
+void GeoPaint::setGeoMargin(double geoMargin)
+{
+    m_geoMargin = geoMargin;
+    findGeoMinMax();    // this will just scale geo-display, weather will be updated on next refresh...
 }
 
 void
@@ -179,6 +186,13 @@ GeoPaint::weather_image_notify(WeatherImageRequest& request)
                   << " pixbuf " <<  static_cast<void*>(requestPixbuf.get()) << std::endl;
     }
 }
+
+void
+GeoPaint::refresh()
+{
+    m_starWin->update();
+}
+
 
 int
 GeoPaint::get_weather_image_size()
@@ -245,8 +259,8 @@ GeoPaint::findGeoMinMax()
             firstPnt = !firstPnt;
         }
     }
-    m_min = min.floor() - GeoCoordinate(GEO_BORDER, GEO_BORDER, COORD_REF);
-    m_max = max.ceil() + GeoCoordinate(GEO_BORDER, GEO_BORDER, COORD_REF);
+    m_min = min.floor() - GeoCoordinate(m_geoMargin, m_geoMargin, COORD_REF);
+    m_max = max.ceil() + GeoCoordinate(m_geoMargin, m_geoMargin, COORD_REF);
     auto diff = m_max - m_min;
     auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
     m_max = m_min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaliy

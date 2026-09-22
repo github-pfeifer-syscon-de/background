@@ -41,17 +41,17 @@ public:
     virtual ~GeoPaint() = default;
 
     bool setGeoJsonFile(const std::string& geoJson);
-    void setImage(const std::string& image);
-     void weather_image_notify(WeatherImageRequest& request) override;
-     int get_weather_image_size() override;
-     void drawImage(Cairo::RefPtr<Cairo::Context>&, const Glib::DateTime&, GeoPosition&, Layout&) override;
-    static constexpr auto GEO_BORDER{5.0};
+    bool setImage(const std::string& image);
+    void weather_image_notify(WeatherImageRequest& request) override;
+    int get_weather_image_size() override;
+    void drawImage(Cairo::RefPtr<Cairo::Context>&, const Glib::DateTime&, GeoPosition&, Layout&) override;
     static constexpr auto GROUP_GEO{"geo"};
     static constexpr auto KEY_GEOJSON{"geoJson"};
     static constexpr auto KEY_IMAGE{"image"};
     static constexpr auto DEFAULT_IMAGE{"2k_earth_daymap.jpg"};
     static constexpr auto SRC_DIR{"src"};
-    std::string  findFile(const std::string& name) override;
+    static constexpr auto KEY_GEO_MARGIN{"geoMargin"};
+    std::string findFile(const std::string& name) override;
     std::shared_ptr<WeatherConfig> get_config() override;
     void weather_transparency_changed(Gtk::Scale *scale) override;
     std::shared_ptr<Weather> get_weather() override;
@@ -59,6 +59,8 @@ public:
     void closeConfigDlg() override;
     void save_config() override;
     void on_action_preferences() override;
+    void refresh();
+    void setGeoMargin(double geoMargin);
 
     // since we do no conversions at the moment use fixed reference system
     static constexpr auto COORD_REF{CoordRefSystem(CoordRefSystem::Value::EPSG_4326)};
@@ -75,4 +77,5 @@ private:
     std::shared_ptr<Weather> m_weatherService;
     bool m_weatherRequested{};
     double m_weatherTransparence;
+    double m_geoMargin{};
 };

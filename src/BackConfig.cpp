@@ -42,5 +42,28 @@ void
 BackConfig::setGeoJsonFile(const std::string& geoJsonFile)
 {
     return setString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOJSON, geoJsonFile);
+}
 
+std::string
+BackConfig::getImageFile()
+{
+    return getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_IMAGE);
+}
+
+void
+BackConfig::setImageFile(const std::string& imageFile)
+{
+    return setString(GeoPaint::GROUP_GEO, GeoPaint::KEY_IMAGE, imageFile);
+}
+
+double
+BackConfig::getGeoMargin()
+{
+    return getDouble(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEO_MARGIN, DEFAULT_GEO_MARGIN);
+}
+
+void
+BackConfig::setGeoMargin(double geoMargin)
+{
+    return setDouble(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEO_MARGIN, geoMargin);
 }
