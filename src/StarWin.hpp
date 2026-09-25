@@ -36,6 +36,7 @@ class FileLoader;
 class GeoPaint;
 class BackConfig;
 class ParamDlg;
+class ModulePaint;
 
 class StarWin
 : public Gtk::ApplicationWindow
@@ -86,7 +87,10 @@ public:
      }
     std::shared_ptr<GeoPaint> getGeoPaint();
     std::shared_ptr<StarPaint> getStarPaint();
-
+    void drawAll(Cairo::RefPtr<Cairo::Context>& ctx, Glib::DateTime now, GeoPosition& pos, Layout layout);
+    std::shared_ptr<ModulePaint> getModulePaint() {
+        return m_modulePaint;
+    }
 protected:
     std::string getGlobeConfigName();
     void setupConfig();
@@ -132,8 +136,6 @@ private:
     GPid m_pid;
     PtrBackPaint m_backPaint;
     bool m_updateBlocked{false};
-    static constexpr auto DAYLIGHT_START_HOUR{6};   // simple daylight rule
-    static constexpr auto DAYLIGHT_END_HOUR{18};
     std::shared_ptr<psc::log::Log> m_log;
     std::shared_ptr<StarPaint> m_starPaint;
     std::shared_ptr<GeoPaint> m_geoPaint;
@@ -141,5 +143,7 @@ private:
 #   ifdef USE_APPMENU
     std::shared_ptr<AppMenu> m_appMenu;
 #   endif
+    std::shared_ptr<ModulePaint> m_modulePaint;
+
 };
 

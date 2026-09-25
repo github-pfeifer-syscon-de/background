@@ -21,11 +21,11 @@
 
 ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& refBuilder,  BaseConfigListener* baseConfigListener)
 : BaseConfigGrid(cobject, refBuilder, baseConfigListener)
+, m_config{std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config())}
 {
-    auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
     refBuilder->get_widget("geoFileButton", m_geoJsonButton);
     if (m_geoJsonButton != nullptr) {
-        m_geoJsonButton->set_filename(config->getGeoJsonFile());
+        m_geoJsonButton->set_filename(m_config->getGeoJsonFile());
         m_geoJsonButton->signal_file_set()
                 .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::geojsonfile_changed));
     }
@@ -37,7 +37,7 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
     }
     refBuilder->get_widget("imageFileButton", m_imageButton);
     if (m_imageButton != nullptr) {
-        m_imageButton->set_filename(config->getImageFile());
+        m_imageButton->set_filename(m_config->getImageFile());
         m_imageButton->signal_file_set()
                 .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::imagefile_changed));
     }
@@ -52,7 +52,17 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
         m_spinGeoMargin->signal_value_changed()
                 .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::borderChanged));
     }
-    m_spinGeoMargin->set_value(config->getGeoMargin());
+    m_spinGeoMargin->set_value(m_config->getGeoMargin());
+    refBuilder->get_widget("spinDayStart", m_spinDayStart);
+    m_spinDayStart->set_value(m_config->getDayStart());
+    m_spinDayStart->signal_changed().connect( [&] {
+       m_config->setDayStart(m_spinDayStart->get_value_as_int());
+    });
+    refBuilder->get_widget("spinDayEnd", m_spinDayEnd);
+    m_spinDayEnd->set_value(m_config->getDayEnd());
+    m_spinDayEnd->signal_changed().connect( [&] {
+       m_config->setDayEnd(m_spinDayEnd->get_value_as_int());
+    });
 }
 
 void

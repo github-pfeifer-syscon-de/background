@@ -18,37 +18,35 @@
 #pragma once
 
 #include <memory>
-#include <KeyConfig.hpp>
-#include <WeatherConfigGrid.hpp>
 
-#include "GeoPosition.hpp"
+#include "BackConfig.hpp"
 #include "Layout.hpp"
+#include "Module.hpp"
 #include "FileLoader.hpp"
 
-
 class StarWin;
-class BackConfig;
 
-class BackPaint
-{
+class ModulePaint {
 public:
-    BackPaint(StarWin* starWin);
-    virtual ~BackPaint() = default;
+    ModulePaint(StarWin* starWin);
+    explicit ModulePaint(const ModulePaint& other) = delete;
+    virtual ~ModulePaint() = default;
 
-    virtual void drawImage(Cairo::RefPtr<Cairo::Context>& ctx
-        , const Glib::DateTime& now
-        , GeoPosition& pos
-        , Layout& layout) = 0;
-    std::shared_ptr<KeyConfig> getConfig();
+    std::vector<PtrModule> createModules();
+    std::vector<PtrModule> getModules();
+    void drawModules(Cairo::RefPtr<Cairo::Context>& ctx
+        , Layout& layout);
 
-    void scale(Pango::FontDescription& starFont, double scale);
-    void brighten(Gdk::RGBA& calColor, double factor);
 
+    std::vector<PtrModule> findModules(const char* pos);
 protected:
+    void drawTop(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+    void drawMiddle(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+    void drawBottom(const Cairo::RefPtr<Cairo::Context>& ctx, Layout& layout, const std::vector<PtrModule>& modules);
+
 
     StarWin* m_starWin;
     std::shared_ptr<BackConfig> m_config;
+    std::vector<PtrModule> m_modules;
     std::shared_ptr<FileLoader> m_fileLoader;
 };
-
-using PtrBackPaint = std::shared_ptr<BackPaint>;

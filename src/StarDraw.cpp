@@ -64,9 +64,7 @@ StarDraw::update(Glib::DateTime now, GeoPosition& pos)
     }
     Layout layout(width, height);
     auto ctx = Cairo::Context::create(m_image);
-    auto backPaint = m_starWin->getBackPaint();
-    backPaint->drawImage(ctx, now, pos, layout);
-    backPaint->drawModules(ctx, layout);
+    m_starWin->drawAll(ctx, now, pos, layout);
 
     //std::cout << "draw " << w << " h " << h << "\n";
     queue_draw();

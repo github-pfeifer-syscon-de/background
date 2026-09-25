@@ -43,6 +43,7 @@
 #include "Renderer.hpp"
 #include "GeoPaint.hpp"
 #include "StarPaint.hpp"
+#include "ModulePaint.hpp"
 
 
 StarWin::StarWin(BaseObjectType* cobject
@@ -62,6 +63,7 @@ StarWin::StarWin(BaseObjectType* cobject
 
     setupConfig();
     m_fileLoader = std::make_shared<FileLoader>(backAppl->get_exec_path());
+    m_modulePaint = std::make_shared<ModulePaint>(this);
     if (m_backAppl->isDaemon()) {
         iconify();
         add_action("preferences", sigc::mem_fun(*this, &StarWin::onMenuConfig));
@@ -360,6 +362,16 @@ StarWin::setBackgroundDbus(const Glib::ustring& dbusChannel, const Glib::ustring
 }
 
 void
+StarWin::drawAll(Cairo::RefPtr<Cairo::Context>& ctx, Glib::DateTime now, GeoPosition& pos, Layout layout)
+{
+
+auto backPaint = getBackPaint();
+backPaint->drawImage(ctx, now, pos, layout);
+m_modulePaint->drawModules(ctx, layout);
+}
+
+
+void
 StarWin::update(Glib::DateTime now, GeoPosition& pos)
 {
     if (m_backAppl->isDaemon()) {
@@ -373,9 +385,7 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
         auto image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
         Layout layout(width, height);
         auto ctx = Cairo::Context::create(image);
-        auto backPaint = getBackPaint();
-        backPaint->drawImage(ctx, now, pos, layout);
-        backPaint->drawModules(ctx, layout);
+        drawAll(ctx, now, pos, layout);
         // create new
         auto dateTime = now.format("%F_%H%M%S%f");  // build a long name, as updates work only when filename changes e.g. from settings dialog
         auto fileName = std::format("{}{}.png", IMAGE_PREFIX, dateTime);
@@ -626,9 +636,11 @@ StarWin::getBackPaint()
 {
     auto geoJson = getConfig()->getGeoJsonFile();
     auto now = Glib::DateTime::create_now_local();
+    auto dayStart = getConfig()->getDayStart();
+    auto dayEnd = getConfig()->getDayEnd();
     if (geoJson.empty()
-     || now.get_hour() <= DAYLIGHT_START_HOUR
-     || now.get_hour() >= DAYLIGHT_END_HOUR) {
+     || now.get_hour() <= dayStart
+     || now.get_hour() >= dayEnd) {
         m_backPaint = getStarPaint();
     }
     else {
@@ -712,7 +724,7 @@ StarWin::exportPdf()
         auto ref = std::min(screen->get_height(), screen->get_width());
         // this is just a guess, since the display may appear somewhere else, but we can't tell
         haruRenderer.setReference(ref);
-        auto starPaint = std::dynamic_pointer_cast<StarPaint>(getBackPaint());
+        auto starPaint = getStarPaint();
         if (starPaint) {
             auto starFont = starPaint->getStarFont();
             starPaint->scale(starFont, 1.5);

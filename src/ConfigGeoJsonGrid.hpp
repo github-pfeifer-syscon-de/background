@@ -21,6 +21,8 @@
 
 #include <WeatherConfigGrid.hpp>
 
+class BackConfig;
+
 class ConfigGeoJsonGrid
 : public BaseConfigGrid
 {
@@ -35,7 +37,10 @@ protected:
     void clearImageFile();
     void borderChanged();
 private:
+    std::shared_ptr<BackConfig> m_config;
     Gtk::FileChooserButton* m_geoJsonButton{};
     Gtk::FileChooserButton* m_imageButton{};
     Gtk::SpinButton* m_spinGeoMargin{};
+    Gtk::SpinButton* m_spinDayStart{};
+    Gtk::SpinButton* m_spinDayEnd{};
 };

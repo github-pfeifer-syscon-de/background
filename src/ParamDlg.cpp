@@ -19,11 +19,13 @@
 #include <iostream>
 #include <WeatherConfigGrid.hpp>
 
-#include "GeoPaint.hpp"
-#include "StarDraw.hpp"
-#include "ParamDlg.hpp"
-#include "StarWin.hpp"
 #include "BackgroundApp.hpp"
+#include "ConfigGridFlights.hpp"
+#include "GeoPaint.hpp"
+#include "ParamDlg.hpp"
+#include "StarDraw.hpp"
+#include "StarWin.hpp"
+#include "ModulePaint.hpp"
 
 ParamDlg::ParamDlg(BaseObjectType* cobject
                 , const Glib::RefPtr<Gtk::Builder>& builder
@@ -113,12 +115,13 @@ ParamDlg::ParamDlg(BaseObjectType* cobject
         m_messierVMag->set_sensitive(false);
     }
 
-    for (auto& mod : m_starWin->getBackPaint()->getModules()) {
+    for (auto& mod : m_starWin->getModulePaint()->getModules()) {
         mod->setupParam(builder, starWin);
     }
 
     builder->get_widget_derived("configWeatherGrid", m_configWeatherGrid, dynamic_cast<BaseConfigListener*>(starWin->getGeoPaint().get()));
     builder->get_widget_derived("configGeoJsonGrid", m_configGeoJson, dynamic_cast<BaseConfigListener*>(starWin->getGeoPaint().get()));
+    builder->get_widget_derived("configFlightsGrid", m_flightGrid, starWin->getGeoPaint());
 
     show_all_children();
 }
@@ -129,6 +132,7 @@ ParamDlg::on_response(int response_id)
 {
     bool save = false;
     if (response_id == Gtk::RESPONSE_OK) {
+        m_flightGrid->save();
         m_starWin->setIntervalMinutes(m_updateInterval->get_value_as_int());
         if (m_starWin->getBackgroundAppl()->isDaemon()) {
             auto nMonitor = m_display->get_active_id();
@@ -150,9 +154,9 @@ ParamDlg::on_response(int response_id)
             starPaint->setMessierVMagMin(m_messierVMag->get_value());
         }
         save = true;
-    }
-    for (auto& mod : m_starWin->getBackPaint()->getModules()) {
-        mod->saveParam(save);
+        for (auto& mod : m_starWin->getModulePaint()->getModules()) {
+            mod->saveParam(save);
+        }
     }
 }
 

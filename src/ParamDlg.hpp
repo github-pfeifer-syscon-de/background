@@ -25,6 +25,7 @@
 class StarDraw;
 class GeoPosition;
 class ConfigWeatherGrid;
+class ConfigGridFlights;
 
 class ParamDlg
 : public Gtk::Dialog
@@ -50,4 +51,5 @@ private:
     Gtk::ComboBoxText* m_display;
     ConfigWeatherGrid* m_configWeatherGrid;
     ConfigGeoJsonGrid* m_configGeoJson;
+    ConfigGridFlights* m_flightGrid;
 };

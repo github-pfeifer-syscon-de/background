@@ -67,3 +67,90 @@ BackConfig::setGeoMargin(double geoMargin)
 {
     return setDouble(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEO_MARGIN, geoMargin);
 }
+
+Glib::ustring
+BackConfig::getFlightService()
+{
+    return getString(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_SERVICE);
+}
+
+void
+BackConfig::setFlightService(const Glib::ustring& service)
+{
+    setString(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_SERVICE, service);
+}
+
+
+int32_t
+BackConfig::getFlightRefreshMin()
+{
+    return getInteger(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_REFRESH, 15);
+}
+
+void
+BackConfig::setFlightRefreshMin(int32_t flightRefreshMin)
+{
+    setInteger(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_REFRESH, flightRefreshMin);
+}
+
+
+double
+BackConfig::getFlightLongitude()
+{
+    return getDouble(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_LONGITUDE);
+}
+
+void
+BackConfig::setFlightLongitude(double lon)
+{
+    setDouble(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_LONGITUDE, lon);
+}
+
+
+double
+BackConfig::getFlightLatitude()
+{
+    return getDouble(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_LATITUDE);
+}
+
+void
+BackConfig::setFlightLatitude(double lat)
+{
+    setDouble(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_LATITUDE, lat);
+}
+
+double
+BackConfig::getFlightBounds()
+{
+    return getDouble(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_BOUNDS);
+}
+
+void
+BackConfig::setFlightBounds(double bounds)
+{
+    setDouble(GeoPaint::GROUP_FLIGHTS, GeoPaint::KEY_FLIGHT_BOUNDS, bounds);
+}
+
+int
+BackConfig::getDayStart()
+{
+    return getInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_DAYSTART, 6);
+}
+
+void
+BackConfig::setDayStart(int dayStart)
+{
+    setInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_DAYSTART, dayStart);
+}
+
+int
+BackConfig::getDayEnd()
+{
+    return getInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_DAYEND, 18);
+}
+
+void
+BackConfig::setDayEnd(int dayEnd)
+{
+    setInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_DAYEND, dayEnd);
+}

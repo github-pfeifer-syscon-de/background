@@ -138,16 +138,15 @@ rounding & addition
 > [!WARNING]  
 > avoid crossing equator/0 meridian for some services/products
 > no projection like mercator will be used
-There is also a option to set a image file with preferences
-the lon/lat's bounds -180/-90 to 180/+90 will be presumed
 (the sat image will adapt delayed as continuously querying
 a WMS will block it).
 By default a solarsystem-scope example is downloaded
 and added 
 > [!NOTE] 
 > if you want to avoid the download see res/meson.build and place your preferred file as image
+the lon/lat's bounds -180/-90 to 180/+90 will be presumed
 
-#### Map-services
+#### Map-services (weather)
 
 > [!WARNING]
 > Sry.: The Real-earth-service does not work on this side...   
@@ -156,3 +155,21 @@ and added
 > The link supplies some WMS variants, but I had not much luck finding something nicely working...
 
 https://geodocs.io/en/blog/list-of-free-wms-and-wmts-basemap-urls-2026
+
+#### Flights
+
+> [!NOTE]
+> This is a just getting started with some service I found interesting.
+> There are many browser services with much more insight, see below for some examples.
+
+Implemented Service (no auth, as there are some limitations don't use a too large area or high update rate):
+
+https://opensky-network.org
+
+Some nice gui (to look up a specific icao use with e.g. ?icao=3c4317):
+
+https://globe.adsbexchange.com/
+
+To get some detailed infos for a callsign (primary display) e.g. FIN5YP use: 
+
+https://www.flightaware.com/live/flight/FIN5YP/

@@ -15,39 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
+#include <gtkmm.h>
+#include <memory>
 
-#include "StarWin.hpp"
-#include "BackConfig.hpp"
-#include "background_config.h"
-#include "BackPaint.hpp"
+class GeoPaint;
 
-
-BackPaint::BackPaint(StarWin* starWin)
-: m_starWin{starWin}
+class ConfigGridFlights
+: public Gtk::Grid
 {
-    m_fileLoader = starWin->getFileLoader();
+public:
+    ConfigGridFlights(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& refBuilder, const std::shared_ptr<GeoPaint>& geoPaint);
+    virtual ~ConfigGridFlights() = default;
 
-    m_config = m_starWin->getConfig();
-}
-
-
-void
-BackPaint::scale(Pango::FontDescription& starFont, double scale)
-{
-    starFont.set_size(static_cast<int>(starFont.get_size() * scale));
-}
-
-void
-BackPaint::brighten(Gdk::RGBA& color, double factor)
-{
-    color.set_red(color.get_red() * factor);
-    color.set_green(color.get_green() * factor);
-    color.set_blue(color.get_blue() * factor);
-}
-
-std::shared_ptr<KeyConfig>
-BackPaint::getConfig()
-{
-    return m_config;
-}
+    void save();
+private:
+    std::shared_ptr<GeoPaint> m_geoPaint;
+    Gtk::ComboBoxText* m_comboService;
+    Gtk::SpinButton* m_flightRefresh;
+    Gtk::SpinButton* m_flightLon;
+    Gtk::SpinButton* m_flightLat;
+    Gtk::SpinButton* m_flightBounds;
+};

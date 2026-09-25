@@ -19,6 +19,7 @@
 #include <iostream>
 #include <Log.hpp>
 #include <WeatherConfig.hpp>
+#include <OpenskyFlights.hpp>
 
 #include "BackConfig.hpp"
 #include "GeoPaint.hpp"
@@ -42,6 +43,7 @@ GeoPaint::GeoPaint(StarWin* starWin)
     setImage(image);
     m_weatherTransparence = m_config->getWeatherTransparency();
     refresh_weather_service();
+    refresh_flight_service(false);
 }
 
 std::string
@@ -94,15 +96,15 @@ GeoPaint::refresh_weather_service()
 {
     auto conf =  m_config->getActiveWebMapServiceConf();
     if (conf) {
-    m_weatherService = m_config->getService(this, conf);
-    m_weatherService->setLog(m_starWin->getLog());
-    //m_weatherService->setLog(m_log);
-    m_weatherService->signal_products_completed().connect(
-        sigc::mem_fun(*this, &GeoPaint::request_weather_product));
-    m_weatherService->capabilities();
-    psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
-         return std::format("requested weather capabilites {} ", conf->getName());
-    });
+        m_weatherService = m_config->getService(this, conf);
+        m_weatherService->setLog(m_starWin->getLog());
+        //m_weatherService->setLog(m_log);
+        m_weatherService->signal_products_completed().connect(
+            sigc::mem_fun(*this, &GeoPaint::request_weather_product));
+        m_weatherService->capabilities();
+        psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
+             return std::format("requested weather capabilites {} ", conf->getName());
+        });
     }
     return m_weatherService;
 }
@@ -272,60 +274,10 @@ GeoPaint::findGeoMinMax()
 }
 
 void
-GeoPaint::drawImage(
+GeoPaint::drawGeoShape(
           Cairo::RefPtr<Cairo::Context>& ctx
-        , const Glib::DateTime& dateTime
-        , GeoPosition& geoPosition
-        , Layout& layout)
+        , double fact)
 {
-    auto min = std::min(layout.getWidth(), layout.getHeight());
-    auto width = min;
-    auto height = min;
-    ctx->save();
-    ctx->set_source_rgb(0.1, 0.1,  0.1);
-    ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
-    ctx->fill();
-
-    //std::cout << "GeoPaint::update"
-    //          << " width " << width<< " min " << m_min.longitude << " max " << m_max.longitude << "\n"
-    //          << " height " << height << " min " << m_min.latitude << " max " << m_max.latitude << std::endl;
-    auto diff = m_max - m_min;
-    if (std::abs(diff.getLongitude()) < 0.001
-      ||std::abs(diff.getLatitude()) < 0.001) {
-        return;
-    }
-    ctx->translate((layout.getWidth() - min) / 2, (layout.getHeight() - min) / 2);
-    ctx->arc(min / 2, min / 2, min / 2, 0.0, Math::TWO_PI);
-    ctx->clip();    // make it a round shape
-    // since the result is quadratic adjust the difference as well
-    auto fact = static_cast<double>(width) / diff.getLongitude(); // since we use same long/latitude this should work
-    if (m_imagePix) {
-        GeoCoordinate geoCoord{m_min.getLongitude(), m_min.getLatitude(), COORD_REF};
-        auto coord = m_geoConversion->fromDisplay(geoCoord);
-        auto target = m_imagePix->getSlice(coord, diff);
-        auto scaled = target->scale_simple(width, height, Gdk::INTERP_BILINEAR);
-        Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
-        //ctx->rectangle(0, 0, width, height);  // strech result -> use progressive scale ?
-        //ctx->fill();
-        ctx->paint();
-    }
-    if (m_weatherService && !m_weatherRequested) {
-        auto weatherProductId = m_config->getWeatherProductId();
-        if (!weatherProductId.empty()) {
-            auto prod = m_weatherService->find_product(weatherProductId);
-            if (prod && !prod->is_latest()) {
-                request_weather_product();
-            }
-        }
-    }
-    if (m_weatherPix) {
-        // as this was rquested with the correct coords can use directly (but need to scale as we used a fixed request size)
-        auto scaled = m_weatherPix->getPixmap()->scale_simple(width, height, Gdk::INTERP_BILINEAR);
-        Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
-        //ctx->rectangle(0, 0, width, height);
-        //ctx->fill();
-        ctx->paint_with_alpha(m_weatherTransparence);
-    }
     bool activePath{false};
     double red{1.0};
     double green{1.0};
@@ -373,10 +325,183 @@ GeoPaint::drawImage(
             }
             firstPnt = !firstPnt;
         }
+        if (activePath) {
+            ctx->stroke();
+            activePath = false;
+        }
     }
+}
+
+void
+GeoPaint::drawGeoImage(
+        Cairo::RefPtr<Cairo::Context>& ctx
+      , GeoCoordinate& diff
+      , int width, int height)
+{
+    if (m_imagePix) {
+        GeoCoordinate geoCoord{m_min.getLongitude(), m_min.getLatitude(), COORD_REF};
+        auto coord = m_geoConversion->fromDisplay(geoCoord);
+        auto target = m_imagePix->getSlice(coord, diff);
+        auto scaled = target->scale_simple(width, height, Gdk::INTERP_BILINEAR);
+        Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
+        //ctx->rectangle(0, 0, width, height);  // strech result -> use progressive scale ?
+        //ctx->fill();
+        ctx->paint();
+    }
+}
+
+void
+GeoPaint::drawWeather(
+        Cairo::RefPtr<Cairo::Context>& ctx
+        , int width, int height)
+{
+    if (m_weatherService && !m_weatherRequested) {
+        auto weatherProductId = m_config->getWeatherProductId();
+        if (!weatherProductId.empty()) {
+            auto prod = m_weatherService->find_product(weatherProductId);
+            if (prod && !prod->is_latest()) {
+                request_weather_product();
+            }
+        }
+    }
+    if (m_weatherPix) {
+        // as this was rquested with the correct coords can use directly (but need to scale as we used a fixed request size)
+        auto scaled = m_weatherPix->getPixmap()->scale_simple(width, height, Gdk::INTERP_BILINEAR);
+        Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
+        //ctx->rectangle(0, 0, width, height);
+        //ctx->fill();
+        ctx->paint_with_alpha(m_weatherTransparence);
+    }
+}
+
+double
+GeoPaint::heightToPixel(double height_m)
+{
+    auto pixel = height_m * 25.0 / 10000.0;   // 10000m -> 25pixel
+    //std::cout << "GeoPaint::heightToPixel"
+    //          << " h " << height_m<< "m"
+    //          << " pix " << pixel << std::endl;
+    return pixel;
+}
+
+void
+GeoPaint::refresh_flight_service(bool force)
+{
+    auto service = m_config->getFlightService();
+    if (service.empty()) {
+        m_flights.clear();
+        m_flightService.reset();
+        return;
+    }
+    bool update = force;
+    if (!m_flightService
+     || service !=  m_flightService->getServiceName()) {
+        m_flightService = Flights::getService(service, this);
+        update = true;
+    }
+    if (m_flightService) {
+        auto now = Glib::DateTime::create_now_local();
+        if (!update) {
+            update = !m_flightService->getLastQuery();
+        }
+        if (!update) {
+            auto diff = now.difference(m_flightService->getLastQuery());
+            psc::log::Log::logAdd(psc::log::Level::Info, [&] {
+               return std::format("Flighs checking diff {} min {}", diff, diff / USEC_MIN_INTERVAL);
+            });
+            update = diff > USEC_MIN_INTERVAL * m_config->getFlightRefreshMin();
+        }
+        if (update) {
+            // since service allows limited queries only give a small area
+            GeoBounds flightBounds{
+                m_config->getFlightLongitude() - m_config->getFlightBounds(), m_config->getFlightLatitude() - m_config->getFlightBounds()
+                , m_config->getFlightLongitude() + m_config->getFlightBounds(), m_config->getFlightLatitude() + m_config->getFlightBounds()
+                , CoordRefSystem(CoordRefSystem::Value::CRS_84)};
+            m_flightService->query(flightBounds);
+        }
+    }
+}
+
+void
+GeoPaint::drawFlights(
+        Cairo::RefPtr<Cairo::Context>& ctx
+        , double fact)
+{
+    refresh_flight_service(false);
+    ctx->set_line_width(1.0);
+    ctx->set_antialias(Cairo::ANTIALIAS_DEFAULT);
+    ctx->set_source_rgb(0.3, 1.0, 0.0);
+    for (auto& flight : m_flights) {
+        auto geoCoord = flight->getPosition();
+        auto coord = m_geoConversion->toDisplay(geoCoord);
+        auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
+        auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
+        ctx->move_to(xDraw, yDraw);
+        auto yTop = yDraw - heightToPixel(flight->getGeoAltitude());
+        ctx->line_to(xDraw, yTop);
+        ctx->stroke();
+        ctx->move_to(xDraw, yTop);
+        auto name = flight->getCallsign();
+        if (name.empty()) {
+            name = flight->getIcao24();
+        }
+        ctx->show_text(name);
+    }
+}
+
+void
+GeoPaint::drawImage(
+          Cairo::RefPtr<Cairo::Context>& ctx
+        , const Glib::DateTime& dateTime
+        , GeoPosition& geoPosition
+        , Layout& layout)
+{
+    auto min = std::min(layout.getWidth(), layout.getHeight());
+    auto width = min;
+    auto height = min;
+    ctx->save();
+    ctx->set_source_rgb(0.1, 0.1,  0.1);
+    ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
+    ctx->fill();
+
+    //std::cout << "GeoPaint::update"
+    //          << " width " << width<< " min " << m_min.longitude << " max " << m_max.longitude << "\n"
+    //          << " height " << height << " min " << m_min.latitude << " max " << m_max.latitude << std::endl;
+    auto diff = m_max - m_min;
+    if (std::abs(diff.getLongitude()) < 0.001
+      ||std::abs(diff.getLatitude()) < 0.001) {
+        return;
+    }
+    ctx->translate((layout.getWidth() - min) / 2, (layout.getHeight() - min) / 2);
+    ctx->arc(min / 2, min / 2, min / 2, 0.0, Math::TWO_PI);
+    ctx->clip();    // make it a round shape
+    // since the result is quadratic adjust the difference as well
+    drawGeoImage(ctx, diff, width, height);
+    drawWeather(ctx, width, height);
+    auto fact = static_cast<double>(width) / diff.getLongitude(); // since we use same long/latitude this should work
+    drawGeoShape(ctx, fact);
+    drawFlights(ctx, fact);
     ctx->restore();
     //std::cout << "draw " << w << " h " << h << "\n";
     //queue_draw();
+}
+
+void GeoPaint::update(std::list<PtrFlight> flights)
+{
+    psc::log::Log::logAdd(psc::log::Level::Info,  [&] {
+        return std::format("Flights {} passed", flights.size());
+    });
+    m_flights = std::move(flights);
+    refresh();
+}
+
+void GeoPaint::notifyError(const Glib::ustring& error, int status)
+{
+    psc::log::Log::logAdd(psc::log::Level::Error,
+        std::format("Flights error {} status {}", error, status));
+    std::cout << "GeoPaint::notifyError"
+              << " error" << error
+              << " status " << status << std::endl;
 }
 
 void

@@ -34,6 +34,22 @@ public:
     void setImageFile(const std::string& imageFile);
     double getGeoMargin();
     void setGeoMargin(double geoMargin);
+
+    Glib::ustring getFlightService();
+    void setFlightService(const Glib::ustring& service);
+    int32_t getFlightRefreshMin();
+    void setFlightRefreshMin(int32_t flightRefreshMin);
+    double getFlightLongitude();
+    void setFlightLongitude(double lon);
+    double getFlightLatitude();
+    void setFlightLatitude(double lat);
+    double getFlightBounds();
+    void setFlightBounds(double bounds);
+    int getDayStart();
+    void setDayStart(int dayStart);
+    int getDayEnd();
+    void setDayEnd(int dayEnd);
+
 protected:
     std::string get_main_config_group() override;
 };

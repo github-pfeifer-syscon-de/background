@@ -23,6 +23,7 @@
 #include <WebMapService.hpp>
 #include <memory>
 #include <WeatherConfigGrid.hpp>
+#include <Flights.hpp>
 
 #include "GeoConversion.hpp"
 #include "GeoBitmap.hpp"
@@ -34,7 +35,7 @@ class GeoPaint
 : public BackPaint
 , public WeatherConsumer
 , public BaseConfigListener
-{
+, public FlightsConsumer {
 public:
     GeoPaint(StarWin* starWin);
     explicit GeoPaint(const GeoPaint& other) = delete;
@@ -51,6 +52,15 @@ public:
     static constexpr auto DEFAULT_IMAGE{"2k_earth_daymap.jpg"};
     static constexpr auto SRC_DIR{"src"};
     static constexpr auto KEY_GEO_MARGIN{"geoMargin"};
+    static constexpr auto KEY_DAYSTART{"dayStart"};
+    static constexpr auto KEY_DAYEND{"dayEnd"};
+    static constexpr auto GROUP_FLIGHTS{"flights"};
+    static constexpr auto KEY_FLIGHT_SERVICE{"service"};
+    static constexpr auto KEY_FLIGHT_REFRESH{"refresh"};
+    static constexpr auto KEY_FLIGHT_LONGITUDE{"longitude"};
+    static constexpr auto KEY_FLIGHT_LATITUDE{"latitude"};
+    static constexpr auto KEY_FLIGHT_BOUNDS{"bounds"};
+
     std::string findFile(const std::string& name) override;
     std::shared_ptr<WeatherConfig> get_config() override;
     void weather_transparency_changed(Gtk::Scale *scale) override;
@@ -61,12 +71,32 @@ public:
     void on_action_preferences() override;
     void refresh();
     void setGeoMargin(double geoMargin);
+    void update(std::list<PtrFlight> flights) override;
+    void notifyError(const Glib::ustring& error, int status) override;
 
     // since we do no conversions at the moment use fixed reference system
     static constexpr auto COORD_REF{CoordRefSystem(CoordRefSystem::Value::EPSG_4326)};
+    static constexpr auto USEC_MIN_INTERVAL{ 60l * G_USEC_PER_SEC};
+    void refresh_flight_service(bool force);
+
 protected:
     bool findGeoMinMax();
     void request_weather_product();
+    void drawGeoImage(
+         Cairo::RefPtr<Cairo::Context>& ctx
+         , GeoCoordinate& diff
+         , int width, int height);
+    void drawWeather(
+        Cairo::RefPtr<Cairo::Context>& ctx
+        , int width, int height);
+    void drawGeoShape(
+         Cairo::RefPtr<Cairo::Context>& ctx
+         , double fact);
+    double heightToPixel(double height_m);
+    void drawFlights(
+        Cairo::RefPtr<Cairo::Context>& ctx
+        , double fact);
+
 private:
     GeoCoordinate m_min{};
     GeoCoordinate m_max{};
@@ -78,4 +108,6 @@ private:
     bool m_weatherRequested{};
     double m_weatherTransparence;
     double m_geoMargin{};
+    std::shared_ptr<Flights> m_flightService;
+    std::list<PtrFlight> m_flights;
 };
