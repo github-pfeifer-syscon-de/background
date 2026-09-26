@@ -45,6 +45,7 @@ sources = files(
 	, 'ConfigGeoJsonGrid.cpp'
 	, 'ConfigGridFlights.cpp'
 	, 'ModulePaint.cpp'
+	, 'FlightsDlg.cpp'
     )
 
 if get_option('python')

@@ -79,7 +79,6 @@ public:
     void update();
     void update(Glib::DateTime dateTime, GeoPosition& pos);
     void onMenuConfig();
-    void on_menu_time();
     static std::shared_ptr<BackConfig> createConfig();
     static void loadThisConfig(const std::shared_ptr<BackConfig>& config);
      std::shared_ptr<psc::log::Log> getLog() {
@@ -93,6 +92,8 @@ public:
     }
 protected:
     std::string getGlobeConfigName();
+    void on_menu_time();
+    void on_menu_flights();
     void setupConfig();
     bool updatePeriodic();
     void updateTimer();

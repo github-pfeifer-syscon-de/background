@@ -133,20 +133,25 @@ otherwise use:
 
 To show a alternative picture for daylight 6-18h
 use the Geo.json section in preferences. 
-The File defines the viewed bounds with some
-rounding & addition
+The File defines the viewed bounds with some rounding & addition
+
 > [!WARNING]  
-> avoid crossing equator/0 meridian for some services/products
 > no projection like mercator will be used
-(the sat image will adapt delayed as continuously querying
-a WMS will block it).
-By default a solarsystem-scope example is downloaded
-and added 
+
+#### Image
+
+By default a solarsystem-scope example is downloaded and added in settings
+
 > [!NOTE] 
 > if you want to avoid the download see res/meson.build and place your preferred file as image
-the lon/lat's bounds -180/-90 to 180/+90 will be presumed
+> the lon/lat's bounds -180/-90 to 180/+90 will be presumed
 
 #### Map-services (weather)
+
+The sat image will adapt delayed to changed settings continuously querying a WMS will block it.
+
+> [!WARNING]  
+> avoid crossing equator/0 meridian for some services/products
 
 > [!WARNING]
 > Sry.: The Real-earth-service does not work on this side...   
@@ -166,10 +171,4 @@ Implemented Service (no auth, as there are some limitations don't use a too larg
 
 https://opensky-network.org
 
-Some nice gui (to look up a specific icao use with e.g. ?icao=3c4317):
-
-https://globe.adsbexchange.com/
-
-To get some detailed infos for a callsign (primary display) e.g. FIN5YP use: 
-
-https://www.flightaware.com/live/flight/FIN5YP/
+Links have been integrated into flight dialog. 

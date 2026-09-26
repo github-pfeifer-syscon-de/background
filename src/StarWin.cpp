@@ -42,8 +42,8 @@
 #endif
 #include "Renderer.hpp"
 #include "GeoPaint.hpp"
-#include "StarPaint.hpp"
 #include "ModulePaint.hpp"
+#include "FlightsDlg.hpp"
 
 
 StarWin::StarWin(BaseObjectType* cobject
@@ -68,6 +68,7 @@ StarWin::StarWin(BaseObjectType* cobject
         iconify();
         add_action("preferences", sigc::mem_fun(*this, &StarWin::onMenuConfig));
         add_action("time", sigc::mem_fun(*this, &StarWin::on_menu_time));
+        add_action("flights", sigc::mem_fun(*this, &StarWin::on_menu_flights));
 #       ifdef USE_PDF
         add_action("export", sigc::mem_fun(*this, &StarWin::exportPdf));
 #       endif
@@ -224,6 +225,12 @@ void StarWin::closeConfigDlg()
         delete m_paramDialog;
         m_paramDialog = nullptr;
     }
+}
+
+void
+StarWin::on_menu_flights()
+{
+    FlightsDlg::show(this);
 }
 
 void

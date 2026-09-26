@@ -78,7 +78,9 @@ public:
     static constexpr auto COORD_REF{CoordRefSystem(CoordRefSystem::Value::EPSG_4326)};
     static constexpr auto USEC_MIN_INTERVAL{ 60l * G_USEC_PER_SEC};
     void refresh_flight_service(bool force);
-
+    std::list<PtrFlight> getFlights() {
+        return m_flights;
+    }
 protected:
     bool findGeoMinMax();
     void request_weather_product();
