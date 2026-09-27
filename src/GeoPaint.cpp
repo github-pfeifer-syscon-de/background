@@ -396,7 +396,8 @@ GeoPaint::refresh_flight_service(bool force)
     bool update = force;
     if (!m_flightService
      || service !=  m_flightService->getServiceName()) {
-        m_flightService = Flights::getService(service, this);
+        m_flightService = Flights::getService(service);
+        m_flightService->addListener(this);
         update = true;
     }
     if (m_flightService) {
@@ -421,6 +422,16 @@ GeoPaint::refresh_flight_service(bool force)
         }
     }
 }
+
+std::shared_ptr<Flights>
+GeoPaint::getFlightService()
+{
+    if (!m_flightService) { // if not yet done try to initialize
+        refresh_flight_service(false);
+    }
+    return m_flightService;
+}
+
 
 void
 GeoPaint::drawFlights(
@@ -486,12 +497,12 @@ GeoPaint::drawImage(
     //queue_draw();
 }
 
-void GeoPaint::update(std::list<PtrFlight> flights)
+void GeoPaint::update(const std::vector<PtrFlight>& flights)
 {
     psc::log::Log::logAdd(psc::log::Level::Info,  [&] {
         return std::format("Flights {} passed", flights.size());
     });
-    m_flights = std::move(flights);
+    m_flights = flights;
     refresh();
 }
 

@@ -71,16 +71,14 @@ public:
     void on_action_preferences() override;
     void refresh();
     void setGeoMargin(double geoMargin);
-    void update(std::list<PtrFlight> flights) override;
+    void update(const std::vector<PtrFlight>& flights) override;
     void notifyError(const Glib::ustring& error, int status) override;
 
     // since we do no conversions at the moment use fixed reference system
     static constexpr auto COORD_REF{CoordRefSystem(CoordRefSystem::Value::EPSG_4326)};
     static constexpr auto USEC_MIN_INTERVAL{ 60l * G_USEC_PER_SEC};
     void refresh_flight_service(bool force);
-    std::list<PtrFlight> getFlights() {
-        return m_flights;
-    }
+    std::shared_ptr<Flights> getFlightService();
 protected:
     bool findGeoMinMax();
     void request_weather_product();
@@ -100,8 +98,8 @@ protected:
         , double fact);
 
 private:
-    GeoCoordinate m_min{};
-    GeoCoordinate m_max{};
+    GeoCoordinate m_min;
+    GeoCoordinate m_max;
     GeoPath m_geoVector;
     std::shared_ptr<GeoBitmap> m_imagePix;
     std::shared_ptr<GeoConversion> m_geoConversion;
@@ -111,5 +109,5 @@ private:
     double m_weatherTransparence;
     double m_geoMargin{};
     std::shared_ptr<Flights> m_flightService;
-    std::list<PtrFlight> m_flights;
+    std::vector<PtrFlight> m_flights;
 };

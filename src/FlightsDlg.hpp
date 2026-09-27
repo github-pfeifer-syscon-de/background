@@ -32,7 +32,9 @@ public:
     Gtk::TreeModelColumn<Glib::ustring> originCountry;
     Gtk::TreeModelColumn<Glib::ustring> timePosition;
     Gtk::TreeModelColumn<Glib::ustring> lastContact;
-    Gtk::TreeModelColumn<Glib::ustring> position;
+    Gtk::TreeModelColumn<double> positionLon;
+    Gtk::TreeModelColumn<double> positionLat;
+    Gtk::TreeModelColumn<double> distance;
     Gtk::TreeModelColumn<double> baroAltitude;
     Gtk::TreeModelColumn<double> velocity;
     Gtk::TreeModelColumn<double> track;
@@ -47,7 +49,9 @@ public:
         add(originCountry);
         add(timePosition);
         add(lastContact);
-        add(position);
+        add(positionLon);
+        add(positionLat);
+        add(distance);
         add(baroAltitude);
         add(velocity);
         add(track);
@@ -60,14 +64,17 @@ public:
 
 class FlightsDlg
 : public Gtk::Dialog
+, public FlightsConsumer
 {
 public:
     FlightsDlg(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
-        , const std::list<PtrFlight>& flights
         , StarWin* starWin);
     explicit FlightsDlg(const FlightsDlg& other) = delete;
     virtual ~FlightsDlg() = default;
+
+    void update(const std::vector<PtrFlight>& flights) override;
+    void notifyError(const Glib::ustring& error, int status) override;
 
     static void show(StarWin* starWin);
 protected:
