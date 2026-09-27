@@ -588,6 +588,9 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
 	pdfExport->signal_activate().connect(sigc::mem_fun(*this, &StarWin::exportPdf));
 	pMenuPopup->append(*pdfExport);
 #   endif
+ 	auto flights = Gtk::make_managed<Gtk::MenuItem>("_Flights", true);
+	flights->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_flights));
+	pMenuPopup->append(*flights);
 
 	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
 	mabout->signal_activate().connect(sigc::mem_fun(*m_backAppl, &BackgroundApp::on_action_about));
