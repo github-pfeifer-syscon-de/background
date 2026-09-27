@@ -73,6 +73,7 @@ public:
     explicit FlightsDlg(const FlightsDlg& other) = delete;
     virtual ~FlightsDlg() = default;
 
+	void on_hide() override;
     void update(const std::vector<PtrFlight>& flights) override;
     void notifyError(const Glib::ustring& error, int status) override;
 

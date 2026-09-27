@@ -64,6 +64,16 @@ FlightsDlg::FlightsDlg(
 }
 
 void
+FlightsDlg::on_hide()
+{
+    auto geoPaint = m_starWin->getGeoPaint();
+    auto flightsService = geoPaint->getFlightService();
+	if (flightsService) {
+		flightsService->removeListener(this);
+	}
+}
+
+void
 FlightsDlg::update(const std::vector<PtrFlight>& flights)
 {
     m_store->clear();   // remove previous entries
