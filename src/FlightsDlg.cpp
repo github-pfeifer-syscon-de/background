@@ -18,7 +18,6 @@
 
 
 #include <Flight.hpp>
-#include <psc_i18n.hpp>
 
 #include "GeoPaint.hpp"
 #include "BackgroundApp.hpp"
@@ -33,30 +32,29 @@ FlightsDlg::FlightsDlg(
         , StarWin* starWin)
 : Gtk::Dialog(cobject)
 , m_starWin{starWin}
+, flightColumns{std::make_shared<FlightColumns>()}
 {
-    builder->get_widget("list", m_list);
-    m_store = Gtk::ListStore::create(flightColumns);
-    m_list->append_column(_("Icao"), flightColumns.icao24);
-    m_list->append_column(_("Callsign"), flightColumns.callsign);
-    m_list->append_column(_("Origin country"), flightColumns.originCountry);
-    m_list->append_column(_("Time position"), flightColumns.timePosition);
-    m_list->append_column(_("Last contact"), flightColumns.lastContact);
-    m_list->append_column(_("Pos. (lat°)"), flightColumns.positionLat);
-    m_list->append_column(_("Pos. (lon°)"), flightColumns.positionLon);
-    m_list->append_column(_("Distance"), flightColumns.distance);
-    m_list->append_column(_("Velocity (m/s)"), flightColumns.velocity);
-    m_list->append_column(_("Track (°)"), flightColumns.track);
-    m_list->append_column(_("Vertical rate (m/s)"), flightColumns.verticalRate);
-    m_list->append_column(_("Barom. altitude (m)"), flightColumns.baroAltitude);
-    m_list->append_column(_("Geom. altitude (m)"), flightColumns.geoAltitude);
-    m_list->append_column(_("Squake"), flightColumns.squake);
+    auto listObj = builder->get_object("list");
+    m_list = Glib::RefPtr<Gtk::TreeView>::cast_dynamic(listObj);
+    m_store = Gtk::ListStore::create(*flightColumns);
     m_list->set_model(m_store);
     m_list->signal_row_activated().connect(
         sigc::mem_fun(*this, &FlightsDlg::showDetail));
+    auto keyFile = m_starWin->getConfig();
+    m_kfTableManager = std::make_shared<psc::ui::KeyfileTableManager>(flightColumns, keyFile->getConfig(), GeoPaint::GROUP_FLIGHTS);
+    m_kfTableManager->setup(this);
+    m_kfTableManager->setup(m_list);
     auto geoPaint = m_starWin->getGeoPaint();
-    auto flightsService = geoPaint->getFlightService();
-    if (flightsService) {
-        flightsService->addListener(this);
+    m_flightsService = geoPaint->getFlightService();
+    if (m_flightsService) {
+        m_flightsService->addListener(this);
+        // with dialog increase the update rade
+        m_savedUpdate = m_flightsService->getUpdateInterval();
+        m_flightsService->setUpdateInterval(UPDATE_RATE);
+        refresh();
+        m_timer = Glib::signal_timeout().connect_seconds(
+                sigc::mem_fun(*this, &FlightsDlg::refresh)
+                , UPDATE_RATE.count());
     }
     else {
         m_starWin->showMessage(_("No flight service found, check config."));
@@ -64,13 +62,31 @@ FlightsDlg::FlightsDlg(
 }
 
 void
-FlightsDlg::on_hide()
+FlightsDlg::on_response(int response_id)
 {
-    auto geoPaint = m_starWin->getGeoPaint();
-    auto flightsService = geoPaint->getFlightService();
-	if (flightsService) {
-		flightsService->removeListener(this);
-	}
+    // signal-hide does not work for this as the dialog will be hidden and we wont get a usable size
+    if (m_timer.connected()) {
+        m_timer.disconnect(); // No more updating
+    }
+    if (m_flightsService) {
+        m_flightsService->setUpdateInterval(m_savedUpdate);
+        m_flightsService->removeListener(this);
+    }
+    if (response_id == Gtk::RESPONSE_OK) {
+        m_kfTableManager->saveConfig(this);
+        m_starWin->saveConfig();
+    }
+}
+
+
+bool
+FlightsDlg::refresh()
+{
+    if (m_flightsService->isUpdate()) {
+        auto geoPaint = m_starWin->getGeoPaint();
+        geoPaint->updateFlights();
+    }
+    return true;
 }
 
 void
@@ -84,23 +100,24 @@ FlightsDlg::update(const std::vector<PtrFlight>& flights)
     for (auto& flight : flights) {
         auto ins = m_store->append();
         auto row = *ins;
-        row.set_value(flightColumns.icao24, Glib::ustring{flight->getIcao24()});
-        row.set_value(flightColumns.callsign, Glib::ustring{flight->getCallsign()});
-        row.set_value(flightColumns.originCountry, Glib::ustring{flight->getOriginCountry()});
-        row.set_value(flightColumns.timePosition, flight->getTimePosition().format_iso8601());
-        row.set_value(flightColumns.lastContact, flight->getLastContact().format_iso8601());
+        row.set_value(flightColumns->icao24, Glib::ustring{flight->getIcao24()});
+        row.set_value(flightColumns->callsign, Glib::ustring{flight->getCallsign()});
+        row.set_value(flightColumns->originCountry, Glib::ustring{flight->getOriginCountry()});
+        row.set_value(flightColumns->timePosition, flight->getTimePosition().format_iso8601());
+        row.set_value(flightColumns->lastContact, flight->getLastContact().format_iso8601());
+        row.set_value(flightColumns->onGround, Glib::ustring((flight->isOnGround() ? _("yes") : _("no"))));
         auto gpos = flight->getPosition();
-        row.set_value(flightColumns.positionLon,  gpos.getLongitude());
-        row.set_value(flightColumns.positionLat, gpos.getLatitude());
+        row.set_value(flightColumns->positionLon,  gpos.getLongitude());
+        row.set_value(flightColumns->positionLat, gpos.getLatitude());
         auto dist = centCoord.distance(gpos);
-        row.set_value(flightColumns.distance, dist);
-        row.set_value(flightColumns.baroAltitude, flight->getBaroAltitude());
-        row.set_value(flightColumns.velocity, flight->getVelocity());
-        row.set_value(flightColumns.track, flight->getTrack());
-        row.set_value(flightColumns.verticalRate, flight->getVerticalRate());
-        row.set_value(flightColumns.geoAltitude, flight->getGeoAltitude());
-        row.set_value(flightColumns.squake, Glib::ustring{flight->getSquake()});
-        row.set_value(flightColumns.flight, flight);
+        row.set_value(flightColumns->distance, dist);
+        row.set_value(flightColumns->baroAltitude, flight->getBaroAltitude());
+        row.set_value(flightColumns->velocity, flight->getVelocity());
+        row.set_value(flightColumns->track, flight->getTrack());
+        row.set_value(flightColumns->verticalRate, flight->getVerticalRate());
+        row.set_value(flightColumns->geoAltitude, flight->getGeoAltitude());
+        row.set_value(flightColumns->squake, Glib::ustring{flight->getSquake()});
+        row.set_value(flightColumns->flight, flight);
     }
 }
 
@@ -115,7 +132,7 @@ FlightsDlg::showDetail(const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* co
 {
     auto iter = m_store->get_iter(path);
     auto row = *iter;
-    auto flight = row->get_value(flightColumns.flight);
+    auto flight = row->get_value(flightColumns->flight);
     // managed works when used with attach ...
     auto pMenuPopup = Gtk::make_managed<Gtk::Menu>();
     auto pMenuitemIcao = Gtk::make_managed<Gtk::MenuItem>(flight->getIcao24());    // *pIcaoBtn
@@ -135,7 +152,7 @@ FlightsDlg::showDetail(const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* co
             , uriCall));
     }
     pMenuPopup->show_all();
-    pMenuPopup->attach_to_widget(*m_list);
+    pMenuPopup->attach_to_widget(*m_list.get());
     const GdkEvent* event = gtk_get_current_event();
     pMenuPopup->popup_at_pointer(event);
 }

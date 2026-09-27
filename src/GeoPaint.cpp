@@ -398,29 +398,27 @@ GeoPaint::refresh_flight_service(bool force)
      || service !=  m_flightService->getServiceName()) {
         m_flightService = Flights::getService(service);
         m_flightService->addListener(this);
+        m_flightService->setUpdateInterval(
+            std::chrono::minutes(
+                m_config->getFlightRefreshMin()));
         update = true;
     }
-    if (m_flightService) {
-        auto now = Glib::DateTime::create_now_local();
-        if (!update) {
-            update = !m_flightService->getLastQuery();
-        }
-        if (!update) {
-            auto diff = now.difference(m_flightService->getLastQuery());
-            psc::log::Log::logAdd(psc::log::Level::Info, [&] {
-               return std::format("Flighs checking diff {} min {}", diff, diff / USEC_MIN_INTERVAL);
-            });
-            update = diff > USEC_MIN_INTERVAL * m_config->getFlightRefreshMin();
-        }
-        if (update) {
-            // since service allows limited queries only give a small area
-            GeoBounds flightBounds{
-                m_config->getFlightLongitude() - m_config->getFlightBounds(), m_config->getFlightLatitude() - m_config->getFlightBounds()
-                , m_config->getFlightLongitude() + m_config->getFlightBounds(), m_config->getFlightLatitude() + m_config->getFlightBounds()
-                , CoordRefSystem(CoordRefSystem::Value::CRS_84)};
-            m_flightService->query(flightBounds);
-        }
+    if (m_flightService->isUpdate()) {
+        updateFlights();
     }
+}
+
+void
+GeoPaint::updateFlights()
+{
+    // since service allows limited queries only give a small area
+    GeoBounds flightBounds{
+        m_config->getFlightLongitude() - m_config->getFlightBounds()
+        , m_config->getFlightLatitude() - m_config->getFlightBounds()
+        , m_config->getFlightLongitude() + m_config->getFlightBounds()
+        , m_config->getFlightLatitude() + m_config->getFlightBounds()
+        , COORD_REF};
+    m_flightService->query(flightBounds);
 }
 
 std::shared_ptr<Flights>

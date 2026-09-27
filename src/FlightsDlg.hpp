@@ -18,13 +18,19 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <psc_i18n.hpp>
+#include <KeyfileTableManager.hpp>
 
 #include <Flight.hpp>
 
 class StarWin;
+class Flights;
+namespace psc::ui {
+    class KeyfileTableManager;
+}
 
 class FlightColumns
-: public Gtk::TreeModel::ColumnRecord
+: public psc::ui::ColumnRecord
 {
 public:
     Gtk::TreeModelColumn<Glib::ustring> icao24;
@@ -32,6 +38,7 @@ public:
     Gtk::TreeModelColumn<Glib::ustring> originCountry;
     Gtk::TreeModelColumn<Glib::ustring> timePosition;
     Gtk::TreeModelColumn<Glib::ustring> lastContact;
+    Gtk::TreeModelColumn<Glib::ustring> onGround;
     Gtk::TreeModelColumn<double> positionLon;
     Gtk::TreeModelColumn<double> positionLat;
     Gtk::TreeModelColumn<double> distance;
@@ -44,21 +51,22 @@ public:
     Gtk::TreeModelColumn<PtrFlight> flight;
     FlightColumns()
     {
-        add(icao24);
-        add(callsign);
-        add(originCountry);
-        add(timePosition);
-        add(lastContact);
-        add(positionLon);
-        add(positionLat);
-        add(distance);
-        add(baroAltitude);
-        add(velocity);
-        add(track);
-        add(verticalRate);
-        add(geoAltitude);
-        add(squake);
-        add(flight);
+        add<Glib::ustring>(_("Icao"), icao24);
+        add<Glib::ustring>(_("Callsign"), callsign);
+        add<Glib::ustring>(_("Origin country"), originCountry);
+        add<Glib::ustring>(_("Time position"), timePosition);
+        add<Glib::ustring>(_("Last contact"), lastContact);
+        add<Glib::ustring>(_("On ground"), onGround);
+        add<double>(_("Pos. (lon°)"), positionLon);
+        add<double>(_("Pos. (lat°)"), positionLat);
+        add<double>(_("Distance (grd.)"), distance);
+        add<double>(_("Velocity (m/s)"), velocity);
+        add<double>(_("Track (°)"), track);
+        add<double>(_("Vertical rate (m/s)"), verticalRate);
+        add<double>(_("Barom. altitude (m)"), baroAltitude);
+        add<double>(_("Geom. altitude (m)"), geoAltitude);
+        add<Glib::ustring>(_("Squake"), squake);
+        Gtk::TreeModel::ColumnRecord::add(flight);
     }
 };
 
@@ -73,18 +81,23 @@ public:
     explicit FlightsDlg(const FlightsDlg& other) = delete;
     virtual ~FlightsDlg() = default;
 
-	void on_hide() override;
+    void on_response(int response_id) override;
     void update(const std::vector<PtrFlight>& flights) override;
     void notifyError(const Glib::ustring& error, int status) override;
 
     static void show(StarWin* starWin);
+    static constexpr auto UPDATE_RATE{std::chrono::seconds(60)};
 protected:
-    FlightColumns flightColumns;
     void showDetail(const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* column);
     void showLink(Glib::ustring& uri);
-
+    bool refresh();
 private:
     StarWin* m_starWin;
+    std::shared_ptr<FlightColumns> flightColumns;
     Glib::RefPtr<Gtk::ListStore> m_store;
-    Gtk::TreeView* m_list;
+    Glib::RefPtr<Gtk::TreeView> m_list;
+    std::shared_ptr<psc::ui::KeyfileTableManager> m_kfTableManager;
+    sigc::connection m_timer;
+    std::shared_ptr<Flights> m_flightsService;
+    std::chrono::seconds m_savedUpdate;
 };

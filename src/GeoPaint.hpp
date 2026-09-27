@@ -79,6 +79,8 @@ public:
     static constexpr auto USEC_MIN_INTERVAL{ 60l * G_USEC_PER_SEC};
     void refresh_flight_service(bool force);
     std::shared_ptr<Flights> getFlightService();
+    void updateFlights();
+
 protected:
     bool findGeoMinMax();
     void request_weather_product();
