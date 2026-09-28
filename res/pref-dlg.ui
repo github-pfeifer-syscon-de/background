@@ -892,7 +892,7 @@
               </packing>
             </child>
             <child>
-              <!-- n-columns=3 n-rows=5 -->
+              <!-- n-columns=3 n-rows=6 -->
               <object class="GtkGrid" id="configGeoJsonGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -904,7 +904,7 @@
                     <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="xpad">10</property>
-                    <property name="label" translatable="yes">File</property>
+                    <property name="label" translatable="yes">Geo.Json shape</property>
                     <property name="xalign">1</property>
                   </object>
                   <packing>
@@ -1059,6 +1059,42 @@ so better avoid large values</property>
                   <packing>
                     <property name="left-attach">1</property>
                     <property name="top-attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkAccelLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">Geo.json points</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFileChooserButton" id="geoPointButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="title" translatable="yes"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="geoPointClear">
+                    <property name="label" translatable="yes">Clear</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">5</property>
                   </packing>
                 </child>
                 <child>
@@ -1367,7 +1403,7 @@ so better avoid large values</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="adjustment">adjustFlightLon</property>
-                    <property name="digits">1</property>
+                    <property name="digits">2</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -1392,7 +1428,7 @@ so better avoid large values</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="adjustment">adjustFlightLat</property>
-                    <property name="digits">1</property>
+                    <property name="digits">2</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -1415,7 +1451,7 @@ so better avoid large values</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="adjustment">adjustFlightBounds</property>
-                    <property name="digits">1</property>
+                    <property name="digits">2</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>

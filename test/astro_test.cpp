@@ -20,11 +20,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <StringUtils.hpp>
-#include <psc_format.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtc/matrix_transform.hpp> // pi ???
-#include <glm/trigonometric.hpp>  //radians
-
+#include <format>
 #include "JulianDate.hpp"
 #include "GeoPosition.hpp"
 #include "RaDec.hpp"
@@ -221,7 +217,7 @@ test_moon()
     auto now = Glib::DateTime::create_now_utc();
     JulianDate jd{now};
     auto ph = moon.getPhase(jd);
-    std::cout << psc::fmt::format("moon phase {} ilum {}"
+    std::cout << std::format("moon phase {} ilum {}"
                 , ph.getPhase(), ph.getIlluminated())
               << std::endl;
 
@@ -232,7 +228,7 @@ test_moon()
         auto ph = moon.getPhase(jdt);
         auto a = ph.getPhase();
         auto b = ph.getIlluminated();
-        std::cout << psc::fmt::format("day {:8.4f} phase {:8.4f} illum {:8.4f}"
+        std::cout << std::format("day {:8.4f} phase {:8.4f} illum {:8.4f}"
                     , i, a, b)
                   << std::endl;
 

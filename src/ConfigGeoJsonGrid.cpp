@@ -63,6 +63,18 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
     m_spinDayEnd->signal_changed().connect( [&] {
        m_config->setDayEnd(m_spinDayEnd->get_value_as_int());
     });
+    refBuilder->get_widget("geoPointButton", m_geoPointButton);
+    if (m_geoPointButton != nullptr) {
+        m_geoPointButton->set_filename(m_config->getGeoPointsFile());
+        m_geoPointButton->signal_file_set()
+                .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::geoPointFile_changed));
+    }
+    Gtk::Button* geoPointFile{};
+    refBuilder->get_widget("geoPointClear", geoPointFile);
+    if (geoPointFile != nullptr) {
+        geoPointFile->signal_clicked()
+                .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::clearGeoPoint));
+    }
 }
 
 void
@@ -90,6 +102,33 @@ ConfigGeoJsonGrid::clearGeoFile()
     geoPaint->setGeoJsonFile("");
     geoPaint->refresh();
 }
+
+void
+ConfigGeoJsonGrid::geoPointFile_changed()
+{
+    Glib::ustring file = m_geoPointButton->get_filename();
+    auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    bool success = geoPaint->setGeoPointsFile(file);
+    if (!success) {
+        file = "";
+    }
+    geoPaint->refresh();
+    m_geoPointButton->set_filename(file);
+    config->setGeoJsonFile(file);
+}
+
+void
+ConfigGeoJsonGrid::clearGeoPoint()
+{
+    auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
+    config->setGeoPointsFile("");
+    m_geoPointButton->set_filename("");
+    auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    geoPaint->setGeoPointsFile("");
+    geoPaint->refresh();
+}
+
 
 void
 ConfigGeoJsonGrid::imagefile_changed()

@@ -9,33 +9,17 @@ sources = files(
 	, 'InfoModule.cpp'
 	, 'CalendarModule.cpp'
 	, 'ClockModule.cpp'
-	, 'Math.cpp'
-	, 'RaDec.cpp'
-	, 'RaDecPlanet.cpp'
-	, 'AzimutAltitude.cpp'
-	, 'Point2D.cpp'
-	, 'Layout.cpp'
-	, 'GeoPosition.cpp'
-	, 'JulianDate.cpp'
-	, 'Phase.cpp'
 	, 'Sun.cpp'
-	, 'Moon.cpp'
 	, 'Star.cpp'
 	, 'Polyline.cpp'
 	, 'Constellation.cpp'
 	, 'HipparcosStar.cpp'
 	, 'HipparcosFormat.cpp'
 	, 'ConstellationFormat.cpp'
-	, 'Planet.cpp'
-	, 'Planets.cpp'
 	, 'SysInfo.cpp'
 	, 'Milkyway.cpp'
-	, 'FileLoader.cpp'
 	, 'Poly.cpp'
-	, 'Messier.cpp'
-	, 'MessierLoader.cpp'
 	, 'ParamDlg.cpp'
-	, 'Renderer.cpp'
 	, 'TimeDlg.cpp'
 	, 'BackPaint.cpp'
 	, 'GeoPaint.cpp'
@@ -48,17 +32,38 @@ sources = files(
 	, 'FlightsDlg.cpp'
     )
 
+astro_srcs = files(		# used for test
+	  'JulianDate.cpp'
+	, 'GeoPosition.cpp'
+	, 'AzimutAltitude.cpp'
+	, 'RaDec.cpp'
+	, 'RaDecPlanet.cpp'
+	, 'Point2D.cpp'
+	, 'Layout.cpp'
+	, 'Math.cpp'
+	, 'Planet.cpp'
+	, 'Planets.cpp'
+	, 'Messier.cpp'
+	, 'MessierLoader.cpp'
+	, 'FileLoader.cpp'
+	, 'Phase.cpp'
+	, 'Renderer.cpp'
+	, 'Moon.cpp'
+	, 'GeoPointHandler.cpp'
+)
+if libharu_deps.found()
+	astro_srcs += files(
+		'HaruRenderer.cpp'
+	)
+endif
+sources += astro_srcs
+
 if get_option('python')
 sources += files(
 	  'PyWrapper.cpp'
     )
 endif
 
-if libharu_deps.found()
-sources += files(
-	  'HaruRenderer.cpp'
-	)
-endif
 
 if target_machine.system() == 'windows'
   sources += files('SysInfoWindows.cpp')

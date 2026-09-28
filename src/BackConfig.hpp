@@ -30,6 +30,10 @@ public:
 
     std::string getGeoJsonFile();
     void setGeoJsonFile(const std::string& geoJsonFile);
+    std::string getGeoPointsFile();
+    void setGeoPointsFile(const std::string& geoPointsFile);
+    int32_t getPointsMinPopulation();
+    void setPointsMinPopulation(int32_t minPopulation);
     std::string getImageFile();
     void setImageFile(const std::string& imageFile);
     double getGeoMargin();

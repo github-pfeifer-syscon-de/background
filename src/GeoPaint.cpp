@@ -33,7 +33,8 @@ GeoPaint::GeoPaint(StarWin* starWin)
 {
     auto geoJson = m_config->getGeoJsonFile();
     setGeoJsonFile(geoJson);
-
+    auto geoPointJson = m_config->getGeoPointsFile();
+    setGeoPointsFile(geoPointJson);
     auto image = m_config->getImageFile();
     if (image.empty()) {    // set some default
         image = Glib::canonicalize_filename(DEFAULT_IMAGE , PACKAGE_DATA_DIR);
@@ -119,6 +120,17 @@ GeoPaint::setGeoJsonFile(const std::string& geoJson)
         geoJsonParse.read(geoJson, &geoJsonVectorHandler);
         m_geoVector = geoJsonVectorHandler.getPath();
         return findGeoMinMax();
+    }
+    return true;
+}
+
+bool
+GeoPaint::setGeoPointsFile(const std::string& geoPointsFile)
+{
+    m_geoPointHandler = std::make_shared<GeoPointHandler>();
+    if (!geoPointsFile.empty()) {
+        GeoJson geoJson;
+        geoJson.read(geoPointsFile, m_geoPointHandler.get());
     }
     return true;
 }
@@ -330,6 +342,25 @@ GeoPaint::drawGeoShape(
             activePath = false;
         }
     }
+    ctx->set_source_rgb(0.2, 0.2, 0.8);
+    auto minPopulation = m_config->getPointsMinPopulation();
+    auto& pnts = m_geoPointHandler->getPoints();
+    for (auto& pnt : pnts) {
+        if (pnt->getPopulation() >= minPopulation) {
+            auto coord = m_geoConversion->toDisplay(pnt->getPosition());
+            auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
+            auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
+            Cairo::TextExtents ext;
+            ctx->get_text_extents(pnt->getName(), ext);
+            ctx->move_to(xDraw - 3, yDraw - 3);
+            ctx->line_to(xDraw + 3, yDraw + 3);
+            ctx->move_to(xDraw + 3, yDraw - 3);
+            ctx->line_to(xDraw - 3, yDraw + 3);
+            ctx->stroke();
+            ctx->move_to(xDraw - ext.width / 2.0, yDraw + 3 + ext.height);
+            ctx->show_text(pnt->getName());
+        }
+    }
 }
 
 void
@@ -393,7 +424,6 @@ GeoPaint::refresh_flight_service(bool force)
         m_flightService.reset();
         return;
     }
-    bool update = force;
     if (!m_flightService
      || service !=  m_flightService->getServiceName()) {
         m_flightService = Flights::getService(service);
@@ -401,9 +431,8 @@ GeoPaint::refresh_flight_service(bool force)
         m_flightService->setUpdateInterval(
             std::chrono::minutes(
                 m_config->getFlightRefreshMin()));
-        update = true;
     }
-    if (m_flightService->isUpdate()) {
+    if (force || m_flightService->isUpdate()) {
         updateFlights();
     }
 }
@@ -439,17 +468,22 @@ GeoPaint::drawFlights(
     refresh_flight_service(false);
     ctx->set_line_width(1.0);
     ctx->set_antialias(Cairo::ANTIALIAS_DEFAULT);
-    ctx->set_source_rgb(0.3, 1.0, 0.0);
     for (auto& flight : m_flights) {
         auto geoCoord = flight->getPosition();
         auto coord = m_geoConversion->toDisplay(geoCoord);
         auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
         auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
         ctx->move_to(xDraw, yDraw);
-        auto yTop = yDraw - heightToPixel(flight->getGeoAltitude());
-        ctx->line_to(xDraw, yTop);
-        ctx->stroke();
-        ctx->move_to(xDraw, yTop);
+        if (flight->isOnGround()) {
+            ctx->set_source_rgb(0.3, 0.3, 0.3);
+        }
+        else {
+            ctx->set_source_rgb(0.3, 1.0, 0.0);
+            auto yTop = yDraw - heightToPixel(flight->getGeoAltitude());
+            ctx->line_to(xDraw, yTop);
+            ctx->stroke();
+            ctx->move_to(xDraw, yTop);
+        }
         auto name = flight->getCallsign();
         if (name.empty()) {
             name = flight->getIcao24();

@@ -31,13 +31,13 @@ endforeach
 
 libharu_deps = declare_dependency(dependencies : cc.find_library('hpdf', required: false))
 
-
 conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())     # Surround the version in quotes to make it a C string
 conf.set       ('USE_PYTHON', get_option('python'))
 conf.set       ('USE_PDF', libharu_deps.found())
-configure_file(output : meson.project_name() + '_config.h'
+confFile = configure_file(output : meson.project_name() + '_config.h'
                , configuration : conf)
+conf_include = include_directories(fs.parent(confFile))
 
 genericimg_deps = dependency('genericimg', version :'>= 0.4.8')
 
@@ -48,7 +48,7 @@ thread_deps     = dependency('threads')
 if get_option('python')
    python_deps    = dependency('python3-embed py3cairo pygobject-3.0')
 endif
-geodata_deps = dependency('geodata', version :'>= 0.2.2')
+geodata_deps = dependency('geodata', version :'>= 0.2.3')
 win_deps     = declare_dependency()
 if target_machine.system() == 'windows'
     win_deps     = cc.find_library('IPHLPAPI')

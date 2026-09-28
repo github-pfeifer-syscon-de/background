@@ -36,6 +36,8 @@ protected:
     void clearGeoFile();
     void clearImageFile();
     void borderChanged();
+    void geoPointFile_changed();
+    void clearGeoPoint();
 private:
     std::shared_ptr<BackConfig> m_config;
     Gtk::FileChooserButton* m_geoJsonButton{};
@@ -43,4 +45,5 @@ private:
     Gtk::SpinButton* m_spinGeoMargin{};
     Gtk::SpinButton* m_spinDayStart{};
     Gtk::SpinButton* m_spinDayEnd{};
+    Gtk::FileChooserButton* m_geoPointButton{};
 };

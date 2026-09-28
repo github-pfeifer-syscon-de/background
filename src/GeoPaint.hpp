@@ -26,6 +26,7 @@
 #include <Flights.hpp>
 
 #include "GeoConversion.hpp"
+#include "GeoPointHandler.hpp"
 #include "GeoBitmap.hpp"
 #include "BackPaint.hpp"
 
@@ -48,6 +49,8 @@ public:
     void drawImage(Cairo::RefPtr<Cairo::Context>&, const Glib::DateTime&, GeoPosition&, Layout&) override;
     static constexpr auto GROUP_GEO{"geo"};
     static constexpr auto KEY_GEOJSON{"geoJson"};
+    static constexpr auto KEY_GEOPOINTS{"geoPoints"};
+    static constexpr auto KEY_GEOMINPOPULATION{"geoMinPopulation"};
     static constexpr auto KEY_IMAGE{"image"};
     static constexpr auto DEFAULT_IMAGE{"2k_earth_daymap.jpg"};
     static constexpr auto SRC_DIR{"src"};
@@ -80,6 +83,7 @@ public:
     void refresh_flight_service(bool force);
     std::shared_ptr<Flights> getFlightService();
     void updateFlights();
+    bool setGeoPointsFile(const std::string& geoPointsFile);
 
 protected:
     bool findGeoMinMax();
@@ -112,4 +116,5 @@ private:
     double m_geoMargin{};
     std::shared_ptr<Flights> m_flightService;
     std::vector<PtrFlight> m_flights;
+    PtrGeoPointHandler m_geoPointHandler;
 };

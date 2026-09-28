@@ -45,6 +45,32 @@ BackConfig::setGeoJsonFile(const std::string& geoJsonFile)
 }
 
 std::string
+BackConfig::getGeoPointsFile()
+{
+    return getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOPOINTS);
+}
+
+void
+BackConfig::setGeoPointsFile(const std::string& geoPointsFile)
+{
+    setString(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOPOINTS, geoPointsFile);
+}
+
+int32_t
+BackConfig::getPointsMinPopulation()
+{
+    return getInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOMINPOPULATION);
+}
+
+void
+BackConfig::setPointsMinPopulation(int32_t minPopulation)
+{
+    setInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOMINPOPULATION, minPopulation);
+}
+
+
+
+std::string
 BackConfig::getImageFile()
 {
     return getString(GeoPaint::GROUP_GEO, GeoPaint::KEY_IMAGE);
