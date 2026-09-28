@@ -370,8 +370,7 @@ GeoPaint::drawGeoImage(
       , int width, int height)
 {
     if (m_imagePix) {
-        GeoCoordinate geoCoord{m_min.getLongitude(), m_min.getLatitude(), COORD_REF};
-        auto coord = m_geoConversion->fromDisplay(geoCoord);
+        auto coord = m_geoConversion->fromDisplay(m_min);
         auto target = m_imagePix->getSlice(coord, diff);
         auto scaled = target->scale_simple(width, height, Gdk::INTERP_BILINEAR);
         Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);

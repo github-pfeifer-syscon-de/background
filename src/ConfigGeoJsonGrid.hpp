@@ -46,4 +46,5 @@ private:
     Gtk::SpinButton* m_spinDayStart{};
     Gtk::SpinButton* m_spinDayEnd{};
     Gtk::FileChooserButton* m_geoPointButton{};
+    Gtk::ComboBoxText* m_pointsMinPopulation{};
 };

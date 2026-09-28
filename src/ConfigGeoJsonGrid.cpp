@@ -75,6 +75,32 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
         geoPointFile->signal_clicked()
                 .connect(sigc::mem_fun(*this, &ConfigGeoJsonGrid::clearGeoPoint));
     }
+    refBuilder->get_widget("pointsMinPopulation", m_pointsMinPopulation);
+    if (m_pointsMinPopulation != nullptr) {
+        m_pointsMinPopulation->append("1000");
+        m_pointsMinPopulation->append("2000");
+        m_pointsMinPopulation->append("5000");
+        m_pointsMinPopulation->append("10000");
+        m_pointsMinPopulation->append("20000");
+        m_pointsMinPopulation->append("50000");
+        m_pointsMinPopulation->append("100000");
+        m_pointsMinPopulation->append("200000");
+        m_pointsMinPopulation->append("500000");
+        m_pointsMinPopulation->append("1000000");
+        m_pointsMinPopulation->append("2000000");
+        m_pointsMinPopulation->append("5000000");
+        if (m_config->getPointsMinPopulation() > 0) {
+            auto sval = std::to_string(m_config->getPointsMinPopulation());
+            m_pointsMinPopulation->set_active_text(sval);
+        }
+        m_pointsMinPopulation->signal_changed().connect([&]{
+            int minPopul = std::stoi(m_pointsMinPopulation->get_active_text());
+            auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
+            config->setPointsMinPopulation(minPopul);
+            auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+            geoPaint->refresh();
+        });
+    }
 }
 
 void
@@ -115,7 +141,7 @@ ConfigGeoJsonGrid::geoPointFile_changed()
     }
     geoPaint->refresh();
     m_geoPointButton->set_filename(file);
-    config->setGeoJsonFile(file);
+    config->setGeoPointsFile(file);
 }
 
 void

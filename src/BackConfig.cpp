@@ -59,7 +59,7 @@ BackConfig::setGeoPointsFile(const std::string& geoPointsFile)
 int32_t
 BackConfig::getPointsMinPopulation()
 {
-    return getInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOMINPOPULATION);
+    return getInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEOMINPOPULATION, 100000);
 }
 
 void
