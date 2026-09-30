@@ -19,7 +19,7 @@
 
 
 #include <gtkmm.h>
-#include <GeoJson.hpp>
+#include <GeoJson2.hpp>
 #include <WebMapService.hpp>
 #include <memory>
 #include <WeatherConfigGrid.hpp>
@@ -87,6 +87,7 @@ public:
 
 protected:
     bool findGeoMinMax();
+    void findGeoMinMax(const psc::geo::PtrGeometry& geom, GeoCoordinate& min, GeoCoordinate& max);
     void request_weather_product();
     void drawGeoImage(
          Cairo::RefPtr<Cairo::Context>& ctx
@@ -95,8 +96,14 @@ protected:
     void drawWeather(
         Cairo::RefPtr<Cairo::Context>& ctx
         , int width, int height);
-    void drawGeoShape(
-         Cairo::RefPtr<Cairo::Context>& ctx
+    void drawFeatures(
+           std::vector<psc::geo::PtrFeature>& features
+         , Cairo::RefPtr<Cairo::Context>& ctx
+         , double fact);
+    void drawGeometry(
+           const psc::geo::PtrGeometry& geom
+         , const psc::geo::PtrFeature& feature
+         , Cairo::RefPtr<Cairo::Context>& ctx
          , double fact);
     double heightToPixel(double height_m);
     void drawFlights(
@@ -106,7 +113,6 @@ protected:
 private:
     GeoCoordinate m_min;
     GeoCoordinate m_max;
-    GeoPath m_geoVector;
     std::shared_ptr<GeoBitmap> m_imagePix;
     std::shared_ptr<GeoConversion> m_geoConversion;
     std::shared_ptr<GeoBitmap> m_weatherPix;
@@ -116,5 +122,6 @@ private:
     double m_geoMargin{};
     std::shared_ptr<Flights> m_flightService;
     std::vector<PtrFlight> m_flights;
-    PtrGeoPointHandler m_geoPointHandler;
+    std::vector<psc::geo::PtrFeature> m_geoVectors;
+    std::vector<psc::geo::PtrFeature> m_geoPoints;
 };

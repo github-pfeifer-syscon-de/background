@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <Log.hpp>
+#include <psc_i18n.hpp>
 #include <WeatherConfig.hpp>
 #include <OpenskyFlights.hpp>
 
@@ -113,26 +114,42 @@ GeoPaint::refresh_weather_service()
 bool
 GeoPaint::setGeoJsonFile(const std::string& geoJson)
 {
-    m_geoVector.clear();
+    m_geoVectors.clear();
     if (!geoJson.empty()) {
-        GeoJsonVectorHandler geoJsonVectorHandler;
-        GeoJson geoJsonParse;
-        geoJsonParse.read(geoJson, &geoJsonVectorHandler);
-        m_geoVector = geoJsonVectorHandler.getPath();
-        return findGeoMinMax();
+        try {
+            JsonHelper jsonHelper;
+            jsonHelper.load_from_file(geoJson);
+            psc::geo::GeoJson2 geoJson2;
+            m_geoVectors = geoJson2.read(jsonHelper);
+            findGeoMinMax();
+            return true;
+        }
+        catch (const psc::geo::Json2Exception& exc) {
+            auto msg = Glib::ustring::sprintf(_("Error %s processing %s shape"), exc.what(), geoJson);
+            m_starWin->showMessage(msg, Gtk::MESSAGE_WARNING);
+        }
     }
-    return true;
+    return false;
 }
 
 bool
 GeoPaint::setGeoPointsFile(const std::string& geoPointsFile)
 {
-    m_geoPointHandler = std::make_shared<GeoPointHandler>();
+    m_geoPoints.clear();
     if (!geoPointsFile.empty()) {
-        GeoJson geoJson;
-        geoJson.read(geoPointsFile, m_geoPointHandler.get());
+        try {
+            JsonHelper jsonHelper;
+            jsonHelper.load_from_file(geoPointsFile);
+            psc::geo::GeoJson2 geoJson2;
+            m_geoPoints = geoJson2.read(jsonHelper);
+            return true;
+        }
+        catch (const psc::geo::Json2Exception& exc) {
+            auto msg = Glib::ustring::sprintf(_("Error %s processing %s points"), exc.what(), geoPointsFile);
+            m_starWin->showMessage(msg, Gtk::MESSAGE_WARNING);
+        }
     }
-    return true;
+    return false;
 }
 
 bool
@@ -260,24 +277,20 @@ GeoPaint::request_weather_product()
 bool
 GeoPaint::findGeoMinMax()
 {
-    GeoCoordinate min{180.0,90.0, COORD_REF}, max{-180.0,-90.0, COORD_REF};
-    for (const auto& segm : m_geoVector) {
-        bool firstPnt{true};
-        GeoCoordinate geoCoord;
-        for (auto& pnt : *segm) {
-            geoCoord.set(firstPnt, pnt);
-            if (!firstPnt) {
-                min.min(geoCoord);
-                max.max(geoCoord);
-            }
-            firstPnt = !firstPnt;
-        }
+    GeoCoordinate min{180.0,90.0, COORD_REF};
+    GeoCoordinate max{-180.0,-90.0, COORD_REF};
+    for (auto& feature : m_geoPoints) { // also check points
+        findGeoMinMax(feature->getGeometry(), min, max);
     }
-    m_min = min.floor() - GeoCoordinate(m_geoMargin, m_geoMargin, COORD_REF);
-    m_max = max.ceil() + GeoCoordinate(m_geoMargin, m_geoMargin, COORD_REF);
+    for (auto& feature : m_geoVectors) {
+        findGeoMinMax(feature->getGeometry(), min, max);
+    }
+    GeoCoordinate coordExt (m_geoMargin, m_geoMargin, COORD_REF);
+    m_min = min.floor() - coordExt;
+    m_max = max.ceil() + coordExt;
     auto diff = m_max - m_min;
     auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
-    m_max = m_min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaliy
+    m_max = m_min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaly
     psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
         return std::format("findGeoMinMax min {} max {}"
             , m_min.toString(), m_max.toString());;
@@ -285,18 +298,76 @@ GeoPaint::findGeoMinMax()
     return diff.getLatitude() > 0.0 && diff.getLongitude() > 0.0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winfinite-recursion"
 void
-GeoPaint::drawGeoShape(
-          Cairo::RefPtr<Cairo::Context>& ctx
+GeoPaint::findGeoMinMax(const psc::geo::PtrGeometry& geom, GeoCoordinate& min, GeoCoordinate& max)
+{
+    auto pnt = std::dynamic_pointer_cast<psc::geo::Point>(geom);
+    if (pnt != nullptr) {
+        min.min(pnt->getCoordinate());
+        max.max(pnt->getCoordinate());
+    }
+    auto segm = std::dynamic_pointer_cast<psc::geo::Segment>(geom);
+    if (segm != nullptr) {
+        for (const auto& coord : segm->getCoordinates()) {
+            min.min(coord);
+            max.max(coord);
+        }
+    }
+    auto poly = std::dynamic_pointer_cast<psc::geo::Polygon>(geom);
+    if (poly != nullptr) {
+        for (auto segm : poly->getSegments()) {
+            findGeoMinMax(segm, min, max);
+        }
+    }
+    auto mult = std::dynamic_pointer_cast<psc::geo::MultiPolygon>(geom);
+    if (mult != nullptr) {
+        for (auto poly : mult->getPolygons()) {
+            findGeoMinMax(poly, min, max);
+        }
+    }
+}
+#pragma GCC diagnostic pop
+
+void
+GeoPaint::drawFeatures(
+           std::vector<psc::geo::PtrFeature>& features
+        ,  Cairo::RefPtr<Cairo::Context>& ctx
         , double fact)
 {
-    bool activePath{false};
-    double red{1.0};
-    double green{1.0};
-    double blue{1.0};
     ctx->set_line_width(0.7);
     ctx->set_antialias(Cairo::ANTIALIAS_DEFAULT);
-    for (const auto& segm : m_geoVector) {
+    for (auto& feature : features) {
+        auto geom = feature->getGeometry();
+        drawGeometry(geom, feature, ctx, fact);
+    }
+}
+
+void
+GeoPaint::drawGeometry(
+       const psc::geo::PtrGeometry& geom
+     , const psc::geo::PtrFeature& feature
+     , Cairo::RefPtr<Cairo::Context>& ctx
+     , double fact)
+{
+    auto multiPoly = std::dynamic_pointer_cast<psc::geo::MultiPolygon>(geom);
+    if (multiPoly != nullptr) {
+        for (auto poly : multiPoly->getPolygons()) {
+            drawGeometry(poly, feature, ctx, fact);
+        }
+    }
+    auto poly = std::dynamic_pointer_cast<psc::geo::Polygon>(geom);
+    if (poly != nullptr) {
+        for (auto segm : poly->getSegments()) {
+            drawGeometry(segm, feature, ctx, fact);
+        }
+    }
+    auto segm = std::dynamic_pointer_cast<psc::geo::Segment>(geom);
+    if (segm != nullptr) {
+        double red{1.0};
+        double green{1.0};
+        double blue{1.0};
         //red += 0.1;
         //if (red > 1.0) {
         //    red = 0.5;
@@ -311,56 +382,53 @@ GeoPaint::drawGeoShape(
         //}
         ctx->set_source_rgb(red, green, blue);
         bool firstInSegm{true};
-        bool firstPnt{true};
-        GeoCoordinate geoCoord;
-        geoCoord.setCoordRefSystem(COORD_REF);
-        for (auto& pnt : *segm) {
-            geoCoord.set(firstPnt, pnt);
-            if (!firstPnt) {
-                auto coord = m_geoConversion->toDisplay(geoCoord);
-                auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
-                auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
-                //std::cout << "x = " << x << " y = " << y
-                //          << " xDraw = " << xDraw << " yDraw = " << yDraw << std::endl;
-                if (firstInSegm) {
-                    if (activePath) {
-                        ctx->stroke();
-                        activePath = false;
-                    }
-                    ctx->move_to(xDraw, yDraw);
-                }
-                else {
-                    ctx->line_to(xDraw, yDraw);
-                    activePath = true;
-                }
-                firstInSegm = false;
+        for (const auto& geoCoord : segm->getCoordinates()) {
+            auto coord = m_geoConversion->toDisplay(geoCoord);
+            auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
+            auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
+            //std::cout << "x = " << x << " y = " << y
+            //          << " xDraw = " << xDraw << " yDraw = " << yDraw << std::endl;
+            if (firstInSegm) {
+                ctx->move_to(xDraw, yDraw);
             }
-            firstPnt = !firstPnt;
+            else {
+                ctx->line_to(xDraw, yDraw);
+            }
+            firstInSegm = false;
         }
-        if (activePath) {
-            ctx->stroke();
-            activePath = false;
-        }
+        ctx->stroke();
     }
-    ctx->set_source_rgb(0.2, 0.2, 0.8);
-    auto minPopulation = m_config->getPointsMinPopulation();
-    auto& pnts = m_geoPointHandler->getPoints();
-    for (auto& pnt : pnts) {
-        if (pnt->getPopulation() >= minPopulation) {
-            auto coord = m_geoConversion->toDisplay(pnt->getPosition());
+    auto pnt = std::dynamic_pointer_cast<psc::geo::Point>(geom);
+    if (pnt != nullptr) {
+        auto props = feature->getProperties();
+        Glib::ustring name;
+        if (props->getType("name") == psc::geo::ValueType::String) {
+            name = props->getString("name");
+        }
+        int64_t population{};
+        if (props->getType("population") == psc::geo::ValueType::Integer) {
+            population = props->getInteger("population");
+        }
+        int64_t minPopulation = m_config->getPointsMinPopulation();
+        if (population >= minPopulation) {
+            ctx->set_source_rgb(0.2, 0.2, 0.8);
+            auto coord = m_geoConversion->toDisplay(pnt->getCoordinate());
             auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
             auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
             Cairo::TextExtents ext;
-            ctx->get_text_extents(pnt->getName(), ext);
+            ctx->get_text_extents(name, ext);
             ctx->move_to(xDraw - 3, yDraw - 3);
             ctx->line_to(xDraw + 3, yDraw + 3);
             ctx->move_to(xDraw + 3, yDraw - 3);
             ctx->line_to(xDraw - 3, yDraw + 3);
             ctx->stroke();
-            ctx->move_to(xDraw - ext.width / 2.0, yDraw + 3 + ext.height);
-            ctx->show_text(pnt->getName());
+            if (!name.empty()) {
+                ctx->move_to(xDraw - ext.width / 2.0, yDraw - ext.height);
+                ctx->show_text(name);
+            }
         }
     }
+
 }
 
 void
@@ -458,7 +526,6 @@ GeoPaint::getFlightService()
     return m_flightService;
 }
 
-
 void
 GeoPaint::drawFlights(
         Cairo::RefPtr<Cairo::Context>& ctx
@@ -505,10 +572,6 @@ GeoPaint::drawImage(
     ctx->set_source_rgb(0.1, 0.1,  0.1);
     ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
     ctx->fill();
-
-    //std::cout << "GeoPaint::update"
-    //          << " width " << width<< " min " << m_min.longitude << " max " << m_max.longitude << "\n"
-    //          << " height " << height << " min " << m_min.latitude << " max " << m_max.latitude << std::endl;
     auto diff = m_max - m_min;
     if (std::abs(diff.getLongitude()) < 0.001
       ||std::abs(diff.getLatitude()) < 0.001) {
@@ -521,7 +584,8 @@ GeoPaint::drawImage(
     drawGeoImage(ctx, diff, width, height);
     drawWeather(ctx, width, height);
     auto fact = static_cast<double>(width) / diff.getLongitude(); // since we use same long/latitude this should work
-    drawGeoShape(ctx, fact);
+    drawFeatures(m_geoVectors, ctx, fact);
+    drawFeatures(m_geoPoints, ctx, fact);
     drawFlights(ctx, fact);
     ctx->restore();
     //std::cout << "draw " << w << " h " << h << "\n";
