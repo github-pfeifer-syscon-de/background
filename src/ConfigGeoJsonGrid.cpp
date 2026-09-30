@@ -77,6 +77,7 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
     }
     refBuilder->get_widget("pointsMinPopulation", m_pointsMinPopulation);
     if (m_pointsMinPopulation != nullptr) {
+        m_pointsMinPopulation->append("0");
         m_pointsMinPopulation->append("1000");
         m_pointsMinPopulation->append("2000");
         m_pointsMinPopulation->append("5000");
@@ -89,6 +90,7 @@ ConfigGeoJsonGrid::ConfigGeoJsonGrid(BaseObjectType* cobject, const Glib::RefPtr
         m_pointsMinPopulation->append("1000000");
         m_pointsMinPopulation->append("2000000");
         m_pointsMinPopulation->append("5000000");
+        m_pointsMinPopulation->append("10000000");
         if (m_config->getPointsMinPopulation() > 0) {
             auto sval = std::to_string(m_config->getPointsMinPopulation());
             m_pointsMinPopulation->set_active_text(sval);

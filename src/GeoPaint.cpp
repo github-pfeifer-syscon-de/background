@@ -352,19 +352,19 @@ GeoPaint::drawGeometry(
      , double fact)
 {
     auto multiPoly = std::dynamic_pointer_cast<psc::geo::MultiPolygon>(geom);
-    if (multiPoly != nullptr) {
-        for (auto poly : multiPoly->getPolygons()) {
+    if (multiPoly) {
+        for (auto& poly : multiPoly->getPolygons()) {
             drawGeometry(poly, feature, ctx, fact);
         }
     }
     auto poly = std::dynamic_pointer_cast<psc::geo::Polygon>(geom);
-    if (poly != nullptr) {
-        for (auto segm : poly->getSegments()) {
+    if (poly) {
+        for (auto& segm : poly->getSegments()) {
             drawGeometry(segm, feature, ctx, fact);
         }
     }
     auto segm = std::dynamic_pointer_cast<psc::geo::Segment>(geom);
-    if (segm != nullptr) {
+    if (segm) {
         double red{1.0};
         double green{1.0};
         double blue{1.0};
@@ -399,7 +399,7 @@ GeoPaint::drawGeometry(
         ctx->stroke();
     }
     auto pnt = std::dynamic_pointer_cast<psc::geo::Point>(geom);
-    if (pnt != nullptr) {
+    if (pnt) {
         auto props = feature->getProperties();
         Glib::ustring name;
         if (props->getType("name") == psc::geo::ValueType::String) {
