@@ -114,42 +114,34 @@ GeoPaint::refresh_weather_service()
 bool
 GeoPaint::setGeoJsonFile(const std::string& geoJson)
 {
-    m_geoVectors.clear();
-    if (!geoJson.empty()) {
-        try {
-            JsonHelper jsonHelper;
-            jsonHelper.load_from_file(geoJson);
-            psc::geo::GeoJson2 geoJson2;
-            m_geoVectors = geoJson2.read(jsonHelper);
-            findGeoMinMax();
-            return true;
-        }
-        catch (const psc::geo::Json2Exception& exc) {
-            auto msg = Glib::ustring::sprintf(_("Error %s processing %s shape"), exc.what(), geoJson);
-            m_starWin->showMessage(msg, Gtk::MESSAGE_WARNING);
-        }
-    }
-    return false;
+    m_geoVectors = loadGeoFile(geoJson, "shape");
+    return !m_geoVectors.empty();
 }
 
 bool
-GeoPaint::setGeoPointsFile(const std::string& geoPointsFile)
+GeoPaint::setGeoPointsFile(const std::string& geoJson)
 {
-    m_geoPoints.clear();
+    m_geoPoints = loadGeoFile(geoJson, "points");
+    return !m_geoPoints.empty();
+}
+
+std::vector<psc::geo::PtrFeature>
+GeoPaint::loadGeoFile(const std::string& geoPointsFile, const std::string& ctx)
+{
+    std::vector<psc::geo::PtrFeature> geoFeatures;
     if (!geoPointsFile.empty()) {
         try {
             JsonHelper jsonHelper;
             jsonHelper.load_from_file(geoPointsFile);
             psc::geo::GeoJson2 geoJson2;
-            m_geoPoints = geoJson2.read(jsonHelper);
-            return true;
+            geoFeatures = geoJson2.read(jsonHelper);
         }
-        catch (const psc::geo::Json2Exception& exc) {
-            auto msg = Glib::ustring::sprintf(_("Error %s processing %s points"), exc.what(), geoPointsFile);
+        catch (const std::exception& exc) {
+            auto msg = Glib::ustring::sprintf(_("Error %s processing %s %s"), exc.what(), geoPointsFile, ctx);
             m_starWin->showMessage(msg, Gtk::MESSAGE_WARNING);
         }
     }
-    return false;
+    return geoFeatures;
 }
 
 bool
@@ -279,10 +271,10 @@ GeoPaint::findGeoMinMax()
 {
     GeoCoordinate min{180.0,90.0, COORD_REF};
     GeoCoordinate max{-180.0,-90.0, COORD_REF};
-    for (auto& feature : m_geoPoints) { // also check points
+    for (auto feature : m_geoPoints) { // also check points
         findGeoMinMax(feature->getGeometry(), min, max);
     }
-    for (auto& feature : m_geoVectors) {
+    for (auto feature : m_geoVectors) {
         findGeoMinMax(feature->getGeometry(), min, max);
     }
     GeoCoordinate coordExt (m_geoMargin, m_geoMargin, COORD_REF);

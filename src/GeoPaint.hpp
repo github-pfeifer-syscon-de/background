@@ -109,6 +109,9 @@ protected:
     void drawFlights(
         Cairo::RefPtr<Cairo::Context>& ctx
         , double fact);
+    std::vector<psc::geo::PtrFeature> loadGeoFile(
+        const std::string& geoPointsFile
+        , const std::string&);
 
 private:
     GeoCoordinate m_min;
