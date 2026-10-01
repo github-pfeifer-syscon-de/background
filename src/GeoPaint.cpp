@@ -115,6 +115,7 @@ bool
 GeoPaint::setGeoJsonFile(const std::string& geoJson)
 {
     m_geoVectors = loadGeoFile(geoJson, "shape");
+    findGeoMinMax();
     return !m_geoVectors.empty();
 }
 
@@ -122,6 +123,7 @@ bool
 GeoPaint::setGeoPointsFile(const std::string& geoJson)
 {
     m_geoPoints = loadGeoFile(geoJson, "points");
+    findGeoMinMax();
     return !m_geoPoints.empty();
 }
 
