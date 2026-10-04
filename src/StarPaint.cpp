@@ -173,7 +173,8 @@ StarPaint::draw_moon(Renderer* renderer, const JulianDate& jd, GeoPosition& geoP
     }
 }
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 void
 StarPaint::draw_milkyway(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
@@ -249,6 +250,7 @@ StarPaint::draw_milkyway(Renderer* renderer, const JulianDate& jd, GeoPosition& 
         renderer->showText(text, p.getX()+w, p.getY(), TextAlign::LeftTop);
     }
 }
+#pragma GCC diagnostic pop
 
 void
 StarPaint::draw_stars(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)

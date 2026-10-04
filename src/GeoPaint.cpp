@@ -21,6 +21,7 @@
 #include <psc_i18n.hpp>
 #include <WeatherConfig.hpp>
 #include <OpenskyFlights.hpp>
+#include <GeoKlm.hpp>
 
 #include "BackConfig.hpp"
 #include "GeoPaint.hpp"
@@ -133,10 +134,17 @@ GeoPaint::loadGeoFile(const std::string& geoPointsFile, const std::string& ctx)
     std::vector<psc::geo::PtrFeature> geoFeatures;
     if (!geoPointsFile.empty()) {
         try {
-            JsonHelper jsonHelper;
-            jsonHelper.load_from_file(geoPointsFile);
-            psc::geo::GeoJson2 geoJson2;
-            geoFeatures = geoJson2.read(jsonHelper);
+            if (StringUtils::endsWith(geoPointsFile, ".kml")) {
+                psc::geo::GeoKlm geoKlm;
+                geoKlm.read(geoPointsFile);
+                geoFeatures = geoKlm.getPlacemarks();
+            }
+            else {
+                JsonHelper jsonHelper;
+                jsonHelper.load_from_file(geoPointsFile);
+                psc::geo::GeoJson2 geoJson2;
+                geoFeatures = geoJson2.read(jsonHelper);
+            }
         }
         catch (const std::exception& exc) {
             auto msg = Glib::ustring::sprintf(_("Error %s processing %s %s"), exc.what(), geoPointsFile, ctx);
@@ -476,6 +484,31 @@ GeoPaint::heightToPixel(double height_m)
     return pixel;
 }
 
+double
+GeoPaint::speedToPixel(double speed)
+{
+    auto pixel = speed * 10.0 / 200.0;   // 200m/s -> 10pixel
+    return pixel;
+}
+
+Gdk::RGBA
+GeoPaint::gradient(double ratio)
+{
+    Gdk::RGBA color;
+    color.set_red(gradientRed.intrapolate(ratio));
+    color.set_green(gradientGreen.intrapolate(ratio));
+    color.set_blue(gradientBlue.intrapolate(ratio));
+    return color;
+}
+
+Gdk::RGBA
+GeoPaint::heightToColor(double height_m)
+{
+    auto ratio = std::max(std::min(height_m / FLIGHT_UPPER_LIMIT_M, 1.0), 0.0);   // 12000m -> 1
+    return gradient(ratio);
+}
+
+
 void
 GeoPaint::refresh_flight_service(bool force)
 {
@@ -523,7 +556,8 @@ GeoPaint::getFlightService()
 void
 GeoPaint::drawFlights(
         Cairo::RefPtr<Cairo::Context>& ctx
-        , double fact)
+        , double fact
+        , double viewSize)
 {
     refresh_flight_service(false);
     ctx->set_line_width(1.0);
@@ -533,22 +567,56 @@ GeoPaint::drawFlights(
         auto coord = m_geoConversion->toDisplay(geoCoord);
         auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
         auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
-        ctx->move_to(xDraw, yDraw);
+        double yTop{};
         if (flight->isOnGround()) {
             ctx->set_source_rgb(0.3, 0.3, 0.3);
         }
         else {
-            ctx->set_source_rgb(0.3, 1.0, 0.0);
-            auto yTop = yDraw - heightToPixel(flight->getGeoAltitude());
-            ctx->line_to(xDraw, yTop);
+            auto color = heightToColor(flight->getGeoAltitude());
+            ctx->set_source_rgb(color.get_red(), color.get_green(), color.get_blue());
+            ctx->move_to(xDraw, yDraw);
+            auto speedPix = speedToPixel(flight->getVelocity());
+            auto track = flight->getTrack();
+            auto speedX = std::sin(track) * speedPix;
+            auto speedY = -std::cos(track) * speedPix;
+            ctx->move_to(xDraw + speedX, yDraw + speedY);
+            ctx->line_to(xDraw, yDraw);
+            yTop = heightToPixel(flight->getGeoAltitude());
+            ctx->line_to(xDraw, yDraw - yTop);
             ctx->stroke();
-            ctx->move_to(xDraw, yTop);
         }
+        ctx->move_to(xDraw, yDraw - yTop);
         auto name = flight->getCallsign();
         if (name.empty()) {
             name = flight->getIcao24();
         }
         ctx->show_text(name);
+        if (true) {    // disable if you don't like legends
+            auto legendX = (viewSize - (100.0 * LEGEND_SEGMENT_WIDTH)) / 2.0;
+            auto legendY = viewSize - 40;
+            for (int i = 0; i < 100; ++i) {
+                auto ratio = static_cast<double>(i) / 100.0;
+                auto color = gradient(ratio);
+                ctx->set_source_rgb(color.get_red(), color.get_green(), color.get_blue());
+                ctx->rectangle(legendX + (i * LEGEND_SEGMENT_WIDTH), legendY
+                    , LEGEND_SEGMENT_WIDTH, LEGEND_HEIGHT);
+                ctx->fill();
+            }
+            ctx->set_source_rgb(0.6, 0.6, 0.6);
+            Cairo::TextExtents extends;
+            for (int i = 0; i <= 100; i += 20) {
+                auto ratio = static_cast<double>(i) / 100.0;
+                int valX = static_cast<int>(legendX + (i * LEGEND_SEGMENT_WIDTH));
+                ctx->move_to(valX, legendY + LEGEND_HEIGHT);
+                ctx->line_to(valX, legendY);
+                ctx->stroke();
+                int height = static_cast<int>(ratio * FLIGHT_UPPER_LIMIT_M);
+                auto label = std::to_string(height) + "m";
+                ctx->get_text_extents(label, extends);
+                ctx->move_to(valX - (extends.width / 2), legendY - extends.height);
+                ctx->show_text(label);
+            }
+        }
     }
 }
 
@@ -580,7 +648,9 @@ GeoPaint::drawImage(
     auto fact = static_cast<double>(width) / diff.getLongitude(); // since we use same long/latitude this should work
     drawFeatures(m_geoVectors, ctx, fact);
     drawFeatures(m_geoPoints, ctx, fact);
-    drawFlights(ctx, fact);
+    if (!m_config->getFlightService().empty()) {
+        drawFlights(ctx, fact, min);
+    }
     ctx->restore();
     //std::cout << "draw " << w << " h " << h << "\n";
     //queue_draw();

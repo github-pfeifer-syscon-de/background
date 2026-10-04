@@ -228,7 +228,7 @@
             </child>
             <child>
               <!-- n-columns=3 n-rows=6 -->
-              <object class="GtkGrid">
+              <object class="GtkGrid" id="configStarGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="row-spacing">3</property>

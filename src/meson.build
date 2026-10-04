@@ -28,6 +28,7 @@ sources = files(
 	, 'BackConfig.cpp'
 	, 'ConfigGeoJsonGrid.cpp'
 	, 'ConfigGridFlights.cpp'
+	, 'ConfigStarGrid.cpp'
 	, 'ModulePaint.cpp'
 	, 'FlightsDlg.cpp'
     )
@@ -49,7 +50,6 @@ astro_srcs = files(		# used for test
 	, 'Phase.cpp'
 	, 'Renderer.cpp'
 	, 'Moon.cpp'
-	, 'GeoPointHandler.cpp'
 )
 if libharu_deps.found()
 	astro_srcs += files(

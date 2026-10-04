@@ -18,8 +18,12 @@
 
 #pragma once
 
+#include <iostream>
 #include <cmath>
 #include <numbers>
+#include <vector>
+#include <exception>
+#include <format>
 
 // decorator, astronomic unit (distance earth to sun)
 consteval double operator ""_AU(const long double dist)
@@ -32,6 +36,40 @@ consteval double operator ""_AU(const long double dist)
 //{
 //    return static_cast<double>(dist);
 //}
+
+template<typename T, size_t N>
+struct LinGradient {
+    const std::array<T, N> m_stops;
+    static_assert(N > 0 && N % 2 == 0, "expecting a even number of values to be used as pairs");
+    // like to do this as compile-time check but get stuck @runtime
+    static constexpr bool is_ascending(std::initializer_list<T> values) {
+        for (size_t i = 2; i < values.size(); i+=2) {
+            if (values[i-2] - values[i] == 0.0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    T intrapolate(T value)
+    {
+        for (size_t i = 0; i < m_stops.size(); i+=2) {
+            if (m_stops[i] > value) {
+                if (i == 0) {       // return first entry
+                    return m_stops[1];
+                }
+                T diff = (m_stops[i] - m_stops[i-2]);
+                if (diff == 0.0) {  // ignore entries with zero distance ... avoid div by zero
+                    std::cout << std::format("expecting ascending stop source values, but {}[{}] and {}[{}] match -> ignoring",
+                        m_stops[i-2], i-2, m_stops[i], i) << std::endl;
+                    continue;
+                }
+                T step = (value - m_stops[i-2]) / diff;
+                return std::lerp(m_stops[i-1], m_stops[i+1], step);
+            }
+        }
+        return m_stops[m_stops.size() - 1];
+    }
+};
 
 // this might still have some java smell
 class Math

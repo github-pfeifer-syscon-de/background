@@ -26,9 +26,9 @@
 #include <Flights.hpp>
 
 #include "GeoConversion.hpp"
-#include "GeoPointHandler.hpp"
 #include "GeoBitmap.hpp"
 #include "BackPaint.hpp"
+#include "Math.hpp"
 
 class StarWin;
 
@@ -84,7 +84,10 @@ public:
     std::shared_ptr<Flights> getFlightService();
     void updateFlights();
     bool setGeoPointsFile(const std::string& geoPointsFile);
-
+    Gdk::RGBA heightToColor(double height_m);
+    inline static LinGradient<double,6> gradientRed{0.0, 1.0, 0.5, 0.0, 1.0, 0.5};
+    inline static LinGradient<double,4> gradientGreen{0.25, 1.0, 0.75, 0.0};
+    inline static LinGradient<double,4> gradientBlue{0.25, 0.0, 0.75, 1.0};
 protected:
     bool findGeoMinMax();
     void findGeoMinMax(const psc::geo::PtrGeometry& geom, GeoCoordinate& min, GeoCoordinate& max);
@@ -106,13 +109,20 @@ protected:
          , Cairo::RefPtr<Cairo::Context>& ctx
          , double fact);
     double heightToPixel(double height_m);
+    double speedToPixel(double speed);
+    Gdk::RGBA gradient(double ratio);
+
     void drawFlights(
         Cairo::RefPtr<Cairo::Context>& ctx
-        , double fact);
+        , double fact
+        , double viewSize);
     std::vector<psc::geo::PtrFeature> loadGeoFile(
         const std::string& geoPointsFile
         , const std::string&);
 
+    static constexpr auto FLIGHT_UPPER_LIMIT_M{12000.0};
+    static constexpr auto LEGEND_SEGMENT_WIDTH{2};
+    static constexpr auto LEGEND_HEIGHT{10};
 private:
     GeoCoordinate m_min;
     GeoCoordinate m_max;

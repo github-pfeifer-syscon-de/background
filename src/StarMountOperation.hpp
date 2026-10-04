@@ -19,6 +19,7 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <glibmm.h>
 
 class StarMountOp;
 class StarWin;
@@ -54,6 +55,7 @@ private:
 };
 
 class StarMountOp
+//: public Glib::Object
 : public Gio::MountOperation
 {
 public:

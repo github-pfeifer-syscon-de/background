@@ -371,10 +371,9 @@ StarWin::setBackgroundDbus(const Glib::ustring& dbusChannel, const Glib::ustring
 void
 StarWin::drawAll(Cairo::RefPtr<Cairo::Context>& ctx, Glib::DateTime now, GeoPosition& pos, Layout layout)
 {
-
-auto backPaint = getBackPaint();
-backPaint->drawImage(ctx, now, pos, layout);
-m_modulePaint->drawModules(ctx, layout);
+    auto backPaint = getBackPaint();
+    backPaint->drawImage(ctx, now, pos, layout);
+    m_modulePaint->drawModules(ctx, layout);
 }
 
 
@@ -384,7 +383,7 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
     if (m_backAppl->isDaemon()) {
         auto screen = Gdk::Screen::get_default();
         auto monitorNum = getDaemonDisplay();
-         Gdk::Rectangle rect;
+        Gdk::Rectangle rect;
         screen->get_monitor_geometry(monitorNum, rect);
         int width = rect.get_width();
         int height = rect.get_height();
@@ -645,11 +644,11 @@ PtrBackPaint
 StarWin::getBackPaint()
 {
     auto geoJson = getConfig()->getGeoJsonFile();
-    auto now = Glib::DateTime::create_now_local();
     auto dayStart = getConfig()->getDayStart();
+    auto now = Glib::DateTime::create_now_local();
     auto dayEnd = getConfig()->getDayEnd();
     if (geoJson.empty()
-     || now.get_hour() <= dayStart
+     || now.get_hour() < dayStart
      || now.get_hour() >= dayEnd) {
         m_backPaint = getStarPaint();
     }

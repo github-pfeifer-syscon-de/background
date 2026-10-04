@@ -63,6 +63,10 @@ this will print the settings name used for this.
 So the correct settings name can be modified for
 the desktopBackground setting (after -p).
 The placeholder $img and will be replaced with the image file.
+So the setting in the main section may look like this:
+```
+desktopBackground=/usr/bin/xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorDVI-D-0/workspace0/last-image -s $img
+```
 
 ## Infos
 
@@ -75,7 +79,7 @@ By default for rendering the info blocks python will be used
 depending on your Linux flavor names may vary).
 If you don't like this option use
 ```
-meson setup build -Dprefix/usr -Dpython=false
+meson setup build -Dprefix=/usr -Dpython=false
 ```
 the C++ functions for rendering will be used in this case.
 
@@ -133,7 +137,14 @@ otherwise use:
 
 To show a alternative picture for daylight 6-18h
 use the Geo.json section in preferences. 
-The File defines the viewed bounds with some rounding & addition
+The File defines the viewed bounds with some rounding & addition.
+A partial .kml File support was added...
+The loading was implemented without a limit,
+but there are Geo-files for all sorts of applications,
+some with a amazing level of detail, that is just
+overkill for this kind of display.
+So decide yourself what you need, ~100k might be enough to
+display a reasonable outline of your country with e.g. states.
 
 > [!WARNING]  
 > no projection like mercator will be used
@@ -164,11 +175,11 @@ https://geodocs.io/en/blog/list-of-free-wms-and-wmts-basemap-urls-2026
 #### Flights
 
 > [!NOTE]
-> This is a just getting started with some service I found interesting.
-> There are many browser services with much more insight, see below for some examples.
+> This is a see how it works implementation... 
 
-Implemented Service (no auth, as there are some limitations don't use a too large area or high update rate):
+Implemented Service 
+(no auth, as there are some limitations don't use a too large area or high update rate):
 
 https://opensky-network.org
 
-Links have been integrated into flight dialog. 
+Links  have been integrated into flight dialog by double-clicking a entry. 

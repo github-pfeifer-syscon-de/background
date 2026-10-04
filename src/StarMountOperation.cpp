@@ -93,6 +93,7 @@ UserDlg::show(StarWin* starWin
 //   so it might need some tweaking, what will practical getting used
 
 StarMountOp::StarMountOp(StarWin* starWin)
+//: Glib::ObjectBase(typeid (StarMountOp))
 : Gio::MountOperation()
 , m_starWin{starWin}
 {

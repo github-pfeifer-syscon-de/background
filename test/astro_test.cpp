@@ -150,7 +150,23 @@ test_mix()
     if (std::abs(r - 3.0) > numLowError) {
         return false;
     }
-
+    LinGradient<double,6> gradient{0.0, 1.0, 0.5, 0.0, 1.0, 1.0};
+    double r0 = gradient.intrapolate(0.0);
+    double r25 = gradient.intrapolate(0.25);
+    double r50 = gradient.intrapolate(0.5);
+    double r75 = gradient.intrapolate(0.75);
+    double r100 = gradient.intrapolate(1.0);
+    std::cout << "Gradient 0 " << r0 << "\n"
+              << " 0.25 " << r25 << "\n"
+              << " 0.5 " << r50 << "\n"
+              << " 0.75 " << r75 << "\n"
+              << " 1 " << r100 << std::endl;
+    if (std::abs(r0 - 1.0) > numLowError
+     ||std::abs(r25 - 0.5) > numLowError
+     ||std::abs(r50 - 0.0) > numLowError
+     ||std::abs(r100 - 1.0) > numLowError) {
+        return false;
+    }
     return true;
 }
 

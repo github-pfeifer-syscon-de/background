@@ -19,6 +19,7 @@
 
 #include <Flight.hpp>
 
+#include "Math.hpp"
 #include "GeoPaint.hpp"
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
@@ -93,6 +94,7 @@ void
 FlightsDlg::update(const std::vector<PtrFlight>& flights)
 {
     m_store->clear();   // remove previous entries
+    auto geoPaint = m_starWin->getGeoPaint();
     auto conf = m_starWin->getConfig();
     auto flightLon = conf->getFlightLongitude();
     auto flightLat = conf->getFlightLatitude();
@@ -117,6 +119,15 @@ FlightsDlg::update(const std::vector<PtrFlight>& flights)
         row.set_value(flightColumns->verticalRate, flight->getVerticalRate());
         row.set_value(flightColumns->geoAltitude, flight->getGeoAltitude());
         row.set_value(flightColumns->squake, Glib::ustring{flight->getSquake()});
+        auto color = geoPaint->heightToColor(flight->getGeoAltitude());
+        auto surface = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+        auto context = Cairo::Context::create(surface);
+        context->arc(ICON_SIZE / 2, ICON_SIZE / 2, ICON_SIZE / 2, 0.0, Math::TWO_PI);
+        context->clip();    // make it a round shape
+        context->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), 1.0);
+        context->paint();
+        auto iconAltitude = Gdk::Pixbuf::create(surface, 0, 0, surface->get_width(), surface->get_height());
+        row.set_value(flightColumns->iconAltitude, iconAltitude);
         row.set_value(flightColumns->flight, flight);
     }
 }

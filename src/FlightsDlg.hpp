@@ -29,6 +29,29 @@ namespace psc::ui {
     class KeyfileTableManager;
 }
 
+
+class IconConverter
+: public psc::ui::CustomConverter<Glib::RefPtr<Gdk::Pixbuf>>
+{
+public:
+    IconConverter(Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf>>& col)
+    : CustomConverter(col)
+    {
+    }
+    virtual ~IconConverter() = default;
+
+    void convert(Gtk::CellRenderer* rend, const Gtk::TreeModel::iterator& iter) override  {
+         Glib::RefPtr<Gdk::Pixbuf> pixbuf;
+         iter->get_value(m_col.index(), pixbuf);
+         auto pixRend = static_cast<Gtk::CellRendererPixbuf*>(rend);
+         pixRend->property_pixbuf() = pixbuf;
+    }
+
+    Gtk::CellRenderer* createCellRenderer() override {
+        return Gtk::manage<Gtk::CellRendererPixbuf>(new Gtk::CellRendererPixbuf());
+    }
+};
+
 class FlightColumns
 : public psc::ui::ColumnRecord
 {
@@ -48,6 +71,7 @@ public:
     Gtk::TreeModelColumn<double> verticalRate;
     Gtk::TreeModelColumn<double> geoAltitude;
     Gtk::TreeModelColumn<Glib::ustring> squake;
+    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf>> iconAltitude;
     Gtk::TreeModelColumn<PtrFlight> flight;
     FlightColumns()
     {
@@ -66,14 +90,15 @@ public:
         add<double>(_("Barom. altitude (m)"), baroAltitude);
         add<double>(_("Geom. altitude (m)"), geoAltitude);
         add<Glib::ustring>(_("Squake"), squake);
+        auto iconConverter = std::make_shared<IconConverter>(iconAltitude);
+        add<Glib::RefPtr<Gdk::Pixbuf>>(_("Altitude (icon)"), iconConverter);
         Gtk::TreeModel::ColumnRecord::add(flight);
     }
 };
 
 class FlightsDlg
 : public Gtk::Dialog
-, public FlightsConsumer
-{
+, public FlightsConsumer {
 public:
     FlightsDlg(BaseObjectType* cobject
         , const Glib::RefPtr<Gtk::Builder>& builder
@@ -87,6 +112,7 @@ public:
 
     static void show(StarWin* starWin);
     static constexpr auto UPDATE_RATE{std::chrono::seconds(60)};
+    static constexpr auto ICON_SIZE{20};
 protected:
     void showDetail(const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* column);
     void showLink(Glib::ustring& uri);
