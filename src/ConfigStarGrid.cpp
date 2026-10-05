@@ -20,42 +20,34 @@
 #include "ConfigStarGrid.hpp"
 #include "StarWin.hpp"
 #include "StarPaint.hpp"
+#include "BackConfig.hpp"
 
 ConfigStarGrid::ConfigStarGrid(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& builder, StarWin* starWin)
 : Gtk::Grid(cobject)
 , m_starWin{starWin}
 {
-   auto starPaint = std::dynamic_pointer_cast<StarPaint>(m_starWin->getStarPaint());
+    auto starPaint = m_starWin->getStarPaint();
+    auto backConfig = m_starWin->getConfig();
     builder->get_widget("startColor", m_startColor);
-    if (starPaint) {
-        m_startColor->set_rgba(starPaint->getStartColor());
-        m_startColor->signal_color_set().connect([this, starPaint] {
-            starPaint->setStartColor(m_startColor->get_rgba());
-            m_starWin->update();
-        });
-    }
-    else {
-        m_startColor->set_sensitive(false);
-    }
+    m_startColor->set_rgba(backConfig->getStartColor());
+    m_startColor->signal_color_set().connect([this, backConfig] {
+        backConfig->setStartColor(m_startColor->get_rgba());
+        m_starWin->update();
+    });
 
     builder->get_widget("stopColor", m_stopColor);
-    if (starPaint) {
-        m_stopColor->set_rgba(starPaint->getStopColor());
-        m_stopColor->signal_color_set().connect([this, starPaint] {
-            starPaint->setStopColor(m_stopColor->get_rgba());
-            m_starWin->update();
-        });
-    }
-    else {
-        m_stopColor->set_sensitive(false);
-    }
+    m_stopColor->set_rgba(backConfig->getStopColor());
+    m_stopColor->signal_color_set().connect([this, backConfig] {
+        backConfig->setStopColor(m_stopColor->get_rgba());
+        m_starWin->update();
+    });
 
     builder->get_widget("starFont", m_starFont);
     if (starPaint) {
-        m_starFont->set_font_name(starPaint->getStarFont().to_string());
-        m_starFont->signal_font_set().connect([this, starPaint] {
+        m_starFont->set_font_name(backConfig->getStarFont().to_string());
+        m_starFont->signal_font_set().connect([this, backConfig] {
             Pango::FontDescription starFont{m_starFont->get_font_name()};
-            starPaint->setStarFont(starFont);
+            backConfig->setStarFont(starFont);
             m_starWin->update();
         });
     }
@@ -64,41 +56,31 @@ ConfigStarGrid::ConfigStarGrid(BaseObjectType* cobject, const Glib::RefPtr<Gtk::
     }
 
     builder->get_widget("showMilkyway", m_showMilkyway);
-    if (starPaint) {
-        m_showMilkyway->set_active(starPaint->isShowMilkyway());
-        m_showMilkyway->signal_clicked().connect([this,starPaint] {
-            starPaint->setShowMilkyway(m_showMilkyway->get_active());
-            m_starWin->update();
-        });
-    }
-    else {
-        m_showMilkyway->set_sensitive(false);
-    }
+    m_showMilkyway->set_active(backConfig->isShowMilkyway());
+    m_showMilkyway->signal_clicked().connect([this,backConfig] {
+        backConfig->setShowMilkyway(m_showMilkyway->get_active());
+        m_starWin->update();
+    });
 
     builder->get_widget("messierVMag", m_messierVMag);
-    if (starPaint) {
-        m_messierVMag->set_value(starPaint->getMessierVMagMin());
-        m_messierVMag->signal_value_changed().connect([this,starPaint] {
-            starPaint->setMessierVMagMin(m_messierVMag->get_value());
-            m_starWin->update();
-        });
-    }
-    else {
-        m_messierVMag->set_sensitive(false);
-    }
-
+    m_messierVMag->set_value(backConfig->getMessierVMagMin());
+    m_messierVMag->signal_value_changed().connect([this,backConfig] {
+        backConfig->setMessierVMagMin(m_messierVMag->get_value());
+        m_starWin->update();
+    });
 }
 
 void
 ConfigStarGrid::save()
 {
-    auto starPaint = std::dynamic_pointer_cast<StarPaint>(m_starWin->getStarPaint());
+    auto starPaint = m_starWin->getStarPaint();
+    auto backConfig = m_starWin->getConfig();
     if (starPaint) {
-        starPaint->setStartColor(m_startColor->get_rgba());
-        starPaint->setStopColor(m_stopColor->get_rgba());
+        backConfig->setStartColor(m_startColor->get_rgba());
+        backConfig->setStopColor(m_stopColor->get_rgba());
         Pango::FontDescription starFont{m_starFont->get_font_name()};
-        starPaint->setStarFont(starFont);
-        starPaint->setShowMilkyway(m_showMilkyway->get_active());
-        starPaint->setMessierVMagMin(m_messierVMag->get_value());
+        backConfig->setStarFont(starFont);
+        backConfig->setShowMilkyway(m_showMilkyway->get_active());
+        backConfig->setMessierVMagMin(m_messierVMag->get_value());
     }
 }

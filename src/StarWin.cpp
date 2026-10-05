@@ -84,7 +84,7 @@ StarWin::StarWin(BaseObjectType* cobject
     }
     m_log->setLevel(
             psc::log::Log::getLevel(
-                    m_config->getString(StarPaint::MAIN_GRP, LOG_LEVEL, "info")));
+                    m_config->getString(BackConfig::MAIN_GRP, LOG_LEVEL, "info")));
     updateTimer();
     signal_hide().connect([this] {
         if (m_timer.connected()) {
@@ -293,7 +293,7 @@ StarWin::update()
 void
 StarWin::setBackgroundExec(const Glib::RefPtr<Gio::File>& file)
 {
-    std::string cmd = m_config->getString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY);
+    std::string cmd = m_config->getString(BackConfig::MAIN_GRP, DESKTOP_BACKGR_KEY);
     auto cmds = StringUtils::splitConsec(cmd, ' ');
     if (cmds.empty()) {
         cmds.push_back("/usr/bin/xfconf-query");
@@ -309,7 +309,7 @@ StarWin::setBackgroundExec(const Glib::RefPtr<Gio::File>& file)
                 return item;
             };
         cmd = StringUtils::concat(cmds, std::string(" "), lambda);
-        m_config->setString(StarPaint::MAIN_GRP, DESKTOP_BACKGR_KEY, cmd);
+        m_config->setString(BackConfig::MAIN_GRP, DESKTOP_BACKGR_KEY, cmd);
         saveConfig();
         showMessage(Glib::ustring::sprintf("A config to change the desktop background was not found, a default for Xfce was created you need to adapt it most likely (see %s).", CONFIG_NAME));
     }
@@ -682,25 +682,25 @@ StarWin::setGeoPosition(const GeoPosition& geoPos)
 int
 StarWin::getIntervalMinutes()
 {
-    return m_config->getInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, 1);
+    return m_config->getInteger(BackConfig::MAIN_GRP, UPDATE_INTERVAL_KEY, 1);
 }
 
 void
 StarWin::setIntervalMinutes(int intervalMinutes)
 {
-    m_config->setInteger(StarPaint::MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
+    m_config->setInteger(BackConfig::MAIN_GRP, UPDATE_INTERVAL_KEY, intervalMinutes);
 }
 
 int
 StarWin::getDaemonDisplay()
 {
-    return m_config->getInteger(StarPaint::MAIN_GRP, DAEMON_DISPLAY_KEY, 0);
+    return m_config->getInteger(BackConfig::MAIN_GRP, DAEMON_DISPLAY_KEY, 0);
 }
 
 void
 StarWin::setDaemonDisplay(int daemonDisplay)
 {
-    m_config->setInteger(StarPaint::MAIN_GRP, DAEMON_DISPLAY_KEY, daemonDisplay);
+    m_config->setInteger(BackConfig::MAIN_GRP, DAEMON_DISPLAY_KEY, daemonDisplay);
 }
 
 Glib::ustring
@@ -735,7 +735,7 @@ StarWin::exportPdf()
         haruRenderer.setReference(ref);
         auto starPaint = getStarPaint();
         if (starPaint) {
-            auto starFont = starPaint->getStarFont();
+            auto starFont = m_config->getStarFont();
             starPaint->scale(starFont, 1.5);
             auto infoTxt = haruRenderer.createText(starFont);
             infoTxt->setText(info);

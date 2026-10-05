@@ -123,9 +123,18 @@ protected:
     static constexpr auto FLIGHT_UPPER_LIMIT_M{12000.0};
     static constexpr auto LEGEND_SEGMENT_WIDTH{2};
     static constexpr auto LEGEND_HEIGHT{10};
+    static constexpr auto PLACE_NAME_RED{0.1}; // also used 4 flight legend
+    static constexpr auto PLACE_NAME_GREEN{0.1};
+    static constexpr auto PLACE_NAME_BLUE{0.1};
+    static constexpr auto FLIGHT_SHOW_LEGEND{true};
+    static constexpr auto FLIGHT_LINE_WIDTH{0.8};
+    static constexpr auto GEO_POINT_MARK_SIZE{3};
+    static constexpr auto GEO_SHAPE_RED{0.7}; // also used 4 flight legend
+    static constexpr auto GEO_SHAPE_GREEN{0.7};
+    static constexpr auto GEO_SHAPE_BLUE{0.7};
+    static constexpr auto GEO_SHAPE_LINE_WIDTH{0.6};
 private:
-    GeoCoordinate m_min;
-    GeoCoordinate m_max;
+    GeoBounds m_bounds;
     std::shared_ptr<GeoBitmap> m_imagePix;
     std::shared_ptr<GeoConversion> m_geoConversion;
     std::shared_ptr<GeoBitmap> m_weatherPix;

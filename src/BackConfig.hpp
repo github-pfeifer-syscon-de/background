@@ -54,6 +54,26 @@ public:
     int getDayEnd();
     void setDayEnd(int dayEnd);
 
+    Pango::FontDescription getStarFont();
+    void setStarFont(const Pango::FontDescription& descr);
+    Gdk::RGBA getStartColor();
+    void setStartColor(const Gdk::RGBA& startColor);
+    Gdk::RGBA getStopColor();
+    void setStopColor(const Gdk::RGBA& stopColor);
+    bool isShowMilkyway();
+    void setShowMilkyway(bool showMilkyway);
+    double getMessierVMagMin();
+    void setMessierVMagMin(double showMessier);
+
+
+    static constexpr auto SHOW_MILKYWAY_KEY{"showMilkyway"};
+    static constexpr auto START_COLOR_KEY{"startColor"};
+    static constexpr auto STOP_COLOR_KEY{"stopColor"};
+    static constexpr auto STAR_FONT_KEY{"starFont"};
+    static constexpr auto DEFAULT_STAR_FONT{"Sans 7"};
+    static constexpr auto MAIN_GRP{"main"};
+    static constexpr auto MESSIER_VMAGMIN_KEY{"messierVMagMin"};
+
 protected:
     std::string get_main_config_group() override;
 };

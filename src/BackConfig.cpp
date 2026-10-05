@@ -180,3 +180,67 @@ BackConfig::setDayEnd(int dayEnd)
 {
     setInteger(GeoPaint::GROUP_GEO, GeoPaint::KEY_DAYEND, dayEnd);
 }
+
+
+bool
+BackConfig::isShowMilkyway()
+{
+    return getBoolean(MAIN_GRP, SHOW_MILKYWAY_KEY, true);
+}
+
+void
+BackConfig::setShowMilkyway(bool showMilkyway)
+{
+    setBoolean(MAIN_GRP, SHOW_MILKYWAY_KEY, showMilkyway);
+}
+
+double
+BackConfig::getMessierVMagMin()
+{
+    return getDouble(MAIN_GRP, MESSIER_VMAGMIN_KEY, 5.0);
+}
+
+void
+BackConfig::setMessierVMagMin(double messierVmagMin)
+{
+    setDouble(MAIN_GRP, MESSIER_VMAGMIN_KEY, messierVmagMin);
+}
+
+Pango::FontDescription
+BackConfig::getStarFont()
+{
+    return getFont(MAIN_GRP, STAR_FONT_KEY, DEFAULT_STAR_FONT);
+}
+
+void
+BackConfig::setStarFont(const Pango::FontDescription& descr)
+{
+    setFont(MAIN_GRP, STAR_FONT_KEY, descr);
+}
+
+Gdk::RGBA
+BackConfig::getStartColor()
+{
+    Gdk::RGBA dfltStart{"rgb(6%,6%,15%)"};
+    return getColor(MAIN_GRP, START_COLOR_KEY, dfltStart);
+}
+
+void
+BackConfig::setStartColor(const Gdk::RGBA& startColor)
+{
+    setColor(MAIN_GRP, START_COLOR_KEY, startColor);
+}
+
+
+Gdk::RGBA
+BackConfig::getStopColor()
+{
+    Gdk::RGBA dfltStop{"rgb(10%,10%,20%)"};
+    return getColor(MAIN_GRP, STOP_COLOR_KEY, dfltStop);
+}
+
+void
+BackConfig::setStopColor(const Gdk::RGBA& stopColor)
+{
+    setColor(MAIN_GRP, STOP_COLOR_KEY, stopColor);
+}

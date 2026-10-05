@@ -69,14 +69,14 @@ void
 StarPaint::draw_messier(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
     renderer->save();
-    auto starDesc = getStarFont();
+    auto starDesc = m_config->getStarFont();
     auto text = renderer->createText(starDesc);
     //double width, height;
     auto messiers = m_messier->getMessiers();
-    const auto messierVMagMin = getMessierVMagMin();
+    const auto messierVMagMin = m_config->getMessierVMagMin();
     std::vector<NamedPoint> points;
     points.reserve(128);
-	for (auto& messier : messiers) {
+    for (auto& messier : messiers) {
 #       ifdef DEBUG
         std::cout << "StarPaint::draw_messier " << messier->getIdent() << std::endl;
 #       endif
@@ -123,7 +123,7 @@ StarPaint::draw_messier(Renderer* renderer, const JulianDate& jd, GeoPosition& g
 void
 StarPaint::draw_planets(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
-    auto starDesc = getStarFont();
+    auto starDesc = m_config->getStarFont();
     auto text = renderer->createText(starDesc);
     Planets planets;
     const auto planetRadius{layout.getMin() / PLANET_FACTOR};
@@ -244,7 +244,7 @@ StarPaint::draw_milkyway(Renderer* renderer, const JulianDate& jd, GeoPosition& 
         renderer->moveTo(p.getX(),p.getY()-w);
         renderer->lineTo(p.getX(),p.getY()+w);
         renderer->stroke();
-        auto starDesc = getStarFont();
+        auto starDesc = m_config->getStarFont();
         auto text = renderer->createText(starDesc);
         text->setText("Gal.cent.");
         renderer->showText(text, p.getX()+w, p.getY(), TextAlign::LeftTop);
@@ -294,7 +294,7 @@ StarPaint::getSunMoonRadius(const Layout& layout)
 void
 StarPaint::draw_constl(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos, const Layout& layout)
 {
-    auto starDesc = getStarFont();
+    auto starDesc = m_config->getStarFont();
     auto text = renderer->createText(starDesc);
     //double width, height;
     //text->setText("M");
@@ -357,8 +357,8 @@ StarPaint::drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos
     renderer->save();
     const double r = layout.getMin() / 2.0;
     auto grad = renderer->createRadialGradient((layout.getWidth()/2), (layout.getHeight()/2), r / 3.0, (layout.getWidth()/2), (layout.getHeight()/2), r);
-    auto startColor = getStartColor();
-    auto stopColor = getStopColor();
+    auto startColor = m_config->getStartColor();
+    auto stopColor = m_config->getStopColor();
     grad->addColorStop(0.0, startColor);
     grad->addColorStop(1.0, stopColor);
     renderer->setSource(grad);
@@ -368,7 +368,7 @@ StarPaint::drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos
                       , (layout.getYOffs() + layout.getHeight()/2));
     renderer->circle(0.0, 0.0, r);
     renderer->clip();    // as we draw some lines beyond the horizon
-    if (isShowMilkyway()) {
+    if (m_config->isShowMilkyway()) {
         draw_milkyway(renderer, jd, geoPos, layout);
     }
     draw_constl(renderer, jd, geoPos, layout);
@@ -380,7 +380,7 @@ StarPaint::drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos
 
     RenderColor gray(TEXT_GRAY, TEXT_GRAY, TEXT_GRAY);
     renderer->setSource(gray);
-    auto starFont = getStarFont();
+    auto starFont = m_config->getStarFont();
     scale(starFont, 1.75);
     auto text = renderer->createText(starFont);
     //double width, height;
@@ -395,71 +395,6 @@ StarPaint::drawSky(Renderer* renderer, const JulianDate& jd, GeoPosition& geoPos
     text->setText("W");
     renderer->showText(text, r1, 0.0, TextAlign::RightMid);
     renderer->restore();
-}
-
-
-
-bool
-StarPaint::isShowMilkyway()
-{
-    return m_config->getBoolean(MAIN_GRP, SHOW_MILKYWAY_KEY, true);
-}
-
-void
-StarPaint::setShowMilkyway(bool showMilkyway)
-{
-    m_config->setBoolean(MAIN_GRP, SHOW_MILKYWAY_KEY, showMilkyway);
-}
-
-double
-StarPaint::getMessierVMagMin()
-{
-    return m_config->getDouble(MAIN_GRP, MESSIER_VMAGMIN_KEY, 5.0);
-}
-
-void
-StarPaint::setMessierVMagMin(double messierVmagMin)
-{
-    m_config->setDouble(MAIN_GRP, MESSIER_VMAGMIN_KEY, messierVmagMin);
-}
-
-Pango::FontDescription
-StarPaint::getStarFont()
-{
-    return m_config->getFont(MAIN_GRP, STAR_FONT_KEY, DEFAULT_STAR_FONT);
-}
-
-void
-StarPaint::setStarFont(const Pango::FontDescription& descr)
-{
-    m_config->setFont(MAIN_GRP, STAR_FONT_KEY, descr);
-}
-
-Gdk::RGBA
-StarPaint::getStartColor()
-{
-    Gdk::RGBA dfltStart{"rgb(6%,6%,15%)"};
-    return m_config->getColor(MAIN_GRP, START_COLOR_KEY, dfltStart);
-}
-
-void
-StarPaint::setStartColor(const Gdk::RGBA& startColor)
-{
-    m_config->setColor(MAIN_GRP, START_COLOR_KEY, startColor);
-}
-
-
-Gdk::RGBA
-StarPaint::getStopColor()
-{
-    Gdk::RGBA dfltStop{"rgb(10%,10%,20%)"};
-    return m_config->getColor(MAIN_GRP, STOP_COLOR_KEY, dfltStop);
-}
-
-void
-StarPaint::setStopColor(const Gdk::RGBA& stopColor)
-{
-    m_config->setColor(MAIN_GRP, STOP_COLOR_KEY, stopColor);
 }
 
 void

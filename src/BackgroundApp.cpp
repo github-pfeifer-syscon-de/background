@@ -20,7 +20,6 @@
 #include <iomanip>
 #include <iostream>
 #include <exception>
-#include <KeyConfig.hpp>
 
 #include "background_config.h"
 #include "BackgroundApp.hpp"
@@ -71,7 +70,7 @@ BackgroundApp::BackgroundApp(int argc, char **argv)
     }
     m_config = StarWin::createConfig();
     if (!m_daemon) {
-        m_daemon = m_config->getBoolean(StarPaint::MAIN_GRP, DAEMON_KEY, false);
+        m_daemon = m_config->getBoolean(BackConfig::MAIN_GRP, DAEMON_KEY, false);
     }
 
     #ifdef DEBUG

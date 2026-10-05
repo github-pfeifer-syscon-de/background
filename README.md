@@ -149,6 +149,10 @@ display a reasonable outline of your country with e.g. states.
 > [!WARNING]  
 > no projection like mercator will be used
 
+The points variant is build for structures used by e.g.:
+
+https://www.quickmaptools.com/download-cities/germany
+
 #### Image
 
 By default a solarsystem-scope example is downloaded and added in settings

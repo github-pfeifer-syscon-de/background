@@ -190,8 +190,8 @@ GeoPaint::weather_image_notify(WeatherImageRequest& request)
         if (!m_weatherPix) {
             m_weatherPix = std::make_shared<GeoBitmap>();
             //std::cout << "Requested weather capabilites weatherPix " << std::endl;
-            m_weatherPix->setMinimum(m_min);
-            m_weatherPix->setMaximum(m_max);
+            m_weatherPix->setMinimum(m_bounds.getWestSouth());
+            m_weatherPix->setMaximum(m_bounds.getEastNorth());
         }
         psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
             return std::format("weather_image_notify bytes {} width {} height {}"
@@ -245,8 +245,8 @@ GeoPaint::request_weather_product()
     auto weatherProductId = m_config->getWeatherProductId();
     if (!weatherProductId.empty() && m_weatherService) {
         m_weatherRequested = true;
-        auto coordMin = m_geoConversion->fromDisplay(m_min);
-        auto coordMax = m_geoConversion->fromDisplay(m_max);
+        auto coordMin = m_geoConversion->fromDisplay(m_bounds.getWestSouth());
+        auto coordMax = m_geoConversion->fromDisplay(m_bounds.getEastNorth());
         auto product = m_weatherService->find_product(weatherProductId);
         auto webMapProd = std::dynamic_pointer_cast<WebMapProduct>(product);
         if (webMapProd) {
@@ -279,24 +279,29 @@ GeoPaint::request_weather_product()
 bool
 GeoPaint::findGeoMinMax()
 {
-    GeoCoordinate min{180.0,90.0, COORD_REF};
-    GeoCoordinate max{-180.0,-90.0, COORD_REF};
-    for (auto feature : m_geoPoints) { // also check points
-        findGeoMinMax(feature->getGeometry(), min, max);
+    m_bounds.setLimits(COORD_REF);
+    for (auto feature : m_geoPoints) {
+        auto geom = feature->getGeometry();
+        geom->updateBounds(m_bounds);
     }
     for (auto feature : m_geoVectors) {
-        findGeoMinMax(feature->getGeometry(), min, max);
+        auto geom = feature->getGeometry();
+        geom->updateBounds(m_bounds);
     }
-    GeoCoordinate coordExt (m_geoMargin, m_geoMargin, COORD_REF);
-    m_min = min.floor() - coordExt;
-    m_max = max.ceil() + coordExt;
-    auto diff = m_max - m_min;
+    GeoCoordinate coordExt(m_geoMargin, m_geoMargin, COORD_REF);
+    auto min = m_bounds.getWestSouth();
+    min = min.floor() - coordExt;
+    auto max = m_bounds.getEastNorth();
+    max = max.ceil() + coordExt;
+    auto diff = max - min;
     auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
-    m_max = m_min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaly
+    max = min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaly
     psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
         return std::format("findGeoMinMax min {} max {}"
-            , m_min.toString(), m_max.toString());;
+            , min.toString(), max.toString());;
     });
+    m_bounds.setWestSouth(min);
+    m_bounds.setEastNorth(max);
     return diff.getLatitude() > 0.0 && diff.getLongitude() > 0.0;
 }
 
@@ -338,7 +343,7 @@ GeoPaint::drawFeatures(
         ,  Cairo::RefPtr<Cairo::Context>& ctx
         , double fact)
 {
-    ctx->set_line_width(0.7);
+    ctx->set_line_width(GEO_SHAPE_LINE_WIDTH);
     ctx->set_antialias(Cairo::ANTIALIAS_DEFAULT);
     for (auto& feature : features) {
         auto geom = feature->getGeometry();
@@ -367,9 +372,6 @@ GeoPaint::drawGeometry(
     }
     auto segm = std::dynamic_pointer_cast<psc::geo::Segment>(geom);
     if (segm) {
-        double red{1.0};
-        double green{1.0};
-        double blue{1.0};
         //red += 0.1;
         //if (red > 1.0) {
         //    red = 0.5;
@@ -382,12 +384,12 @@ GeoPaint::drawGeometry(
         //        blue = 0.5;
         //    }
         //}
-        ctx->set_source_rgb(red, green, blue);
+        ctx->set_source_rgb(GEO_SHAPE_RED, GEO_SHAPE_GREEN, GEO_SHAPE_BLUE);
         bool firstInSegm{true};
         for (const auto& geoCoord : segm->getCoordinates()) {
             auto coord = m_geoConversion->toDisplay(geoCoord);
-            auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
-            auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
+            auto xDraw = (coord.getLongitude() - m_bounds.getWestSouth().getLongitude()) * fact;
+            auto yDraw = (m_bounds.getEastNorth().getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
             //std::cout << "x = " << x << " y = " << y
             //          << " xDraw = " << xDraw << " yDraw = " << yDraw << std::endl;
             if (firstInSegm) {
@@ -412,21 +414,25 @@ GeoPaint::drawGeometry(
             population = props->getInteger("population");
         }
         int64_t minPopulation = m_config->getPointsMinPopulation();
+        auto fontDesc = m_starWin->getConfig()->getStarFont();
+        auto pangoLayout = Pango::Layout::create(ctx);
+        pangoLayout->set_font_description(fontDesc);
         if (population >= minPopulation) {
-            ctx->set_source_rgb(0.2, 0.2, 0.8);
+            ctx->set_source_rgb(PLACE_NAME_RED, PLACE_NAME_GREEN, PLACE_NAME_BLUE);
             auto coord = m_geoConversion->toDisplay(pnt->getCoordinate());
-            auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
-            auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
-            Cairo::TextExtents ext;
-            ctx->get_text_extents(name, ext);
-            ctx->move_to(xDraw - 3, yDraw - 3);
-            ctx->line_to(xDraw + 3, yDraw + 3);
-            ctx->move_to(xDraw + 3, yDraw - 3);
-            ctx->line_to(xDraw - 3, yDraw + 3);
+            auto xDraw = (coord.getLongitude() - m_bounds.getWestSouth().getLongitude()) * fact;
+            auto yDraw = (m_bounds.getEastNorth().getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
+            ctx->move_to(xDraw - GEO_POINT_MARK_SIZE, yDraw - GEO_POINT_MARK_SIZE);
+            ctx->line_to(xDraw + GEO_POINT_MARK_SIZE, yDraw + GEO_POINT_MARK_SIZE);
+            ctx->move_to(xDraw + GEO_POINT_MARK_SIZE, yDraw - GEO_POINT_MARK_SIZE);
+            ctx->line_to(xDraw - GEO_POINT_MARK_SIZE, yDraw + GEO_POINT_MARK_SIZE);
             ctx->stroke();
             if (!name.empty()) {
-                ctx->move_to(xDraw - ext.width / 2.0, yDraw - ext.height);
-                ctx->show_text(name);
+                int iwidth{}, iheight{};
+                pangoLayout->set_text(name);
+                pangoLayout->get_pixel_size(iwidth, iheight);
+                ctx->move_to(xDraw - iwidth / 2.0, yDraw - iheight);
+                pangoLayout->show_in_cairo_context(ctx);
             }
         }
     }
@@ -440,7 +446,7 @@ GeoPaint::drawGeoImage(
       , int width, int height)
 {
     if (m_imagePix) {
-        auto coord = m_geoConversion->fromDisplay(m_min);
+        auto coord = m_geoConversion->fromDisplay(m_bounds.getWestSouth());
         auto target = m_imagePix->getSlice(coord, diff);
         auto scaled = target->scale_simple(width, height, Gdk::INTERP_BILINEAR);
         Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
@@ -560,13 +566,16 @@ GeoPaint::drawFlights(
         , double viewSize)
 {
     refresh_flight_service(false);
-    ctx->set_line_width(1.0);
+    ctx->set_line_width(FLIGHT_LINE_WIDTH);
+    auto fontDesc = m_starWin->getConfig()->getStarFont();
+    auto pangoLayout = Pango::Layout::create(ctx);
+    pangoLayout->set_font_description(fontDesc);
     ctx->set_antialias(Cairo::ANTIALIAS_DEFAULT);
     for (auto& flight : m_flights) {
         auto geoCoord = flight->getPosition();
         auto coord = m_geoConversion->toDisplay(geoCoord);
-        auto xDraw = (coord.getLongitude() - m_min.getLongitude()) * fact;
-        auto yDraw = (m_max.getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
+        auto xDraw = (coord.getLongitude() - m_bounds.getWestSouth().getLongitude()) * fact;
+        auto yDraw = (m_bounds.getEastNorth().getLatitude() - coord.getLatitude()) * fact;    //  invert y as graphic coords are from top
         double yTop{};
         if (flight->isOnGround()) {
             ctx->set_source_rgb(0.3, 0.3, 0.3);
@@ -585,37 +594,41 @@ GeoPaint::drawFlights(
             ctx->line_to(xDraw, yDraw - yTop);
             ctx->stroke();
         }
-        ctx->move_to(xDraw, yDraw - yTop);
         auto name = flight->getCallsign();
         if (name.empty()) {
             name = flight->getIcao24();
         }
-        ctx->show_text(name);
-        if (true) {    // disable if you don't like legends
-            auto legendX = (viewSize - (100.0 * LEGEND_SEGMENT_WIDTH)) / 2.0;
-            auto legendY = viewSize - 40;
-            for (int i = 0; i < 100; ++i) {
-                auto ratio = static_cast<double>(i) / 100.0;
-                auto color = gradient(ratio);
-                ctx->set_source_rgb(color.get_red(), color.get_green(), color.get_blue());
-                ctx->rectangle(legendX + (i * LEGEND_SEGMENT_WIDTH), legendY
-                    , LEGEND_SEGMENT_WIDTH, LEGEND_HEIGHT);
-                ctx->fill();
-            }
-            ctx->set_source_rgb(0.6, 0.6, 0.6);
-            Cairo::TextExtents extends;
-            for (int i = 0; i <= 100; i += 20) {
-                auto ratio = static_cast<double>(i) / 100.0;
-                int valX = static_cast<int>(legendX + (i * LEGEND_SEGMENT_WIDTH));
-                ctx->move_to(valX, legendY + LEGEND_HEIGHT);
-                ctx->line_to(valX, legendY);
-                ctx->stroke();
-                int height = static_cast<int>(ratio * FLIGHT_UPPER_LIMIT_M);
-                auto label = std::to_string(height) + "m";
-                ctx->get_text_extents(label, extends);
-                ctx->move_to(valX - (extends.width / 2), legendY - extends.height);
-                ctx->show_text(label);
-            }
+        pangoLayout->set_text(name);
+        int iwidth{}, iheight{};
+        pangoLayout->get_pixel_size(iwidth, iheight);
+        ctx->move_to(xDraw, yDraw - yTop - iheight);
+        pangoLayout->show_in_cairo_context(ctx);
+    }
+    if (FLIGHT_SHOW_LEGEND) {    // disable if you don't like legends
+        auto legendX = (viewSize - (100.0 * LEGEND_SEGMENT_WIDTH)) / 2.0;
+        auto legendY = viewSize - 40;
+        for (int i = 0; i < 100; ++i) {
+            auto ratio = static_cast<double>(i) / 100.0;
+            auto color = gradient(ratio);
+            ctx->set_source_rgb(color.get_red(), color.get_green(), color.get_blue());
+            ctx->rectangle(legendX + (i * LEGEND_SEGMENT_WIDTH), legendY
+                , LEGEND_SEGMENT_WIDTH, LEGEND_HEIGHT);
+            ctx->fill();
+        }
+        ctx->set_source_rgb(PLACE_NAME_RED, PLACE_NAME_GREEN, PLACE_NAME_BLUE);
+        for (int i = 0; i <= 100; i += 20) {
+            auto ratio = static_cast<double>(i) / 100.0;
+            int valX = static_cast<int>(legendX + (i * LEGEND_SEGMENT_WIDTH));
+            ctx->move_to(valX, legendY + LEGEND_HEIGHT);
+            ctx->line_to(valX, legendY);
+            ctx->stroke();
+            int height = static_cast<int>(ratio * FLIGHT_UPPER_LIMIT_M);
+            auto label = std::to_string(height) + "m";
+            pangoLayout->set_text(label);
+            int iwidth{}, iheight{};
+            pangoLayout->get_pixel_size(iwidth, iheight);
+            ctx->move_to(valX - (iwidth / 2), legendY - iheight);
+            pangoLayout->show_in_cairo_context(ctx);
         }
     }
 }
@@ -634,7 +647,7 @@ GeoPaint::drawImage(
     ctx->set_source_rgb(0.1, 0.1,  0.1);
     ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
     ctx->fill();
-    auto diff = m_max - m_min;
+    auto diff = m_bounds.getEastNorth() - m_bounds.getWestSouth();
     if (std::abs(diff.getLongitude()) < 0.001
       ||std::abs(diff.getLatitude()) < 0.001) {
         return;
