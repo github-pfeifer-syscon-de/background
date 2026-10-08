@@ -20,8 +20,7 @@
 #include <gtkmm.h>
 #include <psc_i18n.hpp>
 #include <KeyfileTableManager.hpp>
-
-#include <Flight.hpp>
+#include <Flights.hpp>
 
 class StarWin;
 class Flights;
@@ -123,7 +122,5 @@ private:
     Glib::RefPtr<Gtk::ListStore> m_store;
     Glib::RefPtr<Gtk::TreeView> m_list;
     std::shared_ptr<psc::ui::KeyfileTableManager> m_kfTableManager;
-    sigc::connection m_timer;
     std::shared_ptr<Flights> m_flightsService;
-    std::chrono::seconds m_savedUpdate;
 };

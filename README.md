@@ -135,7 +135,7 @@ otherwise use:
 
 ### Daylight/Geo view
 
-To show a alternative picture for daylight 6-18h
+To show a alternative picture for daylight 
 use the Geo.json section in preferences. 
 The File defines the viewed bounds with some rounding & addition.
 A partial .kml File support was added...

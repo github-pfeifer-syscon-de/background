@@ -37,19 +37,27 @@ consteval double operator ""_AU(const long double dist)
 //    return static_cast<double>(dist);
 //}
 
-template<typename T, size_t N>
+template<typename T, T... args>
 struct LinGradient {
-    const std::array<T, N> m_stops;
-    static_assert(N > 0 && N % 2 == 0, "expecting a even number of values to be used as pairs");
-    // like to do this as compile-time check but get stuck @runtime
-    static constexpr bool is_ascending(std::initializer_list<T> values) {
-        for (size_t i = 2; i < values.size(); i+=2) {
-            if (values[i-2] - values[i] == 0.0) {
-                return false;
-            }
-        }
+    const std::array<T, sizeof...(args)> m_stops{args...};
+    static_assert(sizeof...(args) > 0 && sizeof...(args) % 2 == 0, "expecting a even number of values to be used as pairs");
+    template<typename U>
+    static constexpr bool is_ascending(U prev) {
         return true;
     }
+    template<typename U, typename...rem>
+    static constexpr bool is_ascending(U prev, U arg, rem...argse) {
+        if (sizeof...(argse) % 2 == 1) {
+            if (arg - prev <= 0.0
+             || arg < 0.0
+             || arg > 1.0) {
+                return false;
+            }
+            return is_ascending(arg, argse...);
+        }
+        return is_ascending(prev, argse...);
+    }
+    static_assert(is_ascending(-0.0000001, args...), "expecting ascending stop source values in range 0..1");
     T intrapolate(T value)
     {
         for (size_t i = 0; i < m_stops.size(); i+=2) {
@@ -58,11 +66,11 @@ struct LinGradient {
                     return m_stops[1];
                 }
                 T diff = (m_stops[i] - m_stops[i-2]);
-                if (diff == 0.0) {  // ignore entries with zero distance ... avoid div by zero
-                    std::cout << std::format("expecting ascending stop source values, but {}[{}] and {}[{}] match -> ignoring",
-                        m_stops[i-2], i-2, m_stops[i], i) << std::endl;
-                    continue;
-                }
+                //if (diff <= 0.0) {  // ignore entries with zero distance ... avoid div by zero
+                //    std::cout << std::format("expecting ascending stop source values, but {}[{}] and {}[{}] match -> ignoring",
+                //        m_stops[i-2], i-2, m_stops[i], i) << std::endl;
+                //    continue;
+                //}
                 T step = (value - m_stops[i-2]) / diff;
                 return std::lerp(m_stops[i-1], m_stops[i+1], step);
             }

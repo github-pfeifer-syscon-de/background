@@ -19,12 +19,11 @@
 
 #include <Flight.hpp>
 
+#include "FlightsDlg.hpp"
 #include "Math.hpp"
 #include "GeoPaint.hpp"
 #include "BackgroundApp.hpp"
 #include "StarWin.hpp"
-#include "FlightsDlg.hpp"
-
 #include "BackConfig.hpp"
 
 FlightsDlg::FlightsDlg(
@@ -50,12 +49,7 @@ FlightsDlg::FlightsDlg(
     if (m_flightsService) {
         m_flightsService->addListener(this);
         // with dialog increase the update rade
-        m_savedUpdate = m_flightsService->getUpdateInterval();
-        m_flightsService->setUpdateInterval(UPDATE_RATE);
         refresh();
-        m_timer = Glib::signal_timeout().connect_seconds(
-                sigc::mem_fun(*this, &FlightsDlg::refresh)
-                , UPDATE_RATE.count());
     }
     else {
         m_starWin->showMessage(_("No flight service found, check config."));
@@ -66,15 +60,11 @@ void
 FlightsDlg::on_response(int response_id)
 {
     // signal-hide does not work for this as the dialog will be hidden and we wont get a usable size
-    if (m_timer.connected()) {
-        m_timer.disconnect(); // No more updating
-    }
     if (m_flightsService) {
-        m_flightsService->setUpdateInterval(m_savedUpdate);
         m_flightsService->removeListener(this);
     }
     if (response_id == Gtk::RESPONSE_OK) {
-        m_kfTableManager->saveConfig(this);
+        m_kfTableManager->saveConfig(this);     // to save changed table layout
         m_starWin->saveConfig();
     }
 }

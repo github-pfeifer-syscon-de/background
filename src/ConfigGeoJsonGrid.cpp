@@ -190,7 +190,7 @@ ConfigGeoJsonGrid::borderChanged()
     double margin = m_spinGeoMargin->get_value();
     auto config = std::dynamic_pointer_cast<BackConfig>(m_sphereView->get_config());
     auto geoPaint = dynamic_cast<GeoPaint*>(m_sphereView);
+    config->setGeoMargin(margin);
     geoPaint->setGeoMargin(margin);
     geoPaint->refresh();
-    config->setGeoMargin(margin);
 }

@@ -85,11 +85,17 @@ public:
     void updateFlights();
     bool setGeoPointsFile(const std::string& geoPointsFile);
     Gdk::RGBA heightToColor(double height_m);
-    inline static LinGradient<double,6> gradientRed{0.0, 1.0, 0.5, 0.0, 1.0, 0.5};
-    inline static LinGradient<double,4> gradientGreen{0.25, 1.0, 0.75, 0.0};
-    inline static LinGradient<double,4> gradientBlue{0.25, 0.0, 0.75, 1.0};
+    void resetFeatures(bool refresh = false);
+    void setFeature(const Glib::ustring& feature);
+    inline static LinGradient<double, 0.0, 1.0, 0.5, 0.0, 1.0, 0.5> gradientRed;
+    inline static LinGradient<double, 0.25, 1.0, 0.75, 0.0> gradientGreen;
+    inline static LinGradient<double, 0.25, 0.0, 0.75, 1.0> gradientBlue;
+    inline static auto MIN_COORD_DIFF{0.001};
 protected:
-    bool findGeoMinMax();
+    bool findGeoMinMax(bool addBorder = true);
+    bool isEmpty(const GeoCoordinate& coord);
+    Glib::ustring getName(psc::geo::PtrFeature& feat);
+    Glib::ustring getRegion(psc::geo::PtrFeature& feat);
     void findGeoMinMax(const psc::geo::PtrGeometry& geom, GeoCoordinate& min, GeoCoordinate& max);
     void request_weather_product();
     void drawGeoImage(
@@ -119,6 +125,7 @@ protected:
     std::vector<psc::geo::PtrFeature> loadGeoFile(
         const std::string& geoPointsFile
         , const std::string&);
+    double m2feet(double m);
 
     static constexpr auto FLIGHT_UPPER_LIMIT_M{12000.0};
     static constexpr auto LEGEND_SEGMENT_WIDTH{2};
@@ -141,7 +148,6 @@ private:
     std::shared_ptr<Weather> m_weatherService;
     bool m_weatherRequested{};
     double m_weatherTransparence;
-    double m_geoMargin{};
     std::shared_ptr<Flights> m_flightService;
     std::vector<PtrFlight> m_flights;
     std::vector<psc::geo::PtrFeature> m_geoVectors;

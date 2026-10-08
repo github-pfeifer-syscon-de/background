@@ -18,7 +18,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <iostream>
 #include <exception>
 
 #include "background_config.h"
@@ -127,7 +126,6 @@ BackgroundApp::on_activate()
         imageView->set_keep_below(true);
     }
     imageView->show_all();
-
 }
 
 #pragma GCC diagnostic push
@@ -212,22 +210,31 @@ BackgroundApp::on_startup()
     set_accel_for_action("app.quit", "<Ctrl>Q");
 
     if (isDaemon()) {
-        auto refBuilder = Gtk::Builder::create();
+        m_menuBuilder = Gtk::Builder::create();
         try {
-            refBuilder->add_from_resource(get_resource_base_path() + "/app-menu.ui");
-            auto object = refBuilder->get_object("appmenu");
+            m_menuBuilder->add_from_resource(get_resource_base_path() + "/app-menu.ui");
+            auto object = m_menuBuilder->get_object("appmenu");
             auto app_menu = Glib::RefPtr<Gio::MenuModel>::cast_dynamic(object);
-            if (app_menu)
-                set_app_menu(app_menu);
-            else
+            if (app_menu) {
+                set_menubar(app_menu);
+            }
+            else {
                 std::cerr << "BackgroundApp::on_startup(): No \"appmenu\" object in app_menu.ui"
                     << std::endl;
+            }
         }
         catch (const Glib::Error& ex) {
             std::cerr << "BackgroundApp::on_startup(): " << ex.what() << std::endl;
         }
     }
 }
+
+Glib::RefPtr<Gtk::Builder>
+BackgroundApp::get_menu_builder()
+{
+    return m_menuBuilder;
+}
+
 
 int main(int argc, char** argv)
 {

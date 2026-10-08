@@ -68,7 +68,6 @@ public:
 protected:
     StarWin* getOrCreateStarWindow();
     StarWin* createStarWindow();
-
 private:
     StarWin* m_starAppWindow{nullptr};
     Glib::StdStringView m_exec;
@@ -76,4 +75,5 @@ private:
     std::shared_ptr<BackConfig> m_config;
     void on_action_quit();
     void on_action_help();
+    Glib::RefPtr<Gtk::Builder> m_menuBuilder;
 };

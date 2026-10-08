@@ -90,10 +90,13 @@ public:
     std::shared_ptr<ModulePaint> getModulePaint() {
         return m_modulePaint;
     }
+    void setFeatures(const std::vector<Glib::ustring>& feats);
+    void on_menu_feature(const Glib::ustring& value);
 protected:
     std::string getGlobeConfigName();
     void on_menu_time();
     void on_menu_flights();
+    void on_menu_resetFeatures();
     void setupConfig();
     bool updatePeriodic();
     void updateTimer();
@@ -120,7 +123,7 @@ protected:
     static constexpr auto LATITUDE_KEY{"lat"};
     static constexpr auto LONGITUDE_KEY{"lon"};
     static constexpr auto LOG_LEVEL{"logLevel"};
-
+    static constexpr auto FEATURE_ACTION_NAME{"win.feature"};
 private:
     StarDraw* m_drawingArea{nullptr};
     std::shared_ptr<FileLoader> m_fileLoader;
@@ -145,6 +148,5 @@ private:
     std::shared_ptr<AppMenu> m_appMenu;
 #   endif
     std::shared_ptr<ModulePaint> m_modulePaint;
-
 };
 

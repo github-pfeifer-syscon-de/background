@@ -69,6 +69,9 @@ StarWin::StarWin(BaseObjectType* cobject
         add_action("preferences", sigc::mem_fun(*this, &StarWin::onMenuConfig));
         add_action("time", sigc::mem_fun(*this, &StarWin::on_menu_time));
         add_action("flights", sigc::mem_fun(*this, &StarWin::on_menu_flights));
+        add_action("resetFeatures", sigc::mem_fun(*this, &StarWin::on_menu_resetFeatures));
+        add_action_radio_string("feature", sigc::mem_fun(*this, &StarWin::on_menu_feature), "");
+
 #       ifdef USE_PDF
         add_action("export", sigc::mem_fun(*this, &StarWin::exportPdf));
 #       endif
@@ -234,6 +237,18 @@ StarWin::on_menu_flights()
 }
 
 void
+StarWin::on_menu_resetFeatures()
+{
+    getGeoPaint()->resetFeatures(true);
+}
+
+void
+StarWin::on_menu_feature(const Glib::ustring& feature)
+{
+    getGeoPaint()->setFeature(feature);
+}
+
+void
 StarWin::on_menu_time()
 {
     m_updateBlocked = true;
@@ -376,6 +391,21 @@ StarWin::drawAll(Cairo::RefPtr<Cairo::Context>& ctx, Glib::DateTime now, GeoPosi
     m_modulePaint->drawModules(ctx, layout);
 }
 
+void
+StarWin::setFeatures(const std::vector<Glib::ustring>& feats)
+{
+    auto refBuilder = m_backAppl->get_menu_builder();
+    auto featureObj = refBuilder->get_object("features");
+    auto featureMenu = Glib::RefPtr<Gio::Menu>::cast_dynamic(featureObj);
+    if (featureMenu) {
+        featureMenu->remove_all();
+        for (const auto& feat : feats) {
+            Glib::RefPtr<Gio::MenuItem> item = Gio::MenuItem::create(feat, FEATURE_ACTION_NAME);
+            item->set_action_and_target(FEATURE_ACTION_NAME, Glib::Variant<Glib::ustring>::create(feat));
+            featureMenu->append_item(item);
+        }
+    }
+}
 
 void
 StarWin::update(Glib::DateTime now, GeoPosition& pos)

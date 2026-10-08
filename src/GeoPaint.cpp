@@ -31,12 +31,9 @@
 GeoPaint::GeoPaint(StarWin* starWin)
 : BackPaint(starWin)
 , m_geoConversion{std::make_shared<GeoConvLinear>()}
-, m_geoMargin{m_config->getGeoMargin()}
+, m_weatherPix{std::make_shared<GeoBitmap>()}
 {
-    auto geoJson = m_config->getGeoJsonFile();
-    setGeoJsonFile(geoJson);
-    auto geoPointJson = m_config->getGeoPointsFile();
-    setGeoPointsFile(geoPointJson);
+    resetFeatures();
     auto image = m_config->getImageFile();
     if (image.empty()) {    // set some default
         image = Glib::canonicalize_filename(DEFAULT_IMAGE , PACKAGE_DATA_DIR);
@@ -154,6 +151,12 @@ GeoPaint::loadGeoFile(const std::string& geoPointsFile, const std::string& ctx)
     return geoFeatures;
 }
 
+double
+GeoPaint::m2feet(double m)
+{
+    return m / 0.3048;
+}
+
 bool
 GeoPaint::setImage(const std::string& image)
 {
@@ -177,7 +180,6 @@ GeoPaint::setImage(const std::string& image)
 
 void GeoPaint::setGeoMargin(double geoMargin)
 {
-    m_geoMargin = geoMargin;
     findGeoMinMax();    // this will just scale geo-display, weather will be updated on next refresh...
 }
 
@@ -187,12 +189,6 @@ GeoPaint::weather_image_notify(WeatherImageRequest& request)
     auto requestPixbuf = request.get_pixbuf();
     m_weatherRequested = false;
     if (requestPixbuf) {
-        if (!m_weatherPix) {
-            m_weatherPix = std::make_shared<GeoBitmap>();
-            //std::cout << "Requested weather capabilites weatherPix " << std::endl;
-            m_weatherPix->setMinimum(m_bounds.getWestSouth());
-            m_weatherPix->setMaximum(m_bounds.getEastNorth());
-        }
         psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
             return std::format("weather_image_notify bytes {} width {} height {}"
                 , requestPixbuf->get_byte_length(), requestPixbuf->get_width(), requestPixbuf->get_height());;
@@ -242,6 +238,9 @@ GeoPaint::request_weather_product()
     //});
     //m_weather_pix->fill(0x0);    // indicate something is going on by setting transp. black
     //update_weather_tex();
+    //std::cout << "Requested weather capabilites weatherPix " << std::endl;
+    m_weatherPix->setMinimum(m_bounds.getWestSouth());  // use right size for pict
+    m_weatherPix->setMaximum(m_bounds.getEastNorth());
     auto weatherProductId = m_config->getWeatherProductId();
     if (!weatherProductId.empty() && m_weatherService) {
         m_weatherRequested = true;
@@ -277,32 +276,91 @@ GeoPaint::request_weather_product()
 }
 
 bool
-GeoPaint::findGeoMinMax()
+GeoPaint::isEmpty(const GeoCoordinate& diff)
+{
+    return std::abs(diff.getLongitude()) < MIN_COORD_DIFF
+      ||std::abs(diff.getLatitude()) < MIN_COORD_DIFF;
+}
+
+Glib::ustring
+GeoPaint::getName(psc::geo::PtrFeature& feat)
+{
+    auto props = feat->getProperties();
+    auto name = props->getString("name");
+    if (name.empty()) {
+        name = props->getString("shapeName");
+    }
+    return name;
+}
+
+Glib::ustring
+GeoPaint::getRegion(psc::geo::PtrFeature& feat)
+{
+    auto props = feat->getProperties();
+    auto region = props->getString("region");
+    if (region.empty()) {
+        region = props->getString("shapeName");
+    }
+    return region;
+}
+
+bool
+GeoPaint::findGeoMinMax(bool addBorder)
 {
     m_bounds.setLimits(COORD_REF);
-    for (auto feature : m_geoPoints) {
+    std::vector<Glib::ustring> features;
+    features.reserve(32);
+    for (auto& feature : m_geoPoints) {
         auto geom = feature->getGeometry();
-        geom->updateBounds(m_bounds);
+        GeoBounds bound;
+        bound.setLimits();
+        geom->updateBounds(bound);
+        m_bounds.update(bound);
+        auto diff = bound.getDifference();
+        if (!isEmpty(diff)) {
+            features.push_back(getName(feature));
+        }
     }
     for (auto feature : m_geoVectors) {
         auto geom = feature->getGeometry();
-        geom->updateBounds(m_bounds);
+        GeoBounds bound;
+        bound.setLimits();
+        geom->updateBounds(bound);
+        m_bounds.update(bound);
+        auto diff = bound.getDifference();
+        if (!isEmpty(diff)) {
+            features.push_back(getName(feature));
+        }
     }
-    GeoCoordinate coordExt(m_geoMargin, m_geoMargin, COORD_REF);
-    auto min = m_bounds.getWestSouth();
-    min = min.floor() - coordExt;
-    auto max = m_bounds.getEastNorth();
-    max = max.ceil() + coordExt;
-    auto diff = max - min;
-    auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
-    max = min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaly
+    m_starWin->setFeatures(features);
+    GeoCoordinate diff, min, max;
+    if (addBorder) {    // full view mode
+        auto geoMargin = m_config->getGeoMargin();
+        GeoCoordinate coordExt(geoMargin, geoMargin, COORD_REF);
+        min = m_bounds.getWestSouth();
+        min = min.floor();
+        max = m_bounds.getEastNorth();
+        max = max.ceil();
+        min = min - coordExt;
+        max = max + coordExt;
+        diff = max - min;
+        auto shortest = std::min(diff.getLongitude(), diff.getLatitude());
+        max = min + GeoCoordinate(shortest, shortest, COORD_REF);   // shape long/lat equaly
+    }
+    else {
+        auto geoMargin = m_config->getGeoMargin();
+        GeoCoordinate coordExt(geoMargin / 10.0, geoMargin / 10.0, COORD_REF);  // use smaller margin
+        min = m_bounds.getWestSouth() - coordExt;
+        max = m_bounds.getEastNorth() + coordExt;
+        diff = max - min;
+    }
     psc::log::Log::logAdd(psc::log::Level::Debug, [&] {
         return std::format("findGeoMinMax min {} max {}"
             , min.toString(), max.toString());;
     });
     m_bounds.setWestSouth(min);
     m_bounds.setEastNorth(max);
-    return diff.getLatitude() > 0.0 && diff.getLongitude() > 0.0;
+    return !isEmpty(diff);
 }
 
 #pragma GCC diagnostic push
@@ -470,7 +528,7 @@ GeoPaint::drawWeather(
             }
         }
     }
-    if (m_weatherPix) {
+    if (m_weatherPix->getPixmap()) {
         // as this was rquested with the correct coords can use directly (but need to scale as we used a fixed request size)
         auto scaled = m_weatherPix->getPixmap()->scale_simple(width, height, Gdk::INTERP_BILINEAR);
         Gdk::Cairo::set_source_pixbuf(ctx, scaled, 0, 0);
@@ -514,6 +572,49 @@ GeoPaint::heightToColor(double height_m)
     return gradient(ratio);
 }
 
+void
+GeoPaint::resetFeatures(bool refreshView)
+{
+    auto geoJson = m_config->getGeoJsonFile();
+    setGeoJsonFile(geoJson);
+    auto geoPointJson = m_config->getGeoPointsFile();
+    setGeoPointsFile(geoPointJson);
+    if (refreshView) {
+        findGeoMinMax(true);
+        request_weather_product();
+        refresh();
+    }
+}
+
+void
+GeoPaint::setFeature(const Glib::ustring& featureName)
+{
+    for (auto iter = m_geoPoints.begin(); iter != m_geoPoints.end(); ) {
+        auto feature = *iter;
+        auto name = getName(feature);
+        auto region = getRegion(feature);
+        if (featureName != name && featureName != region) {
+            iter = m_geoPoints.erase(iter);
+        }
+        else {
+            ++iter;
+        }
+    }
+    for (auto iter = m_geoVectors.begin(); iter != m_geoVectors.end(); ) {
+        auto feature = *iter;
+        auto name = getName(feature);
+        auto region = getRegion(feature);
+        if (featureName != name && featureName != region) {
+            iter = m_geoVectors.erase(iter);
+        }
+        else {
+            ++iter;
+        }
+    }
+    findGeoMinMax(false);
+    request_weather_product();
+    refresh();
+}
 
 void
 GeoPaint::refresh_flight_service(bool force)
@@ -622,12 +723,21 @@ GeoPaint::drawFlights(
             ctx->move_to(valX, legendY + LEGEND_HEIGHT);
             ctx->line_to(valX, legendY);
             ctx->stroke();
-            int height = static_cast<int>(ratio * FLIGHT_UPPER_LIMIT_M);
-            auto label = std::to_string(height) + "m";
+
+            auto heightM = ratio * FLIGHT_UPPER_LIMIT_M;
+            int iheightM = static_cast<int>(heightM);
+            auto label = std::to_string(iheightM) + "m";
             pangoLayout->set_text(label);
             int iwidth{}, iheight{};
             pangoLayout->get_pixel_size(iwidth, iheight);
             ctx->move_to(valX - (iwidth / 2), legendY - iheight);
+            pangoLayout->show_in_cairo_context(ctx);
+
+            int feet = static_cast<int>(m2feet(heightM));
+            label = std::to_string(feet) + "ft";
+            pangoLayout->set_text(label);
+            pangoLayout->get_pixel_size(iwidth, iheight);
+            ctx->move_to(valX - (iwidth / 2), legendY + LEGEND_HEIGHT + 3);
             pangoLayout->show_in_cairo_context(ctx);
         }
     }
@@ -648,8 +758,7 @@ GeoPaint::drawImage(
     ctx->rectangle(0, 0, layout.getWidth(), layout.getHeight());
     ctx->fill();
     auto diff = m_bounds.getEastNorth() - m_bounds.getWestSouth();
-    if (std::abs(diff.getLongitude()) < 0.001
-      ||std::abs(diff.getLatitude()) < 0.001) {
+    if (isEmpty(diff)) {
         return;
     }
     ctx->translate((layout.getWidth() - min) / 2, (layout.getHeight() - min) / 2);
