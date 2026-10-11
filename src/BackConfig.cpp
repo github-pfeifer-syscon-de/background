@@ -94,6 +94,20 @@ BackConfig::setGeoMargin(double geoMargin)
     return setDouble(GeoPaint::GROUP_GEO, GeoPaint::KEY_GEO_MARGIN, geoMargin);
 }
 
+Glib::ArrayHandle<Glib::ustring>
+BackConfig::getGeoSearchFields()
+{
+
+    return getStringList(GeoPaint::GROUP_GEO, GeoPaint::KEY_SEARCH_FIELDS);
+}
+
+void
+BackConfig::setGeoSearchFields(const std::vector<Glib::ustring>& searchFields)
+{
+    return setStringList(GeoPaint::GROUP_GEO, GeoPaint::KEY_SEARCH_FIELDS, searchFields);
+}
+
+
 Glib::ustring
 BackConfig::getFlightService()
 {

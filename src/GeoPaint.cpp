@@ -285,23 +285,24 @@ GeoPaint::isEmpty(const GeoCoordinate& diff)
 Glib::ustring
 GeoPaint::getName(psc::geo::PtrFeature& feat)
 {
-    auto props = feat->getProperties();
-    auto name = props->getString("name");
-    if (name.empty()) {
-        name = props->getString("shapeName");
+    auto arrFlds = m_config->getGeoSearchFields();
+    std::vector<Glib::ustring> flds = arrFlds;
+    if (flds.empty()) {
+        flds.reserve(4);
+        flds.emplace_back("name");
+        flds.emplace_back("shapeName");
+        flds.emplace_back("region");
+        m_config->setGeoSearchFields(flds);
+        save_config();
     }
-    return name;
-}
-
-Glib::ustring
-GeoPaint::getRegion(psc::geo::PtrFeature& feat)
-{
     auto props = feat->getProperties();
-    auto region = props->getString("region");
-    if (region.empty()) {
-        region = props->getString("shapeName");
+    for (const auto& fld : flds) {
+    auto name = props->getString(fld);
+        if (!name.empty()) {
+            return name;
+        }
     }
-    return region;
+    return "";
 }
 
 bool
@@ -592,8 +593,7 @@ GeoPaint::setFeature(const Glib::ustring& featureName)
     for (auto iter = m_geoPoints.begin(); iter != m_geoPoints.end(); ) {
         auto feature = *iter;
         auto name = getName(feature);
-        auto region = getRegion(feature);
-        if (featureName != name && featureName != region) {
+        if (featureName != name) {
             iter = m_geoPoints.erase(iter);
         }
         else {
@@ -603,8 +603,7 @@ GeoPaint::setFeature(const Glib::ustring& featureName)
     for (auto iter = m_geoVectors.begin(); iter != m_geoVectors.end(); ) {
         auto feature = *iter;
         auto name = getName(feature);
-        auto region = getRegion(feature);
-        if (featureName != name && featureName != region) {
+        if (featureName != name) {
             iter = m_geoVectors.erase(iter);
         }
         else {

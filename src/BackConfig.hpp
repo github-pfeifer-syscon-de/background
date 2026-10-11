@@ -38,6 +38,8 @@ public:
     void setImageFile(const std::string& imageFile);
     double getGeoMargin();
     void setGeoMargin(double geoMargin);
+    Glib::ArrayHandle<Glib::ustring>  getGeoSearchFields();
+    void setGeoSearchFields(const std::vector<Glib::ustring>& searchFields);
 
     Glib::ustring getFlightService();
     void setFlightService(const Glib::ustring& service);

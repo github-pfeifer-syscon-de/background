@@ -30,11 +30,18 @@ foreach ccflag : compiler_add_flags
 endforeach
 
 libharu_deps = declare_dependency(dependencies : cc.find_library('hpdf', required: false))
+# if you want to use test/gn250_conv to convert gn250 coordinates to geo.json
+#  see https://proj.org/en/stable/about.html for infos about geo coordinate conversion
+projGeo_deps = declare_dependency(dependencies : cc.find_library('proj', required: false))
+# this was added as an option to convert dbf to sqllite again just an option
+sqllite_deps = declare_dependency(dependencies : cc.find_library('sqllite3', required: false))
 
 conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())     # Surround the version in quotes to make it a C string
 conf.set       ('USE_PYTHON', get_option('python'))
 conf.set       ('USE_PDF', libharu_deps.found())
+conf.set       ('USE_PROJ_GEO', projGeo_deps.found())
+conf.set       ('USE_SQLLITE', sqllite_deps.found())
 confFile = configure_file(output : meson.project_name() + '_config.h'
                , configuration : conf)
 conf_include = include_directories(fs.parent(confFile))
@@ -59,6 +66,8 @@ deps = [
     , geodata_deps
     , python_deps
     , win_deps
+    , projGeo_deps
+    , sqllite_deps
     ]
 subdir('src')
 subdir('test')

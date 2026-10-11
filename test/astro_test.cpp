@@ -21,6 +21,7 @@
 #include <cmath>
 #include <StringUtils.hpp>
 #include <format>
+
 #include "JulianDate.hpp"
 #include "GeoPosition.hpp"
 #include "RaDec.hpp"
@@ -389,8 +390,6 @@ test_dbus_xfconf()
  */
 int main(int argc, char** argv)
 {
-    //std::locale::global(std::locale("de_DE.ISO-8859-15@euro"));
-    //std::cout << "Loc " << std::setlocale(LC_ALL, nullptr) << std::endl;
     std::setlocale(LC_ALL, "");      // make locale dependent, and make glib accept u8 const !!!
     Gio::init();
     if (!test_azAlt()) {

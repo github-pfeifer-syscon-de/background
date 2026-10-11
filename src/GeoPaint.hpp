@@ -55,6 +55,7 @@ public:
     static constexpr auto DEFAULT_IMAGE{"2k_earth_daymap.jpg"};
     static constexpr auto SRC_DIR{"src"};
     static constexpr auto KEY_GEO_MARGIN{"geoMargin"};
+    static constexpr auto KEY_SEARCH_FIELDS{"searchFields"};
     static constexpr auto KEY_DAYSTART{"dayStart"};
     static constexpr auto KEY_DAYEND{"dayEnd"};
     static constexpr auto GROUP_FLIGHTS{"flights"};
@@ -95,7 +96,6 @@ protected:
     bool findGeoMinMax(bool addBorder = true);
     bool isEmpty(const GeoCoordinate& coord);
     Glib::ustring getName(psc::geo::PtrFeature& feat);
-    Glib::ustring getRegion(psc::geo::PtrFeature& feat);
     void findGeoMinMax(const psc::geo::PtrGeometry& geom, GeoCoordinate& min, GeoCoordinate& max);
     void request_weather_product();
     void drawGeoImage(
