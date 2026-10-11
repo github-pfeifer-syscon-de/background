@@ -18,11 +18,12 @@ astro_test = executable('astro_test'
 test('astro_test', astro_test)
 
 # test for converting offical german location data
-#   in utm to wgs
-#   dowloadable from
+#   in utm to wgs, the optional dependency proj is required to make this work
+#   dowload dbf-data-variant from
 #    https://gdz.bkg.bund.de/index.php/default/inspire-wfs-geographical-names-gn250-wfs-gn250-inspire.html
 #   the directory that contains GN250_p.dbf should be used as parameter when starting gn250_conf
 #   see gn250_conv sources, you may vary the selection to your taste
+#     the output gn250.geo.json will be placed in the current directory
 if projGeo_deps.found()
 geo_test_srcs = files(
     'dbf.c'
@@ -33,8 +34,8 @@ geo_test_srcs = files(
 )
 
 dbf_test = executable('dbf_test'
-                        , geo_test_srcs
-                        , dependencies        : deps
-                        , include_directories : test_incl_dir
+    , geo_test_srcs
+    , dependencies        : deps
+    , include_directories : test_incl_dir
 )
 endif

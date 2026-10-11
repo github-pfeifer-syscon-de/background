@@ -183,4 +183,4 @@ private:
     int m_recordCount;
 };
 
-static constexpr auto MIN_POPULATION_EXPORT_GEO_JSON{1000.0};
+static constexpr auto MIN_POPULATION_EXPORT_GEO_JSON{10000.0};
