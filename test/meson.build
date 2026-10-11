@@ -33,7 +33,7 @@ geo_test_srcs = files(
   , 'gn250_conv.cpp'
 )
 
-dbf_test = executable('dbf_test'
+dbf_test = executable('gn250_conv'
     , geo_test_srcs
     , dependencies        : deps
     , include_directories : test_incl_dir
