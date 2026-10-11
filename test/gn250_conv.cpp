@@ -206,8 +206,6 @@ read_dbf(const std::string& dir)
              std::cout << std::format("{} {} ags {}\n   utm {:.3f} {:.3f}\n   geo {:.5f} {:.5f}\n   popul. {:.0f} "
                   , oba, name, ags, dRe,dHo,c.v[0],c.v[1], ewz) << std::endl;
              auto feature = std::make_shared<psc::json::JsonObj>();
-             // need to ref to keep refcount. as set_array_member "takes" the reference, crashes without
-             auto refObj = json_object_ref(feature->getObj());
              features->add(feature);
              feature->set("type", "Feature");
              auto geometry = feature->createObj("geometry");
