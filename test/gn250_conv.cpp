@@ -24,6 +24,8 @@
 #include <fstream>
 #include <GeoCoordinate.hpp>
 #include <JsonObj.hpp>
+#include <JsonHelper.hpp>
+#include <filesystem>
 
 #include "Conversion.hpp"
 #include "gn250_conv.hpp"
@@ -174,8 +176,9 @@ read_dbf(const std::string& dir)
         std::cout << "Could not init convert!" << std::endl;
         return;
     }
-    std::string basename = "GN250_p";
-    Gn250 gn250(dir + basename );
+    std::filesystem::path path(dir);
+    auto dbfPath = path /= "GN250_p";
+    Gn250 gn250(dbfPath);
     auto proj = gn250.getPrj();
     if (proj != "PROJCS[\"ETRS_1989_UTM_Zone_32N\",GEOGCS[\"GCS_ETRS_1989\",DATUM[\"D_ETRS_1989\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",500000.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",9.0],PARAMETER[\"Scale_Factor\",0.9996],PARAMETER[\"Latitude_Of_Origin\",0.0],UNIT[\"Meter\",1.0],AUTHORITY[\"EPSG\",25832]]") {
         std::cout << "The expected projection info was not found " << proj << std::endl;
@@ -218,19 +221,15 @@ read_dbf(const std::string& dir)
              properties->set("region", Glib::ustring{bundesland});
          }
     }
-    auto jsonOut = root->generate(2);
-    std::ofstream file("gn250.geo.json");
-    if (file.is_open()) {
-        file.write(jsonOut.c_str(), jsonOut.bytes());
-        file.close();
+    std::string file("gn250.geo.json");
+    try {
+        root->generate(file, 2);
     }
-    else {
-        std::cout << "Failed to open exp.json" << std::endl;
+    catch (const std::exception& exc) {
+        std::cout << "Error " << exc.what() << " exporting " << file << std::endl;
     }
 }
-/*
- *
- */
+
 int main(int argc, char** argv)
 {
     std::setlocale(LC_ALL, "");      // make locale dependent, and make glib accept u8 const !!!

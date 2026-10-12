@@ -34,7 +34,7 @@ libharu_deps = declare_dependency(dependencies : cc.find_library('hpdf', require
 #  see https://proj.org/en/stable/about.html for infos about geo coordinate conversion
 projGeo_deps = declare_dependency(dependencies : cc.find_library('proj', required: false))
 # this was added as an option to convert dbf to sqllite again just an option
-sqllite_deps = declare_dependency(dependencies : cc.find_library('sqllite3', required: false))
+sqllite_deps = declare_dependency(dependencies : cc.find_library('sqlite3', required: false))
 
 conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())     # Surround the version in quotes to make it a C string
@@ -46,7 +46,7 @@ confFile = configure_file(output : meson.project_name() + '_config.h'
                , configuration : conf)
 conf_include = include_directories(fs.parent(confFile))
 
-genericimg_deps = dependency('genericimg', version :'>= 0.4.8')
+genericimg_deps = dependency('genericimg', version :'>= 0.4.11')
 
 # gtkmm3_deps     = dependency('gtkmm-3.0')
 # glibmm2_deps    = dependency('glibmm-2.4 giomm-2.4')
