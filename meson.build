@@ -81,5 +81,5 @@ project_target = executable(meson.project_name()
     , sources
     , dependencies: deps
     , install: true
-    #, win_subsystem: 'windows'  # disable this to see console output for windows
+    , win_subsystem: 'windows'  # disable this to see console output for windows
     )
