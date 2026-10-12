@@ -35,7 +35,8 @@ libharu_deps = declare_dependency(dependencies : cc.find_library('hpdf', require
 projGeo_lib = cc.find_library('proj', required: false)
 projGeo_deps = declare_dependency(dependencies : projGeo_lib)
 # this was added as an option to convert dbf to sqllite again just an option
-sqllite_deps = declare_dependency(dependencies : cc.find_library('sqlite3', required: false))
+sqlite3_lib = cc.find_library('sqlite3', required: false)
+sqllite_deps = declare_dependency(dependencies : sqlite3_lib)
 
 conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())     # Surround the version in quotes to make it a C string

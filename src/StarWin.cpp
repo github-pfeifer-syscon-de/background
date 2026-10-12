@@ -609,26 +609,40 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
         pMenuPopup->append(*cancel);
     }
 
-	auto mparam = Gtk::make_managed<Gtk::MenuItem>("_Parameter", true);
-	mparam->signal_activate().connect(sigc::mem_fun(*this, &StarWin::onMenuConfig));
-	pMenuPopup->append(*mparam);
+    auto mparam = Gtk::make_managed<Gtk::MenuItem>("_Parameter", true);
+    mparam->signal_activate().connect(sigc::mem_fun(*this, &StarWin::onMenuConfig));
+    pMenuPopup->append(*mparam);
 
-	auto mtime = Gtk::make_managed<Gtk::MenuItem>("_Timeshift&Position", true);
-	mtime->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_time));
-	pMenuPopup->append(*mtime);
+    auto mtime = Gtk::make_managed<Gtk::MenuItem>("_Timeshift&Position", true);
+    mtime->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_time));
+    pMenuPopup->append(*mtime);
 
 #   ifdef USE_PDF
- 	auto pdfExport = Gtk::make_managed<Gtk::MenuItem>("Pdf _Export", true);
-	pdfExport->signal_activate().connect(sigc::mem_fun(*this, &StarWin::exportPdf));
-	pMenuPopup->append(*pdfExport);
+    auto pdfExport = Gtk::make_managed<Gtk::MenuItem>("Pdf _Export", true);
+    pdfExport->signal_activate().connect(sigc::mem_fun(*this, &StarWin::exportPdf));
+    pMenuPopup->append(*pdfExport);
 #   endif
- 	auto flights = Gtk::make_managed<Gtk::MenuItem>("_Flights", true);
-	flights->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_flights));
-	pMenuPopup->append(*flights);
-
-	auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
-	mabout->signal_activate().connect(sigc::mem_fun(*m_backAppl, &BackgroundApp::on_action_about));
-	pMenuPopup->append(*mabout);
+    auto flights = Gtk::make_managed<Gtk::MenuItem>("_Flights", true);
+    flights->signal_activate().connect(sigc::mem_fun(*this, &StarWin::on_menu_flights));
+    pMenuPopup->append(*flights);
+    if (!m_geoFeatures.empty()) {
+        auto featureMenuItem = Gtk::make_managed<Gtk::MenuItem>("Features");
+        pMenuPopup->append(*featureMenuItem);
+        auto featureMenu = Gtk::make_managed<Gtk::Menu>();
+        featureMenuItem->set_submenu(*featureMenu);
+        for (auto feature : m_geoFeatures) {
+            auto item = Gtk::make_managed<Gtk::MenuItem>(feature, FEATURE_ACTION_NAME);
+            item->signal_activate().connect(
+                sigc::bind(
+                    sigc::mem_fun(*this, &StarWin::on_menu_feature)
+                    , feature)
+                );
+            featureMenu->append(*item);
+        }
+    }
+    auto mabout = Gtk::make_managed<Gtk::MenuItem>("_About", true);
+    mabout->signal_activate().connect(sigc::mem_fun(*m_backAppl, &BackgroundApp::on_action_about));
+    pMenuPopup->append(*mabout);
 
 
 #   ifdef USE_APPMENU
@@ -641,9 +655,9 @@ StarWin::addMenuItems(Gtk::Menu* pMenuPopup)
 	//m_appMenu->addMenu(pMenuPopup);
 #   endif
 
-	auto mclose = Gtk::make_managed<Gtk::MenuItem>("_Close", true);
-	mclose->signal_activate().connect(sigc::mem_fun(*this, &StarWin::do_close));
-	pMenuPopup->append(*mclose);
+    auto mclose = Gtk::make_managed<Gtk::MenuItem>("_Close", true);
+    mclose->signal_activate().connect(sigc::mem_fun(*this, &StarWin::do_close));
+    pMenuPopup->append(*mclose);
 
     //auto mounts = m_volumeMonitor->get_mounts();
     //for (auto mount : mounts) {
