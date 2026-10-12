@@ -395,6 +395,7 @@ void
 StarWin::setFeatures(const std::vector<Glib::ustring>& feats)
 {
     auto refBuilder = m_backAppl->get_menu_builder();
+    if (refBuilder) {	// if we are in fullscreen there is no menu
     auto featureObj = refBuilder->get_object("features");
     auto featureMenu = Glib::RefPtr<Gio::Menu>::cast_dynamic(featureObj);
     if (featureMenu) {
@@ -404,6 +405,10 @@ StarWin::setFeatures(const std::vector<Glib::ustring>& feats)
             item->set_action_and_target(FEATURE_ACTION_NAME, Glib::Variant<Glib::ustring>::create(feat));
             featureMenu->append_item(item);
         }
+    }
+    }
+    else {
+	m_geoFeatures = feats;
     }
 }
 

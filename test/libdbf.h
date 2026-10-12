@@ -21,6 +21,7 @@ extern "C" {
 #endif
 #include <sys/types.h>
 
+#include "dbf.h"
 /*! \file libdbf.h
 	\brief provides access to libdbf.
 

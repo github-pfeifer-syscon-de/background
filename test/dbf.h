@@ -38,7 +38,7 @@
 	typedef u_int16_t uint16_t;
 	typedef u_int32_t uint32_t;
 #endif
-#elif _WIN32
+#elif __WIN32__
 #include <io.h>
 #include <sys\stat.h>
 #include <windows.h>

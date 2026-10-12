@@ -32,7 +32,8 @@ endforeach
 libharu_deps = declare_dependency(dependencies : cc.find_library('hpdf', required: false))
 # if you want to use test/gn250_conv to convert gn250 coordinates to geo.json
 #  see https://proj.org/en/stable/about.html for infos about geo coordinate conversion
-projGeo_deps = declare_dependency(dependencies : cc.find_library('proj', required: false))
+projGeo_lib = cc.find_library('proj', required: false)
+projGeo_deps = declare_dependency(dependencies : projGeo_lib)
 # this was added as an option to convert dbf to sqllite again just an option
 sqllite_deps = declare_dependency(dependencies : cc.find_library('sqlite3', required: false))
 
@@ -79,5 +80,5 @@ project_target = executable(meson.project_name()
     , sources
     , dependencies: deps
     , install: true
-    , win_subsystem: 'windows'  # disable this to see console output for windows
+    #, win_subsystem: 'windows'  # disable this to see console output for windows
     )

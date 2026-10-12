@@ -148,5 +148,6 @@ private:
     std::shared_ptr<AppMenu> m_appMenu;
 #   endif
     std::shared_ptr<ModulePaint> m_modulePaint;
+    std::vector<Glib::ustring> m_geoFeatures;
 };
 
