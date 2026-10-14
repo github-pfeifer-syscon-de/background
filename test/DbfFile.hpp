@@ -65,6 +65,7 @@ public:
     std::string getName();
     char getType();
     int getSize();
+    int getDecimals();
     int getColumn();
     size_t getOffs();
 private:
@@ -74,8 +75,10 @@ private:
     std::string m_name;
     char m_type;
     int m_size;
+    int m_decimals;
 };
 
+using PtrDbfColumn = std::shared_ptr<DbfColumn>;
 
 class DbfRecord {
 public:

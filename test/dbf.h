@@ -20,6 +20,11 @@
 #ifndef __DBF_CORE__
 #define __DBF_CORE__
 
+#pragma push_macro("PACKAGE")
+#pragma push_macro("VERSION")
+#undef PACKAGE
+#undef VERSION
+
 #include "config.h"
 
 #ifdef ENABLE_NLS
@@ -221,6 +226,7 @@ struct DB_MEMO_BLOCK_TOP {
 /* [1] Integers stored with the most
 significant byte first.    */
 
-
+#pragma pop_macro("VERSION")
+#pragma pop_macro("PACKAGE")
 #endif
 

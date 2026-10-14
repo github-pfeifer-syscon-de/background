@@ -59,6 +59,7 @@ public:
     virtual ~Gn250() = default;
     std::string getPrj();
     bool next();
+    void reset();
     std::string getNnid() {
         return m_record->getValue(nnid);
     }
@@ -146,6 +147,11 @@ public:
     std::string getBox() {
         return m_record->getValue(box);
     }
+    psc::dbf::PtrDbfRecord getRecord()
+    {
+        return m_record;
+    }
+    std::vector<psc::dbf::PtrDbfColumn> getColumns();
 private:
     std::string m_baseName;
     std::shared_ptr<psc::dbf::DbfFile> m_dbfFile;

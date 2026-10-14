@@ -51,7 +51,7 @@ astro_srcs = files(		# used for test
 	, 'Renderer.cpp'
 	, 'Moon.cpp'
 )
-if libharu_deps.found()
+if libharu_lib.found()
 	astro_srcs += files(
 		'HaruRenderer.cpp'
 	)
@@ -64,6 +64,9 @@ sources += files(
     )
 endif
 
+if sqlite3_lib.found()
+	sources += files('SqlLite.cpp')
+endif
 
 if target_machine.system() == 'windows'
   sources += files('SysInfoWindows.cpp')

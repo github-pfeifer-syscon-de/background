@@ -29,8 +29,63 @@
 #include "GeoBitmap.hpp"
 #include "BackPaint.hpp"
 #include "Math.hpp"
+#include "background_config.h"
+#ifdef USE_SQLLITE
+#include "SqlLite.hpp"
+#endif
+#include "GenericGeo.hpp"
 
 class StarWin;
+
+class SqlProperties
+: public psc::geo::Properties
+{
+public:
+    SqlProperties(const std::string& name, int32_t population, const std::string& region) {
+        m_properties.insert(std::pair("name", std::make_unique<psc::geo::PropValueString>(name)));
+        m_properties.insert(std::pair("population",  std::make_unique<psc::geo::PropValueInt>(population)));
+        m_properties.insert(std::pair("region", std::make_unique<psc::geo::PropValueString>(region)));
+    }
+    explicit SqlProperties(const SqlProperties& other) = delete;
+    virtual ~SqlProperties() = default;
+};
+using PtrGenProperties = std::shared_ptr<SqlProperties>;
+
+class SqlPoint
+: public psc::geo::Point
+{
+public:
+    SqlPoint(const GeoCoordinate& coord) {
+        m_coord = coord;
+    }
+    explicit SqlPoint(const SqlPoint& other) = delete;
+    virtual ~SqlPoint() = default;
+
+};
+using PtrGenPoint = std::shared_ptr<SqlPoint>;
+
+class SqlFeature
+: public psc::geo::Feature
+{
+public:
+    SqlFeature(const PtrGenProperties& prop, const PtrGenPoint& pnt)
+    : m_geometry{pnt}
+    , m_properties{prop}
+    {
+    }
+    explicit SqlFeature(const SqlFeature& other) = delete;
+    virtual ~SqlFeature() = default;
+
+    psc::geo::PtrProperties getProperties() override {
+        return m_properties;
+    }
+    psc::geo::PtrGeometry getGeometry() override {
+        return m_geometry;
+    }
+protected:
+    psc::geo::PtrGeometry m_geometry;
+    psc::geo::PtrProperties m_properties;
+};
 
 class GeoPaint
 : public BackPaint
@@ -117,6 +172,9 @@ protected:
     double heightToPixel(double height_m);
     double speedToPixel(double speed);
     Gdk::RGBA gradient(double ratio);
+#   ifdef USE_SQLLITE
+    std::vector<psc::geo::PtrFeature> readSqlite(const std::string& sqlite);
+#   endif
 
     void drawFlights(
         Cairo::RefPtr<Cairo::Context>& ctx

@@ -19,6 +19,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#pragma GCC diagnostic push // yes it legacy -> limit complaints
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable="
+#pragma GCC diagnostic ignored "-Wformat-overflow="
+
 #include <sys/types.h>
 
 #include "dbf.h"
@@ -340,6 +349,7 @@ int dbf_WriteRecord(P_DBF *p_dbf, char *record, int len);
 */
 int dbf_IsMemo(P_DBF *p_dbf);
 
+#pragma GCC diagnostic pop
 #ifdef __cplusplus
 }
 #endif

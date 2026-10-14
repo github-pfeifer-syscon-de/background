@@ -63,4 +63,6 @@ private:
 
 };
 
+using PtrTransform = std::shared_ptr<Transform>;
+
 } /* namespace psc::geo */

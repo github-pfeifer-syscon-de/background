@@ -125,6 +125,51 @@ GeoPaint::setGeoPointsFile(const std::string& geoJson)
     return !m_geoPoints.empty();
 }
 
+#ifdef USE_SQLLITE
+std::vector<psc::geo::PtrFeature>
+GeoPaint::readSqlite(const std::string& sqlite)
+{
+    std::vector<psc::geo::PtrFeature> features;
+    try {
+        psc::sql::SqlLite sqlLite(sqlite);
+        auto  gn250 = std::make_shared<psc::sql::SqlTable>("gn250");
+        gn250->addColumns(std::make_shared<psc::sql::SqlVarcharColumn>("NNID", 16, false, true));
+        auto colName = std::make_shared<psc::sql::SqlVarcharColumn>("NAME", 200, true, false);
+        gn250->addColumns(colName);
+        auto colOba = std::make_shared<psc::sql::SqlVarcharColumn>("OBA", 50, true, false);
+        gn250->addColumns(colOba);
+        auto colEwz = std::make_shared<psc::sql::SqlNumColumn>("EWZ", 10, 0, true, false);
+        gn250->addColumns(colEwz);
+        auto colBund = std::make_shared<psc::sql::SqlNumColumn>("BUNDESLAND", 50, 0, true, false);
+        gn250->addColumns(colBund);
+        auto colLong = std::make_shared<psc::sql::SqlNumColumn>("LONGITUDE", 16, 8, true, false);
+        gn250->addColumns(colLong);
+        auto colLat = std::make_shared<psc::sql::SqlNumColumn>("LATITUDE", 16, 8, true, false);
+        gn250->addColumns(colLat);
+
+        int32_t minPopulation{100000}; //make this fixed as the selection may change ... m_config->getPointsMinPopulation();
+        auto stmt = sqlLite.select(gn250, colOba->getName() + "= 'AX_Gemeinde'"
+            " AND " + colEwz->getName() + " >= " + std::to_string(minPopulation));
+        while (stmt->next()) {
+            auto name = stmt->getString(colName);
+            auto bund = stmt->getString(colBund);
+            auto pop = stmt->getLong(colEwz);
+            auto lon = stmt->getDouble(colLong);
+            auto lat = stmt->getDouble(colLat);
+            GeoCoordinate coord(lon, lat, CoordRefSystem::CRS_84);
+            auto prop = std::make_shared<SqlProperties>(name, pop, bund);
+            auto coordPnt = std::make_shared<SqlPoint>(coord);
+            auto feat = std::make_shared<SqlFeature>(prop, coordPnt);
+            features.emplace_back(std::move(feat));
+        }
+    }
+    catch (const std::exception& exc) {
+        std::cout << "Error " << exc.what() << " reading sqlite " << sqlite << std::endl;
+    }
+    return features;
+}
+#endif
+
 std::vector<psc::geo::PtrFeature>
 GeoPaint::loadGeoFile(const std::string& geoPointsFile, const std::string& ctx)
 {
@@ -136,6 +181,11 @@ GeoPaint::loadGeoFile(const std::string& geoPointsFile, const std::string& ctx)
                 geoKlm.read(geoPointsFile);
                 geoFeatures = geoKlm.getPlacemarks();
             }
+#ifdef      USE_SQLLITE
+            if (StringUtils::endsWith(geoPointsFile, ".sqlite")) {
+                geoFeatures = readSqlite(geoPointsFile);
+            }
+#           endif
             else {
                 JsonHelper jsonHelper;
                 jsonHelper.load_from_file(geoPointsFile);

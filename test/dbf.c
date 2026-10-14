@@ -18,6 +18,17 @@
 
 
 #include <time.h>
+
+#pragma GCC diagnostic push // yes it legacy -> disable complaints
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wpointer-sign"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable="
+#pragma GCC diagnostic ignored "-Wformat-overflow="
+
 #include "libdbf.h"
 #include "dbf.h"
 
@@ -595,3 +606,5 @@ char *dbf_GetRecordData(P_DBF *p_dbf, char *record, int column) {
  * vim600: sw=4 ts=4 fdm=marker
  * vim<600: sw=4 ts=4
  */
+
+#pragma GCC diagnostic pop

@@ -2,7 +2,7 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 // reduced config
 /* always defined to indicate that i18n is enabled */
-#define ENABLE_NLS 0
+#undef ENABLE_NLS
 
 /* GETTEXT_PACKAGE */
 #define GETTEXT_PACKAGE "libdbf"

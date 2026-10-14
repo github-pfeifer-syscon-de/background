@@ -26,6 +26,9 @@ namespace psc::dbf {
 DbfFile::DbfFile(const std::string& name)
 {
     m_dbf = dbf_Open(name.c_str());
+    if (m_dbf == nullptr) {
+        throw std::invalid_argument("The dbf file was not found!");
+    }
     auto cols = dbf_NumCols(m_dbf);
     m_columns.reserve(cols);
     size_t offs{1};
@@ -101,6 +104,7 @@ DbfColumn::DbfColumn(DbfFile* dbfFile, int col, size_t offs)
     m_name = dbf_ColumnName(dbf, m_col);
     m_type = dbf_ColumnType(dbf, m_col);
     m_size = dbf_ColumnSize(dbf, m_col);
+    m_decimals = dbf_ColumnDecimals(dbf, m_col);
     //std::printf("Column %d %16s[%d]%c\n", m_col, m_name.c_str(), m_size, m_type);
 }
 
@@ -120,6 +124,12 @@ int
 DbfColumn::getSize()
 {
     return m_size;
+}
+
+int
+DbfColumn::getDecimals()
+{
+    return m_decimals;
 }
 
 int
