@@ -21,6 +21,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <cstdint>
 #include <sqlite3.h>
 
 struct sqlite3;
