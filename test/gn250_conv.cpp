@@ -97,7 +97,11 @@ Gn250::reset()
 bool
 Gn250::next() {
     if (m_pos < m_recordCount) {
-        m_record->read(m_pos++);
+        auto r = m_record->read(m_pos);
+        if (r != m_pos) {
+            throw std::runtime_error(std::format("Gn250::next error {} at {}", r, m_pos));
+        }
+        ++m_pos;
         return true;
     }
     return false;
@@ -168,13 +172,14 @@ createSqlLite(const psc::geo::PtrTransform& transf32
             "LATITUDE"
             , 12, 6
             , true);
+        std::vector<psc::sql::PtrSqlColumn> idxColsLonLat;
+        idxColsLonLat.push_back(colLong);
+        idxColsLonLat.push_back(colLat);
         sqlTbl->addColumns(colLat);
         auto indexObaEwz = std::make_shared<psc::sql::SqlIndex>(false, "IDX_OBA_EWZ", idxColsObaEwz);
         sqlTbl->addIndex(indexObaEwz);
-        auto indexLat = std::make_shared<psc::sql::SqlIndex>(false, "IDX_LONGITUDE", colLong);
-        sqlTbl->addIndex(indexLat);
-        auto indexLong = std::make_shared<psc::sql::SqlIndex>(false, "IDX_LATITUDE", colLat);
-        sqlTbl->addIndex(indexLong);
+        auto indexLonLat = std::make_shared<psc::sql::SqlIndex>(false, "IDX_LONGITUDE_LATITUDE", idxColsLonLat);
+        sqlTbl->addIndex(indexLonLat);
         auto indexName = std::make_shared<psc::sql::SqlIndex>(false, "IDX_NAME", nameColumn);
         sqlTbl->addIndex(indexName);
         sqlLite.create(sqlTbl);
@@ -221,7 +226,7 @@ createSqlLite(const psc::geo::PtrTransform& transf32
 
 
 static void
-read_dbf(const psc::geo::PtrTransform& transf32
+dbf2json(const psc::geo::PtrTransform& transf32
     , const std::shared_ptr<Gn250> gn250
     , const std::string& geoJsonFile)
 {
@@ -234,6 +239,7 @@ read_dbf(const psc::geo::PtrTransform& transf32
         auto bundesland = gn250->getBundesland();
         auto oba = gn250->getOba();
         auto ewz = gn250->getEwz();
+        auto height = gn250->getHoehe();
         if (oba == "AX_Gemeinde" && ewz > MIN_POPULATION_EXPORT_GEO_JSON) {       // (name == "Altendiez" || name == "Lich" || name == "Gießen" || name ==  "Katzenelnbogen"
              auto dRe = gn250->getRechts();
              auto dHo = gn250->getHoch();
@@ -242,7 +248,7 @@ read_dbf(const psc::geo::PtrTransform& transf32
                  //    2.0,     // longitude in degree
                  dRe,
                  dHo,
-                 0.0,     // z ordinate. unused
+                 height,     // z ordinate.
                  HUGE_VAL // time ordinate. unused
              }};
              c = transf32->convert(c);
@@ -301,11 +307,6 @@ openGn250(const std::string& dir)
         return {};
     }
     auto  gn250 = std::make_shared<Gn250>(dbfPath.string());
-    auto proj = gn250->getPrj();
-    if (proj != "PROJCS[\"ETRS_1989_UTM_Zone_32N\",GEOGCS[\"GCS_ETRS_1989\",DATUM[\"D_ETRS_1989\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",500000.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",9.0],PARAMETER[\"Scale_Factor\",0.9996],PARAMETER[\"Latitude_Of_Origin\",0.0],UNIT[\"Meter\",1.0],AUTHORITY[\"EPSG\",25832]]") {
-        std::cout << "The expected projection info was not found " << proj << std::endl;
-        return {};
-    }
     return gn250;
 }
 
@@ -314,19 +315,21 @@ int main(int argc, char** argv)
     std::setlocale(LC_ALL, "");      // make locale dependent, and make glib accept u8 const !!!
     Glib::init();
     if (argc >= 2) {
-        psc::geo::PtrTransform transf32 = createCrsTransform(
-                   "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
-                  ,"EPSG", "4326");
-        if (!transf32) {
-            std::cout << "Could not init convert!" << std::endl;
-            return 1;
-        }
         auto gn250 = openGn250(argv[1]);
         if (!gn250) {
             std::cout << "Could not load gn250-data!" << std::endl;
             return 2;
         }
-        read_dbf(transf32, gn250, "gn250.geo.json");
+        auto projWkt = gn250->getPrj();
+        // alternative : proj tes "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
+        psc::geo::PtrTransform transf32 = createCrsTransform(
+            projWkt
+                  ,"EPSG", "4326");
+        if (!transf32) {
+            std::cout << "Could not init convert!" << std::endl;
+            return 1;
+        }
+        dbf2json(transf32, gn250, "gn250.geo.json");
 #       ifdef USE_SQLLITE
         createSqlLite(transf32, gn250, "gn250.sqlite");
 #       endif

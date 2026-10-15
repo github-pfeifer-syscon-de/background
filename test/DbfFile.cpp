@@ -20,6 +20,7 @@
 #include <format>
 
 #include "DbfFile.hpp"
+#include "libdbf.h"         // better keep this file local as it redefines some common pieces
 
 namespace psc::dbf {
 
@@ -152,11 +153,15 @@ DbfRecord::DbfRecord(DbfFile* dbfFile)
     m_rec.resize(static_cast<size_t>(m_recLen));
 }
 
+// returns the read record or a negative value if this was not possible
 int
 DbfRecord::read(int rec)
 {
     P_DBF* dbf = m_dbfFile->getDbf();
     int r = dbf_SetRecordOffset(dbf, rec + 1);
+    if (r < 0) {
+        return r;
+    }
     //std::printf("setRecordOffs %d %d\n", rec, r);
     return dbf_ReadRecord(dbf, m_rec.data(), static_cast<int>(m_rec.size()));
 }

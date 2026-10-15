@@ -32,7 +32,7 @@ geo_test_srcs = files(
   , 'DbfFile.cpp'
   , 'gn250_conv.cpp'
 )
-# just as an option the data will also be written as sqlite
+# just as an option full data will also be written as sqlite
 if sqlite3_lib.found()
     sqlite = '../src/SqlLite.cpp'
     sql_test_srcs = files(

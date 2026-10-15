@@ -24,12 +24,9 @@
 #include <memory>
 
 #include "background_config.h"
-#include "libdbf.h"
 
-#ifdef USE_SQLLITE
-//#include <SqlHelper.hpp>
-#endif
-
+struct _P_DBF;
+typedef struct _P_DBF P_DBF;
 namespace psc::dbf {
 
 class DbfColumn;
@@ -49,9 +46,6 @@ public:
     PtrDbfRecord getRecord();
     P_DBF* getDbf();
     std::string info();
-#   ifdef USE_SQLLITE
-    void convert2Sqllite(const std::string& sqllite);
-#   endif
 private:
     P_DBF* m_dbf;
     std::vector<PtrDbfColumn> m_columns;

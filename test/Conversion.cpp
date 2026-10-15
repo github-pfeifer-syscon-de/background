@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <iostream>
 #include "Conversion.hpp"
 
 namespace psc::geo {
+
 Conversion::Conversion()
 : m_dbContext{osgeo::proj::io::DatabaseContext::create()}
 , m_authFactory{osgeo::proj::io::AuthorityFactory::create(m_dbContext, std::string())}
@@ -88,31 +89,78 @@ Conversion::getTranform(
         return std::shared_ptr<Transform>();
     }
     // Create a coordinate transformer from the first operation of the list
-    return std::make_shared<Transform>(list[0]);
+    return std::make_shared<TransformCrs>(list[0]);
 }
 
-
-
-Transform::Transform(NS_PROJ::operation::CoordinateOperationNNPtr& transf)
+Transform::Transform()
 : m_ctx{proj_context_create()}
-, m_transformer{transf->coordinateTransformer(m_ctx)}
 {
 // Create an execution context (must only be used by one thread at a time)
 }
 
-
 Transform::~Transform()
 {
-    if (m_ctx) {    // Destroy execution context
+    if (m_ctx != nullptr) {    // Destroy execution context
         proj_context_destroy(m_ctx);
+        m_ctx = nullptr;
+    }
+}
+
+TransformCrs::TransformCrs(NS_PROJ::operation::CoordinateOperationNNPtr& transf)
+: Transform()
+, m_transformer{transf->coordinateTransformer(m_ctx)}
+{
+}
+
+TransformCrs::~TransformCrs()
+{
+}
+
+PJ_COORD
+TransformCrs::convert(PJ_COORD& coord)
+{
+    // Perform the coordinate transformation.
+    return m_transformer->transform(coord);
+}
+
+
+TransformWkt::TransformWkt(const std::string& src, const std::string& target)
+: Transform()
+{
+    //PJ_GUESSED_WKT_DIALECT dial = proj_context_guess_wkt_dialect(m_ctx, wkt.c_str());
+    //if (dial == PJ_GUESSED_NOT_WKT) {
+    //    return nullptr;
+    //}
+    //PROJ_STRING_LIST opt;
+    //PROJ_STRING_LIST out_warnings;
+    //PROJ_STRING_LIST out_grammar_errors;
+    //PJ* pj = proj_create_from_wkt(m_ctx, wkt.c_str(), opt, &out_warnings, &out_grammar_errors);
+    //PJ* pj = proj_create(m_ctx, wkt.c_str());      // this works
+    // simplest c-api
+    m_pj = proj_create_crs_to_crs(m_ctx, src.c_str(), target.c_str(),0 );
+}
+
+TransformWkt::~TransformWkt()
+{
+    if (m_pj != nullptr) {
+        proj_destroy(m_pj);
+        m_pj = nullptr;
     }
 }
 
 PJ_COORD
-Transform::convert(PJ_COORD& coord)
+TransformWkt::convert(PJ_COORD& in)
 {
-    // Perform the coordinate transformation.
-    return m_transformer->transform(coord);
+    PJ_COORD out = proj_trans(m_pj, PJ_DIRECTION::PJ_FWD, in);
+    //std::cout << "result " << out.xy.x << " " << out.xy.y << std::endl;
+    return out;
+}
+
+PJ_COORD TransformWkt::reverseConvert(PJ_COORD& in)
+{
+    PJ_COORD out = proj_trans(m_pj, PJ_DIRECTION::PJ_INV, in);
+    //std::cout << "result " << out.xy.x << " " << out.xy.y << std::endl;
+    return out;
 }
 
 

@@ -17,6 +17,7 @@
  */
 #pragma once
 
+#include <memory>
 #include <cmath>   // for HUGE_VAL
 #include <proj/coordinateoperation.hpp>
 #include <proj/crs.hpp>
@@ -27,6 +28,7 @@
 namespace psc::geo {
 
 class Transform;
+
 
 class Conversion {
 public:
@@ -39,6 +41,8 @@ public:
     // use with e.g. "4326"
     NS_PROJ::crs::CRSNNPtr createCRS(NS_PROJ::io::AuthorityFactoryPtr& authFactory, const std::string& crs);
     // use with e.g. "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
+    //   or wkt can used like almost anything else
+    //   https://proj.org/en/stable/development/reference/cpp/io.html
     NS_PROJ::crs::CRSNNPtr createFromUser(const std::string& userInput);
 
     std::shared_ptr<Transform> getTranform(
@@ -54,14 +58,39 @@ private:
 class Transform
 {
 public:
-    Transform(NS_PROJ::operation::CoordinateOperationNNPtr& transf);
-    virtual  ~Transform();
+    Transform();
+    virtual ~Transform();
+    virtual PJ_COORD convert(PJ_COORD& coord) = 0;
+protected:
+    PJ_CONTEXT* m_ctx;
+};
+
+class TransformCrs
+: public Transform
+{
+public:
+    TransformCrs(NS_PROJ::operation::CoordinateOperationNNPtr& transf);
+    virtual  ~TransformCrs();
     PJ_COORD convert(PJ_COORD& coord);
 private:
-    PJ_CONTEXT* m_ctx;
     NS_PROJ::operation::CoordinateTransformerNNPtr m_transformer;
-
 };
+
+// allows creating from e.g. wkt/prj string to e.g. EPSG:4326
+//  use C-Api for reference
+class TransformWkt
+: public Transform
+{
+public:
+    TransformWkt(const std::string& src, const std::string& target);
+    virtual  ~TransformWkt();
+    PJ_COORD convert(PJ_COORD& in);
+    PJ_COORD reverseConvert(PJ_COORD& in);
+
+private:
+    PJ *m_pj;
+};
+
 
 using PtrTransform = std::shared_ptr<Transform>;
 
