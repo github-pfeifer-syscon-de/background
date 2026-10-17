@@ -34,20 +34,6 @@ geo_test_srcs = files(
   , 'ShapeFile.cpp'
   , 'gn250_conv.cpp'
 )
-# just as an option full data will also be written as sqlite
-if sqlite3_lib.found()
-    sqlite = '../src/SqlLite.cpp'
-    sql_test_srcs = files(
-        'sql_test.cpp'
-       , sqlite
-    )
-    sql_test = executable('sql_test'
-                          , sql_test_srcs
-                          , dependencies        : deps
-                          , include_directories : test_incl_dir
-    )
-    geo_test_srcs += files(sqlite)
-endif
 dbf_test = executable('gn250_conv'
     , geo_test_srcs
     , dependencies        : deps

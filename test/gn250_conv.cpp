@@ -26,14 +26,15 @@
 #include <JsonObj.hpp>
 #include <JsonHelper.hpp>
 #include <filesystem>
+#include <genericimg_config.h>
+#ifdef USE_SQLITE3
+#include <Sqlite.hpp>
+#endif
 
 #include "Conversion.hpp"
 #include "gn250_conv.hpp"
 #include "background_config.h"
 #include "ShapeFile.hpp"
-#ifdef USE_SQLLITE
-#include "../src/SqlLite.hpp"
-#endif
 
 Gn250::Gn250(const std::string& basename)
 : m_baseName{basename}
@@ -119,7 +120,7 @@ Gn250::getColumns() {
     return ret;
 }
 
-#ifdef USE_SQLLITE
+#ifdef USE_SQLITE3
 psc::sql::PtrSqlColumn
 toSqlite(const psc::dbf::PtrDbfColumn& dbfColumn) {
     psc::sql::PtrSqlColumn sqlColumn;
@@ -334,7 +335,7 @@ int main(int argc, char** argv)
             return 2;
         }
         dbf2json(transf32, gn250, "gn250.geo.json");
-#       ifdef USE_SQLLITE
+#       ifdef USE_SQLITE3
         createSqlLite(transf32, gn250, "gn250.sqlite");
 #       endif
         //ShapeFile shapeFile(argv[1]);

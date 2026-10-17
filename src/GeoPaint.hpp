@@ -24,15 +24,12 @@
 #include <memory>
 #include <WeatherConfigGrid.hpp>
 #include <Flights.hpp>
+#include <genericimg_config.h>
 
 #include "GeoConversion.hpp"
 #include "GeoBitmap.hpp"
 #include "BackPaint.hpp"
 #include "Math.hpp"
-#include "background_config.h"
-#ifdef USE_SQLLITE
-#include "SqlLite.hpp"
-#endif
 #include "GenericGeo.hpp"
 
 class StarWin;
@@ -172,7 +169,7 @@ protected:
     double heightToPixel(double height_m);
     double speedToPixel(double speed);
     Gdk::RGBA gradient(double ratio);
-#   ifdef USE_SQLLITE
+#   ifdef USE_SQLITE3
     std::vector<psc::geo::PtrFeature> readSqlite(const std::string& sqlite);
 #   endif
 

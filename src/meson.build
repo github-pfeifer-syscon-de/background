@@ -64,10 +64,6 @@ sources += files(
     )
 endif
 
-if sqlite3_lib.found()
-	sources += files('SqlLite.cpp')
-endif
-
 if target_machine.system() == 'windows'
   sources += files('SysInfoWindows.cpp')
 else

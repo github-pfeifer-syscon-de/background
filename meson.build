@@ -33,20 +33,17 @@ libharu_lib = cc.find_library('hpdf', required: false)
 #  if you want to use test/gn250_conv to convert gn250 coordinates to geo.json
 #  see https://proj.org/en/stable/about.html for infos about geo coordinate conversion
 projGeo_lib = cc.find_library('proj', required: false)
-# this was added as an option to convert dbf to sqllite again just an option
-sqlite3_lib = cc.find_library('sqlite3', required: false)
 
 conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())     # Surround the version in quotes to make it a C string
 conf.set       ('USE_PYTHON', get_option('python'))
 conf.set       ('USE_PDF', libharu_lib.found())
 conf.set       ('USE_PROJ_GEO', projGeo_lib.found())
-conf.set       ('USE_SQLLITE', sqlite3_lib.found())
 confFile = configure_file(output : meson.project_name() + '_config.h'
                , configuration : conf)
 conf_include = include_directories(fs.parent(confFile))
 
-genericimg_deps = dependency('genericimg', version :'>= 0.4.11')
+genericimg_deps = dependency('genericimg', version :'>= 0.4.12')
 
 # gtkmm3_deps     = dependency('gtkmm-3.0')
 # glibmm2_deps    = dependency('glibmm-2.4 giomm-2.4')
@@ -68,7 +65,6 @@ deps = [
     , win_deps
     , libharu_lib
     , projGeo_lib
-    , sqlite3_lib
     ]
 subdir('src')
 subdir('test')

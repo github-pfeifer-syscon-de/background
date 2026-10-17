@@ -22,6 +22,10 @@
 #include <WeatherConfig.hpp>
 #include <OpenskyFlights.hpp>
 #include <GeoKlm.hpp>
+#include <genericimg_config.h>
+#ifdef USE_SQLITE3
+#include <Sqlite.hpp>
+#endif
 
 #include "BackConfig.hpp"
 #include "GeoPaint.hpp"
@@ -125,7 +129,7 @@ GeoPaint::setGeoPointsFile(const std::string& geoJson)
     return !m_geoPoints.empty();
 }
 
-#ifdef USE_SQLLITE
+#ifdef USE_SQLITE3
 std::vector<psc::geo::PtrFeature>
 GeoPaint::readSqlite(const std::string& sqlite)
 {
@@ -148,14 +152,14 @@ GeoPaint::readSqlite(const std::string& sqlite)
         gn250->addColumns(colLat);
 
         int32_t minPopulation{100000}; //make this fixed as the selection may change ... m_config->getPointsMinPopulation();
-        auto stmt = sqlLite.select(gn250, colOba->getName() + "= 'AX_Gemeinde'"
+        auto stmt = sqlLite.select(gn250, "*", colOba->getName() + "= 'AX_Gemeinde'"
             " AND " + colEwz->getName() + " >= " + std::to_string(minPopulation));
         while (stmt->next()) {
-            auto name = stmt->getString(colName);
-            auto bund = stmt->getString(colBund);
-            auto pop = stmt->getLong(colEwz);
-            auto lon = stmt->getDouble(colLong);
-            auto lat = stmt->getDouble(colLat);
+            auto name = stmt->getString(colName->getName());
+            auto bund = stmt->getString(colBund->getName());
+            auto pop = stmt->getLong(colEwz->getName());
+            auto lon = stmt->getDouble(colLong->getName());
+            auto lat = stmt->getDouble(colLat->getName());
             GeoCoordinate coord(lon, lat, CoordRefSystem::CRS_84);
             auto prop = std::make_shared<SqlProperties>(name, pop, bund);
             auto coordPnt = std::make_shared<SqlPoint>(coord);
@@ -181,7 +185,7 @@ GeoPaint::loadGeoFile(const std::string& geoPointsFile, const std::string& ctx)
                 geoKlm.read(geoPointsFile);
                 geoFeatures = geoKlm.getPlacemarks();
             }
-#ifdef      USE_SQLLITE
+#ifdef      USE_SQLITE3
             if (StringUtils::endsWith(geoPointsFile, ".sqlite")) {
                 geoFeatures = readSqlite(geoPointsFile);
             }
