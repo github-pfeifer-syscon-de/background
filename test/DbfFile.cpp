@@ -17,18 +17,20 @@
  */
 
 #include <iostream>
+#include <algorithm>
 #include <format>
 
 #include "DbfFile.hpp"
 #include "libdbf.h"         // better keep this file local as it redefines some common pieces
 
 namespace psc::dbf {
-
+// Infos about dbf structure
+// http://www.manmrk.net/tutorials/database/xbase/dbf.html
 DbfFile::DbfFile(const std::string& name)
 {
     m_dbf = dbf_Open(name.c_str());
     if (m_dbf == nullptr) {
-        throw std::invalid_argument("The dbf file was not found!");
+        throw DbfException(std::format("The dbf file {} was not found!", name));
     }
     auto cols = dbf_NumCols(m_dbf);
     m_columns.reserve(cols);

@@ -20,7 +20,8 @@ test('astro_test', astro_test)
 # test for converting offical german location data
 #   in utm to wgs, the optional dependency proj is required to make this work
 #   download dbf-data-variant from
-#    https://gdz.bkg.bund.de/index.php/default/inspire-wfs-geographical-names-gn250-wfs-gn250-inspire.html
+#    https://gdz.bkg.bund.de/index.php as links may change: search gn250,
+#        ignore online service links like...inspire..., use direct download
 #   the directory that contains GN250_p.dbf should be used as parameter when starting gn250_conf
 #   see gn250_conv sources, you may vary the selection to your taste
 #     the output gn250.geo.json will be placed in the current directory
@@ -30,6 +31,7 @@ geo_test_srcs = files(
   , 'dbf_endian.c'
   , 'Conversion.cpp'
   , 'DbfFile.cpp'
+  , 'ShapeFile.cpp'
   , 'gn250_conv.cpp'
 )
 # just as an option full data will also be written as sqlite

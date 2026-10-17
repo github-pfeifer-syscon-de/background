@@ -30,6 +30,7 @@
 #include "Conversion.hpp"
 #include "gn250_conv.hpp"
 #include "background_config.h"
+#include "ShapeFile.hpp"
 #ifdef USE_SQLLITE
 #include "../src/SqlLite.hpp"
 #endif
@@ -83,7 +84,7 @@ Gn250::getPrj() {
         return "Failed to open file: " + proj;
     }
     std::string line;
-    getline(file, line);
+    std::getline(file, line);
     file.close();
     return line;
 }
@@ -164,18 +165,18 @@ createSqlLite(const psc::geo::PtrTransform& transf32
             }
         }
         auto colLong = std::make_shared<psc::sql::SqlNumColumn>(
-            "LONGITUDE"
+            LONGITUE_NAME
             , 12, 6
             , true);
         sqlTbl->addColumns(colLong);
         auto colLat = std::make_shared<psc::sql::SqlNumColumn>(
-            "LATITUDE"
+            LATITUDE_NAME
             , 12, 6
             , true);
+        sqlTbl->addColumns(colLat);
         std::vector<psc::sql::PtrSqlColumn> idxColsLonLat;
         idxColsLonLat.push_back(colLong);
         idxColsLonLat.push_back(colLat);
-        sqlTbl->addColumns(colLat);
         auto indexObaEwz = std::make_shared<psc::sql::SqlIndex>(false, "IDX_OBA_EWZ", idxColsObaEwz);
         sqlTbl->addIndex(indexObaEwz);
         auto indexLonLat = std::make_shared<psc::sql::SqlIndex>(false, "IDX_LONGITUDE_LATITUDE", idxColsLonLat);
@@ -183,36 +184,39 @@ createSqlLite(const psc::geo::PtrTransform& transf32
         auto indexName = std::make_shared<psc::sql::SqlIndex>(false, "IDX_NAME", nameColumn);
         sqlTbl->addIndex(indexName);
         sqlLite.create(sqlTbl);
-        gn250->reset();
         sqlLite.beginTransaction(); // this speeds up import dramatically
-        auto ins = sqlLite.insert(sqlTbl);
+        psc::sql::SqlMerge sqlMerge(&sqlLite, sqlTbl);
+        gn250->reset();
         while (gn250->next()) {
             auto record = gn250->getRecord();
             auto nnid = gn250->getNnid();
             std::cout << "Converting to sqlite " << nnid << std::endl;
-            int n{1};
+            sqlMerge.prepare(nnid);
             for (auto& dbfCol : dbfCols) {
                 if (dbfCol->getType() == 'C') {
-                    ins->setString(n, record->getValue(dbfCol));
+                    sqlMerge.setString(dbfCol->getName(), record->getValue(dbfCol));
                 }
                 else {
-                    ins->setDouble(n, record->getDouble(dbfCol));
+                    sqlMerge.setDouble(dbfCol->getName(), record->getDouble(dbfCol));
                 }
-                ++n;
             }
             auto dRe = gn250->getRechts();
             auto dHo = gn250->getHoch();
+            auto dHeight = gn250->getHoehe();
+            if (dHeight == 0.0) {
+                dHeight = gn250->getHoehe_ger();
+            }
             PJ_COORD c = {{
                 dRe,
                 dHo,
-                0.0,     // z ordinate. unused
+                dHeight,
                 HUGE_VAL // time ordinate. unused
             }};
             c = transf32->convert(c);
-            ins->setDouble(n++, c.v[1]);
-            ins->setDouble(n++, c.v[0]);
-            if (ins->exec() == SQLITE_CONSTRAINT) {
-                std::cout << "Insert constraint violation!" << std::endl;
+            sqlMerge.setDouble(LONGITUE_NAME, c.xyz.y);
+            sqlMerge.setDouble(LATITUDE_NAME, c.xyz.x);
+            if (sqlMerge.exec() == SQLITE_CONSTRAINT) {
+                std::cout << "Merge constraint violation!" << std::endl;
             }
         }
         sqlLite.commit();
@@ -318,21 +322,22 @@ int main(int argc, char** argv)
         auto gn250 = openGn250(argv[1]);
         if (!gn250) {
             std::cout << "Could not load gn250-data!" << std::endl;
-            return 2;
+            return 1;
         }
         auto projWkt = gn250->getPrj();
-        // alternative : proj tes "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
+        // alternative : projUser  "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
         psc::geo::PtrTransform transf32 = createCrsTransform(
             projWkt
                   ,"EPSG", "4326");
         if (!transf32) {
             std::cout << "Could not init convert!" << std::endl;
-            return 1;
+            return 2;
         }
         dbf2json(transf32, gn250, "gn250.geo.json");
 #       ifdef USE_SQLLITE
         createSqlLite(transf32, gn250, "gn250.sqlite");
 #       endif
+        //ShapeFile shapeFile(argv[1]);
     }
     else {
         std::cout << "Provide directory from download german gn250 data (containing GN250_p.dbf) as argument" << std::endl;

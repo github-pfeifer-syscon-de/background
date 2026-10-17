@@ -190,3 +190,6 @@ private:
 };
 
 static constexpr auto MIN_POPULATION_EXPORT_GEO_JSON{10000.0};
+static constexpr auto LONGITUE_NAME{"LONGITUDE"};
+static constexpr auto LATITUDE_NAME{"LATITUDE"};
+static constexpr auto LONLATHEIGHT_NAME{"LONLATHEIGHT"};

@@ -33,7 +33,7 @@ SqlException::SqlException(const std::string& error)
 }
 
 std::string
-SqlIndex::getCreate(SqlTable* table)
+SqlIndex::getCreate(const SqlTable* table) const
 {
     std::string stmt;
     stmt.reserve(256);
@@ -60,7 +60,7 @@ SqlIndex::getCreate(SqlTable* table)
 }
 
 std::string
-SqlTable::getCreate()
+SqlTable::getCreate() const
 {
     std::string stmt;
     stmt.reserve(512);
@@ -84,7 +84,7 @@ SqlTable::getCreate()
 }
 
 std::string
-SqlTable::getInsert()
+SqlTable::getInsert() const
 {
     std::string stmt;
     stmt.reserve(256);
@@ -111,15 +111,46 @@ SqlTable::getInsert()
 }
 
 std::string
-SqlTable::getSelect()
+SqlTable::getSelect(const std::string& fields) const
 {
     std::string stmt;
-    stmt.reserve(256);
-    stmt += "SELECT * FROM ";
+    stmt.reserve(32 + fields.size() + m_name.size());
+    stmt += "SELECT ";
+    stmt += fields;
+    stmt += " FROM ";
     stmt += m_name;
     return stmt;
 }
 
+std::string
+SqlTable::getUpdate(const std::vector<PtrSqlColumn>& cols) const
+{
+    std::string stmt;
+    stmt.reserve(256);
+    stmt += "UPDATE ";
+    stmt += m_name;
+    stmt += " SET ";
+    size_t n{};
+    for (auto& column : cols) {
+        if (n > 0) {
+            stmt += ',';
+        }
+        stmt += column->getName();
+        stmt += "=?";
+        ++n;
+    }
+    return stmt;
+}
+
+std::string
+SqlTable::getDeleteFrom() const
+{
+    std::string stmt;
+    stmt.reserve(64);
+    stmt += "DELETE FROM ";
+    stmt += m_name;
+    return stmt;
+}
 
 SqlLiteStmt::SqlLiteStmt(SqlLite* sqlLite, const std::string& sql)
 : m_sqlLite{sqlLite}
@@ -151,6 +182,12 @@ SqlLiteStmt::~SqlLiteStmt()
     }
 }
 
+void
+SqlLiteStmt::reset()
+{
+    sqlite3_reset(m_stmt);
+}
+
 bool
 SqlLiteStmt::next()
 {
@@ -166,7 +203,7 @@ SqlLiteStmt::exec()
 {
     auto rc = sqlite3_step(m_stmt);
     if (rc != SQLITE_OK && rc != SQLITE_CONSTRAINT && rc != SQLITE_DONE) {
-        throw SqlException(std::format("SQL error {} next executing {}", sqlite3_errmsg(m_sqlLite->getDb()), m_sql));
+        throw SqlException(std::format("SQL error {} exec executing {}", sqlite3_errmsg(m_sqlLite->getDb()), m_sql));
     }
     sqlite3_reset(m_stmt);  // make stmt ready for next bind
     return rc;
@@ -240,23 +277,23 @@ SqlLiteStmt::getColumnIdx(const std::string& name)
 }
 
 std::string
-SqlLiteStmt::getString(const PtrSqlColumn& col)
+SqlLiteStmt::getString(const std::string& colName)
 {
-    auto n = getColumnIdx(col->getName());
+    auto n = getColumnIdx(colName);
     return getString(n);
 }
 
 double
-SqlLiteStmt::getDouble(const PtrSqlColumn& col)
+SqlLiteStmt::getDouble(const std::string& colName)
 {
-    auto n = getColumnIdx(col->getName());
+    auto n = getColumnIdx(colName);
     return getDouble(n);
 }
 
 int64_t
-SqlLiteStmt::getLong(const PtrSqlColumn& col)
+SqlLiteStmt::getLong(const std::string& colName)
 {
-    auto n = getColumnIdx(col->getName());
+    auto n = getColumnIdx(colName);
     return getLong(n);
 }
 
@@ -272,7 +309,8 @@ SqlLiteStmt::setString(int bindIdx, const std::string& value)
     }
 }
 
-void SqlLiteStmt::setDouble(int bindIdx, double value)
+void
+SqlLiteStmt::setDouble(int bindIdx, double value)
 {
     if (bindIdx <= 0) {
         throw SqlException(std::format("SqlLiteStmt::setDouble idx {} value must be > 0", bindIdx));
@@ -283,6 +321,17 @@ void SqlLiteStmt::setDouble(int bindIdx, double value)
     }
 }
 
+void
+SqlLiteStmt::setLong(int bindIdx, int64_t value)
+{
+    if (bindIdx <= 0) {
+        throw SqlException(std::format("SqlLiteStmt::setLong idx {} value must be > 0", bindIdx));
+    }
+    auto rc = sqlite3_bind_int64(m_stmt, bindIdx, value);
+    if (rc != SQLITE_OK) {
+        throw SqlException(std::format("SqlLiteStmt::setLong idx {} error {}", bindIdx, sqlite3_errmsg(m_sqlLite->getDb())));
+    }
+}
 
 SqlLite::SqlLite(const std::string& name)
 {
@@ -296,6 +345,7 @@ SqlLite::~SqlLite()
 {
     if (m_db != nullptr) {
         sqlite3_close(m_db);
+        m_db = nullptr;
     }
 }
 
@@ -336,15 +386,38 @@ SqlLite::insert(const PtrSqlTable& table)
 
 
 std::unique_ptr<SqlLiteStmt>
-SqlLite::select(const PtrSqlTable& table, const std::string& where)
+SqlLite::select(const PtrSqlTable& table, const std::string& fields, const std::string& where)
 {
-    std::string select{table->getSelect()};
+    std::string select{table->getSelect(fields)};
     if (!where.empty()) {
         select += " WHERE ";
         select += where;
     }
     return prepareStatement(select);
 }
+
+PtrSqlLiteStmt
+SqlLite::update(const PtrSqlTable& table, const std::vector<PtrSqlColumn>& cols, const std::string& where)
+{
+    std::string update{table->getUpdate(cols)};
+    if (!where.empty()) {
+        update += " WHERE ";
+        update += where;
+    }
+    return prepareStatement(update);
+}
+
+PtrSqlLiteStmt
+SqlLite::deleteFrom(const PtrSqlTable& table, const std::string& where)
+{
+    std::string update{table->getDeleteFrom()};
+    if (!where.empty()) {
+        update += " WHERE ";
+        update += where;
+    }
+    return prepareStatement(update);
+}
+
 
 void
 SqlLite::execute(const std::string& sql)

@@ -20,6 +20,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <map>
+#include <functional>
 #include <unordered_map>
 #include <cstdint>
 #include <sqlite3.h>
@@ -55,20 +57,20 @@ public:
     explicit SqlColumn(const SqlColumn& other) = delete;
     virtual ~SqlColumn() = default;
 
-    std::string getName() {
+    std::string getName() const {
         return m_name;
     }
-    int getType() {
+    int getType() const {
         return m_type;
     }
-    int getSize() {
+    int getSize() const {
         return m_size;
     }
-    bool isPrimaryKey() {
+    bool isPrimaryKey() const {
         return m_primaryKey;
     }
-    virtual void addCreateSize(std::string& def) = 0;
-    std::string getCreate() {
+    virtual void addCreateSize(std::string& def) const = 0 ;
+    std::string getCreate() const {
         std::string def;
         def.reserve(64);
         def += m_name;
@@ -122,7 +124,7 @@ public:
     }
     explicit SqlVarcharColumn(const SqlVarcharColumn& other) = delete;
     virtual ~SqlVarcharColumn() = default;
-     void addCreateSize(std::string& def) override {
+     void addCreateSize(std::string& def) const override {
         if (m_size > 0) {
             def += '(';
             def += std::to_string(m_size);
@@ -145,10 +147,10 @@ public:
     explicit SqlNumColumn(const SqlNumColumn& other) = delete;
     virtual ~SqlNumColumn() = default;
 
-    int getDecimals() {
+    int getDecimals() const {
         return m_decimals;
     }
-    void addCreateSize(std::string& def) override {
+    void addCreateSize(std::string& def) const override {
         if (m_size > 0) {
             def += '(';
             def += std::to_string(m_size);
@@ -164,8 +166,8 @@ private:
     int m_decimals;
 };
 
-class SqlTable
-;
+class SqlTable;
+
 class SqlIndex
 {
 public:
@@ -184,7 +186,7 @@ public:
     explicit SqlIndex(const SqlIndex& other) = delete;
     virtual ~SqlIndex() = default;
 
-    std::string getCreate(SqlTable* table);
+    std::string getCreate(const SqlTable* table) const;
     std::string getName() {
         return m_name;
     }
@@ -215,12 +217,17 @@ public:
         m_indexes.push_back(index);
         return m_indexes.size();
     }
-    std::string getName() {
+    std::vector<PtrSqlColumn> getColumns() const {
+        return m_columns;
+    }
+    std::string getName() const {
         return m_name;
     }
-    std::string getCreate();
-    std::string getInsert();
-    std::string getSelect();
+    std::string getCreate() const;
+    std::string getInsert() const;
+    std::string getSelect(const std::string& fields) const;
+    std::string getUpdate(const std::vector<PtrSqlColumn>& cols) const;
+    std::string getDeleteFrom() const;
 private:
     std::string m_name;
     std::vector<PtrSqlColumn> m_columns;
@@ -236,11 +243,11 @@ public:
     explicit SqlLiteStmt(const SqlLiteStmt& other) = delete;
     virtual ~SqlLiteStmt();
 
-    // this is intended for selects
-    bool next();
+    void reset();   // make stmt ready for next bind
+    bool next();    // this is intended for selects
     // this is intended for dml e.g. insert
     //   @return same as sqlite e.g. constrain violated for existing data e.g. SQLITE_CONSTRAINT
-    //   @Exception for "unfixable" errors from client side
+    //   @Exception for probably "unfixable" errors from client side
     int exec();
     int64_t getRowCount();
     std::vector<std::string> getColumnNames();
@@ -248,11 +255,13 @@ public:
     std::string getString(int col);
     double getDouble(int col);
     int64_t getLong(int col);
-    std::string getString(const PtrSqlColumn& col);
-    double getDouble(const PtrSqlColumn& col);
-    int64_t getLong(const PtrSqlColumn& col);
+    std::string getString(const std::string& colName);
+    double getDouble(const std::string& colName);
+    int64_t getLong(const std::string& colName);
     void setString(int bindIdx, const std::string& value);
     void setDouble(int bindIdx, double value);
+    void setLong(int bindIdx, int64_t value);
+
 protected:
     int getColumnIdx(const std::string& name);
 
@@ -284,9 +293,100 @@ public:
     void rollback();
     void create(const PtrSqlTable& table);
     PtrSqlLiteStmt insert(const PtrSqlTable& table);
-    PtrSqlLiteStmt select(const PtrSqlTable& table, const std::string& where);
+    PtrSqlLiteStmt select(const PtrSqlTable& table, const std::string& fields, const std::string& where);
+    PtrSqlLiteStmt update(const PtrSqlTable& table, const std::vector<PtrSqlColumn>& cols, const std::string& where);
+    PtrSqlLiteStmt deleteFrom(const PtrSqlTable& table, const std::string& where);
 private:
     sqlite3* m_db{};
 };
 
+// this contains some presumptions:
+//   single primary key
+class SqlMerge {
+public:
+    SqlMerge(SqlLite* sqlLite, const std::shared_ptr<SqlTable>& table)
+    : m_sqlLite{sqlLite}
+    {
+        std::vector<PtrSqlColumn> updateCols;
+        PtrSqlColumn primaryColumn;
+        int32_t n{1};
+        for (auto& sqlCol : table->getColumns()) {
+            if (sqlCol->isPrimaryKey()) {
+                primaryColumn = sqlCol;
+                m_insBindIdx = n;
+            }
+            else {
+                updateCols.push_back(sqlCol);
+                m_bindIdxMap.insert(std::pair(sqlCol->getName(), n));
+                ++n;
+            }
+        }
+        m_updBindIdx = n;
+        m_select = sqlLite->select(table, "COUNT(*)", primaryColumn->getName() + "=?");
+        m_insert = sqlLite->insert(table);
+        m_update = sqlLite->update(table, updateCols, primaryColumn->getName() + "=?");
+    }
+    void prepare(const std::string& keyValue) {
+        m_select->reset();
+        m_select->setString(1, keyValue);
+        m_cnt = 0;
+        if (m_select->next()) {
+            m_cnt = m_select->getLong(0);
+        }
+        if (m_cnt == 0) {
+            m_insert->reset();
+            m_insert->setString(m_insBindIdx, keyValue);
+        }
+        else {
+            m_update->reset();
+            m_update->setString(m_updBindIdx, keyValue);
+        }
+    }
+    void findColumn(const std::string& name, std::function<void(const PtrSqlLiteStmt& stmt, int32_t)> function) {
+        auto iter = m_bindIdxMap.find(name);
+        if (iter != m_bindIdxMap.end()) {
+            auto bindIdx = iter->second;
+            if (m_cnt == 0) {
+                if (bindIdx >= m_insBindIdx) {
+                    ++bindIdx;
+                }
+                function(m_insert, bindIdx);
+            }
+            else {
+                function(m_update, bindIdx);
+            }
+        }
+    }
+    void setString(const std::string& name, const std::string& value) {
+        findColumn(name, [&](const PtrSqlLiteStmt& stmt, int32_t n) {
+            stmt->setString(n, value);
+        });
+    }
+    void setDouble(const std::string& name, const double value) {
+        findColumn(name, [&](const PtrSqlLiteStmt& stmt, int32_t n) {
+            stmt->setDouble(n, value);
+        });
+    }
+    int exec() {
+        int ret;
+        if (m_cnt == 0) {
+            ret = m_insert->exec();
+        }
+        else {
+            ret = m_update->exec();
+        }
+        return ret;
+    }
+    explicit SqlMerge(const SqlMerge& other) = delete;
+    virtual ~SqlMerge() = default;
+private:
+    SqlLite* m_sqlLite;
+    int32_t m_insBindIdx;
+    int32_t m_updBindIdx;
+    std::map<std::string, int32_t> m_bindIdxMap; // bind indexes for update
+    PtrSqlLiteStmt m_select;
+    PtrSqlLiteStmt m_insert;
+    PtrSqlLiteStmt m_update;
+    int64_t m_cnt;
+};
 } // namespace psc::sql

@@ -34,6 +34,17 @@ using PtrDbfColumn = std::shared_ptr<DbfColumn>;
 class DbfRecord;
 using PtrDbfRecord = std::shared_ptr<DbfRecord>;
 
+class DbfException
+: public std::invalid_argument
+{
+public:
+    DbfException(const std::string& msg)
+    : std::invalid_argument{msg.c_str()}
+    {
+    }
+    virtual ~DbfException() = default;
+};
+
 class DbfFile
 {
 public:
