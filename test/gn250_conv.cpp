@@ -148,7 +148,7 @@ createSqlLite(const psc::geo::PtrTransform& transf32
     , const std::shared_ptr<Gn250> gn250
     , const std::string& db)
 {
-    psc::sql::SqlLite sqlLite(db);
+    psc::sql::PtrDatabase sqlLite = std::make_shared<psc::sql::SqlLite>(db);
     try {
         auto dbfCols = gn250->getColumns();
         auto sqlTbl = std::make_shared<psc::sql::SqlTable>("gn250");
@@ -184,9 +184,9 @@ createSqlLite(const psc::geo::PtrTransform& transf32
         sqlTbl->addIndex(indexLonLat);
         auto indexName = std::make_shared<psc::sql::SqlIndex>(false, "IDX_NAME", nameColumn);
         sqlTbl->addIndex(indexName);
-        sqlLite.create(sqlTbl);
-        sqlLite.beginTransaction(); // this speeds up import dramatically
-        psc::sql::SqlMerge sqlMerge(&sqlLite, sqlTbl);
+        sqlLite->create(sqlTbl);
+        sqlLite->beginTransaction(); // this speeds up import dramatically
+        psc::sql::SqlMerge sqlMerge(sqlLite, sqlTbl);
         gn250->reset();
         while (gn250->next()) {
             auto record = gn250->getRecord();
@@ -220,10 +220,10 @@ createSqlLite(const psc::geo::PtrTransform& transf32
                 std::cout << "Merge constraint violation!" << std::endl;
             }
         }
-        sqlLite.commit();
+        sqlLite->commit();
     }
     catch (const std::exception& exc) {
-        sqlLite.rollback();
+        sqlLite->rollback();
         std::cout << "Error converting to sqlite " << exc.what() << std::endl;
     }
 }
