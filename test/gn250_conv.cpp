@@ -216,7 +216,7 @@ createSqlLite(const psc::geo::PtrTransform& transf32
             c = transf32->convert(c);
             sqlMerge.setDouble(LONGITUE_NAME, c.xyz.y);
             sqlMerge.setDouble(LATITUDE_NAME, c.xyz.x);
-            if (sqlMerge.exec() == SQLITE_CONSTRAINT) {
+            if (sqlMerge.exec() == psc::sql::Result::ConstraintViolated) {
                 std::cout << "Merge constraint violation!" << std::endl;
             }
         }

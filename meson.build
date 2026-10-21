@@ -43,7 +43,7 @@ confFile = configure_file(output : meson.project_name() + '_config.h'
                , configuration : conf)
 conf_include = include_directories(fs.parent(confFile))
 
-genericimg_deps = dependency('genericimg', version :'>= 0.4.12')
+genericimg_deps = dependency('genericimg', version :'>= 0.4.13')
 
 # gtkmm3_deps     = dependency('gtkmm-3.0')
 # glibmm2_deps    = dependency('glibmm-2.4 giomm-2.4')
