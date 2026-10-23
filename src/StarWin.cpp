@@ -417,11 +417,18 @@ StarWin::update(Glib::DateTime now, GeoPosition& pos)
 {
     if (m_backAppl->isDaemon()) {
         auto screen = Gdk::Screen::get_default();
-        auto monitorNum = getDaemonDisplay();
-        Gdk::Rectangle rect;
-        screen->get_monitor_geometry(monitorNum, rect);
-        int width = rect.get_width();
-        int height = rect.get_height();
+        int width = 1024;
+        int height = 1024;
+        try {
+            Gdk::Rectangle rect;
+            auto monitorNum = getDaemonDisplay();
+            screen->get_monitor_geometry(monitorNum, rect);
+            width = rect.get_width();
+            height = rect.get_height();
+        }
+        catch (const Glib::Error& err) {
+            std::cout << "Error determine screen size " << err.what() << std::endl;
+        }
         //std::cout << "Monitor size " << width << " x " << height << std::endl;
         auto image = Cairo::ImageSurface::create(Cairo::Format::FORMAT_ARGB32, width, height);
         Layout layout(width, height);
@@ -743,7 +750,12 @@ StarWin::setIntervalMinutes(int intervalMinutes)
 int
 StarWin::getDaemonDisplay()
 {
-    return m_config->getInteger(BackConfig::MAIN_GRP, DAEMON_DISPLAY_KEY, 0);
+    auto monitorNum = m_config->getInteger(BackConfig::MAIN_GRP, DAEMON_DISPLAY_KEY, 0);
+    auto screen = Gdk::Screen::get_default();
+    if (monitorNum >= screen->get_n_monitors()) {
+        monitorNum = screen->get_primary_monitor();
+    }
+    return monitorNum;
 }
 
 void
